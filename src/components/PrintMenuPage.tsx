@@ -209,35 +209,38 @@ const PrintMenuPage: React.FC<PrintMenuPageProps> = ({ menu, specials, drinks, o
                             style={{
                               display: 'flex',
                               justifyContent: 'space-between',
-                              alignItems: 'center',
+                              alignItems: 'flex-start',
                               padding: '5px 0',
                               borderBottom: idx < section.items.length - 1 ? `1px solid ${C.divider}` : 'none',
+                              gap: '12px',
                             }}
                           >
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
-                              {item.isAddon && (
-                                <span style={{ fontSize: '10px', color: C.subtle, fontFamily: bodyFont }}>+</span>
-                              )}
-                              <span style={{ fontSize: '14px', fontFamily: bodyFont, color: item.isAddon ? C.muted : C.pageText, fontWeight: item.isAddon ? 400 : 700 }}>
-                                {item.name}
-                              </span>
-                              {isSpecialItem(item.name) && (
-                                <span style={{ fontSize: '8px', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: C.specialChip.text, background: C.specialChip.bg, padding: '2px 7px', fontFamily: bodyFont, borderRadius: '2px' }}>
-                                  SPECIAL
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                                {item.isAddon && (
+                                  <span style={{ fontSize: '10px', color: C.subtle, fontFamily: bodyFont }}>+</span>
+                                )}
+                                <span style={{ fontSize: '13px', fontFamily: bodyFont, color: item.isAddon ? C.muted : C.pageText, fontWeight: item.isAddon ? 400 : 700 }}>
+                                  {item.name}
                                 </span>
-                              )}
-                              {item.isNew && (
-                                <span style={{ fontSize: '8px', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: '#fff', background: '#dc2626', padding: '2px 7px', fontFamily: bodyFont, borderRadius: '2px' }}>
-                                  NEW
-                                </span>
-                              )}
+                                {isSpecialItem(item.name) && (
+                                  <span style={{ fontSize: '8px', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: C.specialChip.text, background: C.specialChip.bg, padding: '2px 6px', fontFamily: bodyFont }}>
+                                    SPECIAL
+                                  </span>
+                                )}
+                                {item.isNew && (
+                                  <span style={{ fontSize: '8px', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: '#fff', background: '#dc2626', padding: '2px 6px', fontFamily: bodyFont }}>
+                                    NEW
+                                  </span>
+                                )}
+                              </div>
                               {item.description && (
-                                <span style={{ fontSize: '10px', color: C.subtle, fontStyle: 'italic', fontFamily: bodyFont }}>
+                                <p style={{ margin: '2px 0 0', fontSize: '10px', color: C.subtle, fontStyle: 'italic', fontFamily: bodyFont, lineHeight: 1.4 }}>
                                   {item.description}
-                                </span>
+                                </p>
                               )}
                             </div>
-                            <span style={{ fontSize: '15px', fontWeight: 700, fontFamily: displayFont, color: accent, marginLeft: '12px', whiteSpace: 'nowrap' }}>
+                            <span style={{ fontSize: '14px', fontWeight: 700, fontFamily: displayFont, color: accent, whiteSpace: 'nowrap', paddingTop: '1px' }}>
                               ${item.price % 1 === 0 ? item.price : item.price.toFixed(2)}
                             </span>
                           </div>
@@ -300,15 +303,23 @@ const PrintMenuPage: React.FC<PrintMenuPageProps> = ({ menu, specials, drinks, o
                           style={{
                             display: 'flex',
                             justifyContent: 'space-between',
-                            alignItems: 'baseline',
+                            alignItems: 'flex-start',
                             padding: '4.5px 0',
                             borderBottom: idx < items.length - 1 ? `1px solid ${C.divider}` : 'none',
+                            gap: '10px',
                           }}
                         >
-                          <span style={{ fontSize: '13px', fontFamily: bodyFont, color: C.pageText, flex: 1, paddingRight: '8px', lineHeight: 1.3, fontWeight: 700 }}>
-                            {drink.name}
-                          </span>
-                          <span style={{ fontSize: '14px', fontWeight: 700, fontFamily: displayFont, color: accent, whiteSpace: 'nowrap' }}>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: '12px', fontFamily: bodyFont, color: C.pageText, fontWeight: 700, lineHeight: 1.3 }}>
+                              {drink.name}
+                            </div>
+                            {drink.desc && (
+                              <div style={{ fontSize: '9px', color: C.subtle, fontStyle: 'italic', fontFamily: bodyFont, marginTop: '1px', lineHeight: 1.3 }}>
+                                {drink.desc}
+                              </div>
+                            )}
+                          </div>
+                          <span style={{ fontSize: '13px', fontWeight: 700, fontFamily: displayFont, color: accent, whiteSpace: 'nowrap', paddingTop: '1px' }}>
                             ${drink.price}
                           </span>
                         </div>
