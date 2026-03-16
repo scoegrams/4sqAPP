@@ -45,3 +45,18 @@ export const DRINK_CATEGORY_LABELS: Record<string, string> = {
   wine: 'Wine',
   seltzers: 'Seltzers & Cans',
 };
+
+export const CANNED_BEERS: { name: string; price: number }[] = [
+  { name: 'Bud Light', price: 4 },
+  { name: 'Budweiser', price: 4 },
+  { name: 'Miller Lite', price: 4 },
+  { name: 'Coors Light', price: 4 },
+  { name: 'Michelob Ultra', price: 5 },
+  { name: 'Corona Extra', price: 5 },
+  { name: 'Modelo Especial', price: 5 },
+  { name: 'Heineken', price: 5 },
+  { name: 'Blue Moon', price: 5 },
+  { name: 'Sam Adams Lager', price: 5 },
+  { name: 'Truly Hard Seltzer', price: 5 },
+  { name: 'White Claw', price: 5 },
+];

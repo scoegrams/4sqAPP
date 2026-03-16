@@ -6,6 +6,8 @@ import { Theme } from '../theme';
 interface SpecialsEditorProps {
   isOpen: boolean;
   specials: Special[];
+  openHours: string;
+  onUpdateOpenHours: (value: string) => void;
   theme: Theme;
   onUpdate: (idx: number, field: keyof Special, value: string | number) => void;
   onClose: () => void;
@@ -21,8 +23,8 @@ const DAY_COLORS: Record<string, string> = {
   Sun: 'bg-rose-600',
 };
 
-const SpecialsEditor: React.FC<SpecialsEditorProps> = ({ isOpen, specials, theme, onUpdate, onClose }) => {
-  const isDark = theme.isDark || theme.mode === 'mbta';
+const SpecialsEditor: React.FC<SpecialsEditorProps> = ({ isOpen, specials, openHours, onUpdateOpenHours, theme, onUpdate, onClose }) => {
+  const isDark = theme.isDark || theme.mode === 'apple';
   const panelBg = isDark ? 'bg-slate-900' : 'bg-white';
   const borderColor = isDark ? 'border-slate-700' : 'border-slate-200';
   const inputBorder = isDark ? 'border-white/25 text-white placeholder:text-white/30' : 'border-black/25 placeholder:text-black/30';
@@ -46,6 +48,15 @@ const SpecialsEditor: React.FC<SpecialsEditorProps> = ({ isOpen, specials, theme
         </div>
 
         <div className="flex-1 overflow-y-auto no-scrollbar p-4 space-y-4">
+          <div className={`p-3 border ${isDark ? 'border-emerald-700/50 bg-emerald-950/30' : 'border-emerald-200 bg-emerald-50/80'}`}>
+            <label className={`text-[8px] font-bold uppercase tracking-widest ${theme.textMuted}`}>We're open (hours text)</label>
+            <input
+              value={openHours}
+              onChange={e => onUpdateOpenHours(e.target.value)}
+              placeholder="e.g. 4-1am Wed thru Saturday"
+              className={`w-full mt-1 text-sm font-bold bg-transparent border-b border-dashed focus:outline-none ${inputBorder} ${theme.text}`}
+            />
+          </div>
           {specials.map((s, i) => (
             <div key={s.day} className={`p-3 border ${isDark ? 'border-slate-700 bg-slate-800/40' : 'border-slate-200 bg-slate-50'}`}>
               <div className="flex items-center gap-2 mb-2">

@@ -5,6 +5,7 @@ import { Theme } from '../theme';
 
 interface FooterProps {
   specials: Special[];
+  openHours: string;
   theme: Theme;
   isAdmin: boolean;
   onUpdateSpecial: (idx: number, field: string, value: string | number) => void;
@@ -21,8 +22,8 @@ const DAY_COLORS: Record<string, string> = {
   Sun: 'bg-rose-600',
 };
 
-const Footer: React.FC<FooterProps> = ({ specials, theme, isAdmin, onUpdateSpecial, onOpenSpecialsEditor }) => {
-  const isMbta = theme.mode === 'mbta';
+const Footer: React.FC<FooterProps> = ({ specials, openHours, theme, isAdmin, onUpdateSpecial, onOpenSpecialsEditor }) => {
+  const isApple = theme.mode === 'apple';
   const doubled = [...specials, ...specials];
 
   return (
@@ -32,8 +33,8 @@ const Footer: React.FC<FooterProps> = ({ specials, theme, isAdmin, onUpdateSpeci
         <div className="flex items-center">
           <button
             onClick={isAdmin ? onOpenSpecialsEditor : undefined}
-            className={`shrink-0 px-4 py-2 font-black text-[9px] uppercase tracking-[0.2em] border-r flex items-center gap-1.5 transition-all ${
-              theme.isDark ? 'bg-emerald-600 text-white border-emerald-500 hover:bg-emerald-500' : isMbta ? 'bg-[#00843D] text-white border-[#00843D]' : 'bg-emerald-700 text-white border-emerald-600 hover:bg-emerald-600'
+            className={`shrink-0 px-4 py-3 sm:py-2 font-black text-[9px] uppercase tracking-[0.2em] border-r flex items-center gap-1.5 transition-all min-h-[44px] sm:min-h-0 ${
+              theme.isDark ? 'bg-emerald-600 text-white border-emerald-500 hover:bg-emerald-500' : isApple ? 'bg-[#1d1d1f] text-white border-[#3a3a3c] hover:bg-[#2c2c2e]' : 'bg-emerald-700 text-white border-emerald-600 hover:bg-emerald-600'
             } ${!isAdmin ? 'cursor-default' : 'cursor-pointer'}`}
           >
             Daily Schedule
@@ -53,20 +54,20 @@ const Footer: React.FC<FooterProps> = ({ specials, theme, isAdmin, onUpdateSpeci
                         onChange={(e) => onUpdateSpecial(i % specials.length, 'dish', e.target.value)}
                         className={`text-xs font-bold bg-transparent border-b border-dashed w-24 focus:outline-none ${theme.isDark ? 'border-white/30 text-white' : 'border-black/30'}`}
                       />
-                      <span className={`text-xs font-black ml-1 ${isMbta ? 'text-[#00843D]' : theme.isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>
+                      <span className={`text-xs font-black ml-1 ${isApple ? 'text-[#0071e3]' : theme.isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>
                         $
                       </span>
                       <input
                         type="number"
                         value={s.price}
                         onChange={(e) => onUpdateSpecial(i % specials.length, 'price', parseFloat(e.target.value) || 0)}
-                        className={`text-xs font-black bg-transparent border-b border-dashed w-10 focus:outline-none ${isMbta ? 'text-[#00843D] border-white/30' : theme.isDark ? 'text-emerald-400 border-white/30' : 'text-emerald-700 border-black/30'}`}
+                        className={`text-xs font-black bg-transparent border-b border-dashed w-10 focus:outline-none ${isApple ? 'text-[#0071e3] border-white/30' : theme.isDark ? 'text-emerald-400 border-white/30' : 'text-emerald-700 border-black/30'}`}
                       />
                     </>
                   ) : (
                     <span className={`text-xs font-black uppercase tracking-wider ${theme.text}`}>
                       {s.dish}{' '}
-                      <span className={`${isMbta ? 'text-[#00843D]' : theme.isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>
+                      <span className={`${isApple ? 'text-[#0071e3]' : theme.isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>
                         ${s.price}
                       </span>
                     </span>
@@ -79,7 +80,7 @@ const Footer: React.FC<FooterProps> = ({ specials, theme, isAdmin, onUpdateSpeci
       </div>
 
       {/* Info bar */}
-      <div className="flex items-center justify-center gap-6 px-4 py-1.5">
+      <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 px-4 py-3 sm:py-1.5 safe-bottom">
         <div className={`flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.15em] ${theme.textMuted}`}>
           <MapPin size={10} />
           16 Commercial Street, Braintree MA
@@ -92,13 +93,6 @@ const Footer: React.FC<FooterProps> = ({ specials, theme, isAdmin, onUpdateSpeci
           <Clock size={10} />
           Open: Wednesday through Saturday
         </div>
-      </div>
-
-      {/* Consumer advisory / legal */}
-      <div className={`border-t border-inherit px-4 py-2 ${theme.isDark ? 'border-white/10' : theme.mode === 'mbta' ? 'border-white/15' : 'border-black/10'}`}>
-        <p className={`text-[8px] leading-relaxed max-w-4xl mx-auto ${theme.textMuted}`}>
-          <span className={`font-bold ${theme.textMuted}`}>Consumer advisory:</span> Consuming raw or undercooked meats, poultry, seafood, shellfish, or eggs may increase your risk of foodborne illness, especially if you have certain medical conditions. Menu items may contain or come into contact with allergens including wheat, eggs, peanuts, tree nuts, milk, soy, fish, and shellfish. Please inform your server of any dietary restrictions or allergies. Four Square Restaurant & Bar is not responsible for errors in dietary descriptions. Prices and menu items are subject to change without notice.
-        </p>
       </div>
     </div>
   );

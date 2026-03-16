@@ -1,4 +1,5 @@
 import React from 'react';
+import { LucideIcon } from 'lucide-react';
 import { UtensilsCrossed, Beef, Salad, Pizza, Trash2, ChevronUp, ChevronDown, Plus } from 'lucide-react';
 import { QuadrantData, MenuData, MenuItem, MenuSection } from '../types';
 import { Theme, QuadrantTheme } from '../theme';
@@ -19,7 +20,7 @@ interface QuadrantProps {
   onMoveSection: (q: keyof MenuData, si: number, dir: 'up' | 'down') => void;
 }
 
-const QUADRANT_ICONS: Record<string, React.FC<{ size?: number; className?: string }>> = {
+const QUADRANT_ICONS: Record<string, LucideIcon> = {
   apps: UtensilsCrossed,
   mains: Pizza,
   burgers: Beef,

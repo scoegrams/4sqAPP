@@ -1,8 +1,27 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { db } from '../db';
-import { MenuData, Special, DrinksData, MenuVersion, MenuItem, MenuSection } from '../types';
+import { MenuData, Special, DrinksData, MenuVersion, MenuItem, MenuSection, TrainSignEvent, ChalkboardData, ChalkboardSpecial } from '../types';
 import { INITIAL_MENU_DATA, INITIAL_SPECIALS } from '../data/menuData';
 import { INITIAL_DRINKS_DATA } from '../data/drinksData';
+
+const DEFAULT_TRAIN_EVENTS: TrainSignEvent[] = [
+  { id: 'evt-1', title: 'KARAOKE WEDNESDAY', emoji: '🎤' },
+  { id: 'evt-2', title: 'SATURDAY NIGHT DJ PARTY', emoji: '🪩' },
+];
+
+const DEFAULT_OPEN_HOURS = '4-1am Wed thru Saturday';
+
+const DEFAULT_CHALKBOARD: ChalkboardData = {
+  title: 'Four Square',
+  price: '$12 Lunch Specials',
+  subtitle: 'Wednesday–Saturday from 4PM–1AM',
+  items: [
+    { id: 'cb-1', heading: 'Bar Pizza', description: 'Our signature thin-crust bar pie with house sauce and mozzarella' },
+    { id: 'cb-2', heading: 'Steak Tips', description: 'Marinated sirloin tips with fries and house slaw' },
+    { id: 'cb-3', heading: 'Classic Cheeseburger', description: 'Our classic cheeseburger & fries' },
+    { id: 'cb-4', heading: 'Fish & Chips', description: 'Beer-battered cod with fries, tartar sauce & slaw' },
+  ],
+};
 
 function deepClone<T>(val: T): T {
   return JSON.parse(JSON.stringify(val));
@@ -16,21 +35,32 @@ export function useMenuStore() {
   const [menu, setMenu] = useState<MenuData>(deepClone(INITIAL_MENU_DATA));
   const [specials, setSpecials] = useState<Special[]>(deepClone(INITIAL_SPECIALS));
   const [drinks, setDrinks] = useState<DrinksData>(deepClone(INITIAL_DRINKS_DATA));
+  const [events, setEvents] = useState<TrainSignEvent[]>(() => deepClone(DEFAULT_TRAIN_EVENTS));
+  const [openHours, setOpenHours] = useState<string>(DEFAULT_OPEN_HOURS);
+  const [chalkboard, setChalkboard] = useState<ChalkboardData>(() => deepClone(DEFAULT_CHALKBOARD));
   const [isDirty, setIsDirty] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
-  const savedRef = useRef({ menu, specials, drinks });
+  const savedRef = useRef({ menu, specials, drinks, events: [] as TrainSignEvent[], openHours: DEFAULT_OPEN_HOURS, chalkboard: deepClone(DEFAULT_CHALKBOARD) as ChalkboardData });
 
   // Load from DB on mount
   useEffect(() => {
     db.current_menu.get('current').then((record) => {
       if (record) {
+        const loadedEvents = record.events?.length ? record.events : deepClone(DEFAULT_TRAIN_EVENTS);
+        const loadedOpenHours = record.openHours ?? DEFAULT_OPEN_HOURS;
+        const loadedChalkboard = record.chalkboard ?? deepClone(DEFAULT_CHALKBOARD);
         setMenu(record.menu);
         setSpecials(record.specials);
         setDrinks(record.drinks);
-        setLastSaved(record.lastSaved);
-        savedRef.current = { menu: record.menu, specials: record.specials, drinks: record.drinks };
+        setEvents(deepClone(loadedEvents));
+        setOpenHours(loadedOpenHours);
+        setChalkboard(deepClone(loadedChalkboard));
+        setLastSaved(record.lastSaved ? new Date(record.lastSaved) : null);
+        savedRef.current = { menu: record.menu, specials: record.specials, drinks: record.drinks, events: loadedEvents, openHours: loadedOpenHours, chalkboard: loadedChalkboard };
+      } else {
+        savedRef.current = { menu: deepClone(INITIAL_MENU_DATA), specials: deepClone(INITIAL_SPECIALS), drinks: deepClone(INITIAL_DRINKS_DATA), events: deepClone(DEFAULT_TRAIN_EVENTS), openHours: DEFAULT_OPEN_HOURS, chalkboard: deepClone(DEFAULT_CHALKBOARD) };
       }
     }).finally(() => setIsLoading(false));
   }, []);
@@ -38,26 +68,29 @@ export function useMenuStore() {
   // Track dirty state
   useEffect(() => {
     if (!isLoading) {
-      setIsDirty(JSON.stringify({ menu, specials, drinks }) !== JSON.stringify(savedRef.current));
+      setIsDirty(JSON.stringify({ menu, specials, drinks, events, openHours, chalkboard }) !== JSON.stringify(savedRef.current));
     }
-  }, [menu, specials, drinks, isLoading]);
+  }, [menu, specials, drinks, events, openHours, chalkboard, isLoading]);
 
   // ── Save ────────────────────────────────────────────────────────────────────
   const save = useCallback(async (note = '') => {
     const now = new Date();
-    const snapshot = { menu: deepClone(menu), specials: deepClone(specials), drinks: deepClone(drinks) };
+    const snapshot = { menu: deepClone(menu), specials: deepClone(specials), drinks: deepClone(drinks), events: deepClone(events), openHours, chalkboard: deepClone(chalkboard) };
     await db.current_menu.put({ id: 'current', ...snapshot, lastSaved: now });
     await db.menu_versions.add({ timestamp: now, note: note || `Saved ${now.toLocaleString()}`, ...snapshot });
-    savedRef.current = snapshot;
+    savedRef.current = { ...snapshot };
     setLastSaved(now);
     setIsDirty(false);
-  }, [menu, specials, drinks]);
+  }, [menu, specials, drinks, events, openHours, chalkboard]);
 
   // ── Discard ─────────────────────────────────────────────────────────────────
   const discard = useCallback(() => {
     setMenu(deepClone(savedRef.current.menu));
     setSpecials(deepClone(savedRef.current.specials));
     setDrinks(deepClone(savedRef.current.drinks));
+    setEvents(deepClone(savedRef.current.events));
+    setOpenHours(savedRef.current.openHours);
+    setChalkboard(deepClone(savedRef.current.chalkboard));
     setIsDirty(false);
   }, []);
 
@@ -66,6 +99,8 @@ export function useMenuStore() {
     setMenu(deepClone(version.menu));
     setSpecials(deepClone(version.specials));
     setDrinks(deepClone(version.drinks));
+    setEvents(version.events?.length ? deepClone(version.events) : deepClone(DEFAULT_TRAIN_EVENTS));
+    setOpenHours(version.openHours ?? DEFAULT_OPEN_HOURS);
     setIsDirty(true);
   }, []);
 
@@ -127,7 +162,7 @@ export function useMenuStore() {
   ) => {
     setMenu(prev => {
       const next = deepClone(prev);
-      (next[quadrant].sections[sectionIdx] as Record<string, unknown>)[field] = value;
+      (next[quadrant].sections[sectionIdx] as unknown as Record<string, unknown>)[field] = value;
       return next;
     });
   }, []);
@@ -186,13 +221,75 @@ export function useMenuStore() {
     }));
   }, []);
 
+  // ── TRAIN SIGN EVENTS ───────────────────────────────────────────────────────
+  const updateEvent = useCallback((idx: number, field: keyof TrainSignEvent, value: string) => {
+    setEvents(prev => prev.map((e, i) => i === idx ? { ...e, [field]: value } : e));
+  }, []);
+
+  const addEvent = useCallback(() => {
+    setEvents(prev => [...prev, { id: genId(), title: 'NEW EVENT', emoji: '✨' }]);
+  }, []);
+
+  const removeEvent = useCallback((idx: number) => {
+    setEvents(prev => prev.filter((_, i) => i !== idx));
+  }, []);
+
+  const moveEvent = useCallback((idx: number, direction: 'up' | 'down') => {
+    setEvents(prev => {
+      const next = [...prev];
+      const target = direction === 'up' ? idx - 1 : idx + 1;
+      if (target < 0 || target >= next.length) return prev;
+      [next[idx], next[target]] = [next[target], next[idx]];
+      return next;
+    });
+  }, []);
+
+  // ── CHALKBOARD SPECIALS CRUD ─────────────────────────────────────────────────
+  const updateChalkboardMeta = useCallback((field: 'title' | 'price' | 'subtitle', value: string) => {
+    setChalkboard(prev => ({ ...prev, [field]: value }));
+  }, []);
+
+  const updateChalkboardItem = useCallback((idx: number, field: keyof ChalkboardSpecial, value: string) => {
+    setChalkboard(prev => ({
+      ...prev,
+      items: prev.items.map((item, i) => i === idx ? { ...item, [field]: value } : item),
+    }));
+  }, []);
+
+  const addChalkboardItem = useCallback(() => {
+    setChalkboard(prev => ({
+      ...prev,
+      items: [...prev.items, { id: genId(), heading: 'New Special', description: 'Description here' }],
+    }));
+  }, []);
+
+  const removeChalkboardItem = useCallback((idx: number) => {
+    setChalkboard(prev => ({
+      ...prev,
+      items: prev.items.filter((_, i) => i !== idx),
+    }));
+  }, []);
+
+  const moveChalkboardItem = useCallback((idx: number, direction: 'up' | 'down') => {
+    setChalkboard(prev => {
+      const items = [...prev.items];
+      const target = direction === 'up' ? idx - 1 : idx + 1;
+      if (target < 0 || target >= items.length) return prev;
+      [items[idx], items[target]] = [items[target], items[idx]];
+      return { ...prev, items };
+    });
+  }, []);
+
   return {
-    menu, specials, drinks,
+    menu, specials, drinks, events, openHours, setOpenHours,
+    chalkboard, setChalkboard,
+    updateChalkboardMeta, updateChalkboardItem, addChalkboardItem, removeChalkboardItem, moveChalkboardItem,
     isDirty, isLoading, lastSaved,
     save, discard, restoreVersion,
     updateItem, addItem, removeItem, moveItem,
     updateSection, addSection, removeSection, moveSection,
     updateSpecial,
     updateDrinkItem, addDrinkItem, removeDrinkItem,
+    updateEvent, addEvent, removeEvent, moveEvent,
   };
 }

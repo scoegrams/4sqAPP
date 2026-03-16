@@ -15,7 +15,7 @@ function summarizeChanges(a: MenuVersion, b: MenuVersion): string[] {
   const lines: string[] = [];
   // Count items
   const countItems = (m: MenuVersion['menu']) =>
-    Object.values(m).reduce((acc, q) => acc + q.sections.reduce((s, sec) => s + sec.items.length, 0), 0);
+    Object.values(m).reduce((acc: number, q) => acc + q.sections.reduce((s: number, sec: { items: unknown[] }) => s + sec.items.length, 0), 0);
   const countSpecials = (v: MenuVersion) => v.specials.length;
 
   const aItems = countItems(a.menu);
@@ -55,7 +55,7 @@ const VersionHistory: React.FC<VersionHistoryProps> = ({ isOpen, onClose, onRest
     onClose();
   };
 
-  const isDark = theme.isDark || theme.mode === 'mbta';
+  const isDark = theme.isDark || theme.mode === 'apple';
   const panelBg = isDark ? 'bg-slate-900' : 'bg-white';
   const borderColor = isDark ? 'border-slate-700' : 'border-slate-200';
   const rowHover = isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50';

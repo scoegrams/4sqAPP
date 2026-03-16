@@ -49,6 +49,28 @@ export interface MenuVersion {
   menu: MenuData;
   specials: Special[];
   drinks: DrinksData;
+  events?: TrainSignEvent[];
+  openHours?: string;
+}
+
+export interface TrainSignEvent {
+  id: string;
+  title: string;
+  emoji: string;
+}
+
+export interface ChalkboardSpecial {
+  id: string;
+  heading: string;
+  description: string;
+  image?: string;
+}
+
+export interface ChalkboardData {
+  title: string;
+  price: string;
+  subtitle: string;
+  items: ChalkboardSpecial[];
 }
 
 export interface CurrentMenuRecord {
@@ -57,4 +79,7 @@ export interface CurrentMenuRecord {
   specials: Special[];
   drinks: DrinksData;
   lastSaved: Date;
+  events?: TrainSignEvent[];
+  openHours?: string;
+  chalkboard?: ChalkboardData;
 }

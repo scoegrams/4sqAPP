@@ -38,7 +38,7 @@ export const INITIAL_MENU_DATA: MenuData = {
         note: 'Served with 2 sides',
         items: [
           { id: 'm1', name: 'Steak Tip Dinner', price: 26 },
-          { id: 'm2', name: '½ Grill Special', price: 24 },
+          { id: 'm2', name: 'Double Grill Special', price: 24 },
           { id: 'm3', name: 'Chicken A La King', price: 22 },
         ],
       },

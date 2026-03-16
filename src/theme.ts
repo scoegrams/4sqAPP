@@ -1,4 +1,4 @@
-export type ThemeMode = 'dark' | 'light' | 'modern' | 'mbta';
+export type ThemeMode = 'dark' | 'light' | 'modern' | 'apple';
 
 export interface QuadrantTheme {
   bg: string;
@@ -125,41 +125,42 @@ const modernTheme: Theme = {
   inputBorder: 'border-[#c8d8e4]',
 };
 
-const mbtaTheme: Theme = {
-  mode: 'mbta',
-  isDark: true,
-  bg: 'bg-[#231F20]',
-  text: 'text-white',
-  textMuted: 'text-white/60',
-  border: 'border-white/20',
-  headerBg: 'bg-[#DA291C]',
-  headerBorder: 'border-[#b02218]',
+// Apple-inspired: ultra-clean titanium/aluminum, SF palette, precise blue accents
+const appleTheme: Theme = {
+  mode: 'apple',
+  isDark: false,
+  bg: 'bg-[#f5f5f7]',
+  text: 'text-[#1d1d1f]',
+  textMuted: 'text-[#6e6e73]',
+  border: 'border-[#d2d2d7]',
+  headerBg: 'bg-[#1d1d1f]/95 backdrop-blur-xl',
+  headerBorder: 'border-[#3a3a3c]',
   quadrantGreen: {
-    bg: 'bg-[#00843D]/20',
-    border: 'border-[#00843D]',
-    accent: 'text-[#00843D]',
-    headerBg: 'bg-[#00843D]/15',
+    bg: 'bg-white',
+    border: 'border-[#d2d2d7]',
+    accent: 'text-[#34c759]',
+    headerBg: 'bg-[#f5f5f7]',
   },
   quadrantBlue: {
-    bg: 'bg-[#003DA5]/20',
-    border: 'border-[#003DA5]',
-    accent: 'text-[#60a5fa]',
-    headerBg: 'bg-[#003DA5]/15',
+    bg: 'bg-white',
+    border: 'border-[#d2d2d7]',
+    accent: 'text-[#0071e3]',
+    headerBg: 'bg-[#f5f5f7]',
   },
-  navUnderline: 'border-[#b02218] bg-[#DA291C]/90',
+  navUnderline: 'border-[#3a3a3c] bg-[#1d1d1f]/90',
   navActive: 'text-white border-white',
-  navInactive: 'text-white/70 border-transparent',
-  navInactiveHover: 'hover:text-white hover:border-white/50',
-  cardBg: 'bg-[#2d2829]',
-  footerBg: 'bg-[#231F20]/95 backdrop-blur-md',
-  footerBorder: 'border-white/20',
-  inputBg: 'bg-[#2d2829]',
-  inputBorder: 'border-white/20',
+  navInactive: 'text-[#aeaeb2] border-transparent',
+  navInactiveHover: 'hover:text-white hover:border-white/40',
+  cardBg: 'bg-white',
+  footerBg: 'bg-[#f5f5f7]/95 backdrop-blur-xl',
+  footerBorder: 'border-[#d2d2d7]',
+  inputBg: 'bg-white',
+  inputBorder: 'border-[#d2d2d7]',
 };
 
 export const THEMES: Record<ThemeMode, Theme> = {
   dark: darkTheme,
   light: lightTheme,
   modern: modernTheme,
-  mbta: mbtaTheme,
+  apple: appleTheme,
 };

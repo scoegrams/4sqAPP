@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Save, Printer, History, RotateCcw, Check, AlertCircle } from 'lucide-react';
+import { Save, Printer, History, RotateCcw, Check, AlertCircle, PencilLine } from 'lucide-react';
 import { Theme } from '../theme';
 
 interface AdminToolbarProps {
@@ -9,11 +9,12 @@ interface AdminToolbarProps {
   onSave: (note: string) => Promise<void>;
   onDiscard: () => void;
   onPrint: () => void;
+  onChalkboard: () => void;
   onHistory: () => void;
 }
 
 const AdminToolbar: React.FC<AdminToolbarProps> = ({
-  theme, isDirty, lastSaved, onSave, onDiscard, onPrint, onHistory,
+  theme, isDirty, lastSaved, onSave, onDiscard, onPrint, onChalkboard, onHistory,
 }) => {
   const [note, setNote] = useState('');
   const [saving, setSaving] = useState(false);
@@ -34,7 +35,7 @@ const AdminToolbar: React.FC<AdminToolbarProps> = ({
     setTimeout(() => setSavedFlash(false), 2000);
   };
 
-  const bg = theme.isDark ? 'bg-slate-900 border-slate-700' : theme.mode === 'mbta' ? 'bg-[#231F20] border-[#DA291C]' : 'bg-white border-slate-300';
+  const bg = theme.isDark ? 'bg-slate-900 border-slate-700' : theme.mode === 'apple' ? 'bg-[#1d1d1f] border-[#3a3a3c]' : 'bg-white border-slate-300';
   const mutedText = theme.isDark ? 'text-slate-400' : 'text-slate-500';
 
   return (
@@ -104,6 +105,14 @@ const AdminToolbar: React.FC<AdminToolbarProps> = ({
           className={`p-1.5 border transition-all ${theme.isDark ? 'border-slate-600 text-white hover:border-emerald-500 hover:text-emerald-400' : 'border-slate-300 text-slate-700 hover:border-emerald-600 hover:text-emerald-700'}`}
         >
           <Printer size={13} />
+        </button>
+
+        <button
+          onClick={onChalkboard}
+          title="Chalkboard Specials"
+          className={`p-1.5 border transition-all ${theme.isDark ? 'border-slate-600 text-white hover:border-amber-500 hover:text-amber-400' : 'border-slate-300 text-slate-700 hover:border-amber-600 hover:text-amber-700'}`}
+        >
+          <PencilLine size={13} />
         </button>
 
         <button
