@@ -23,7 +23,7 @@ const App = () => {
   const store = useMenuStore();
 
   const [isAdmin, setIsAdmin] = useState(false);
-  const [themeMode, setThemeMode] = useState<ThemeMode>('dark');
+  const [themeMode, setThemeMode] = useState<ThemeMode>('light');
   const [activePage, setActivePage] = useState<Page>('menu');
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [customBgColor, setCustomBgColor] = useState<string | null>(null);
