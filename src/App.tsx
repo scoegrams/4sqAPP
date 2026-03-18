@@ -8,13 +8,9 @@ import Connect4Page from './components/pages/Connect4Page';
 import BookingPage from './components/pages/BookingPage';
 import DrinksPage from './components/pages/DrinksPage';
 import SpecialsPage from './components/pages/SpecialsPage';
+import JackpotPage from './components/pages/JackpotPage';
 import PrintMenuPage from './components/PrintMenuPage';
 import ChalkboardSpecials from './components/ChalkboardSpecials';
-import AdminToolbar from './components/AdminToolbar';
-import VersionHistory from './components/VersionHistory';
-import SpecialsEditor from './components/SpecialsEditor';
-import TrainSignEditor from './components/TrainSignEditor';
-import BgColorPicker from './components/BgColorPicker';
 import { MenuData, MenuItem, MenuSection } from './types';
 import { ThemeMode, THEMES } from './theme';
 import { useMenuStore } from './hooks/useMenuStore';
@@ -22,6 +18,7 @@ import { useMenuStore } from './hooks/useMenuStore';
 const App = () => {
   const store = useMenuStore();
 
+  // isAdmin is only ever true when the Jackpot page grants it
   const [isAdmin, setIsAdmin] = useState(false);
   const [themeMode, setThemeMode] = useState<ThemeMode>('light');
   const [activePage, setActivePage] = useState<Page>('menu');
@@ -29,29 +26,28 @@ const App = () => {
   const [customBgColor, setCustomBgColor] = useState<string | null>(null);
   const [showPrint, setShowPrint] = useState(false);
   const [showChalkboard, setShowChalkboard] = useState(false);
-  const [showHistory, setShowHistory] = useState(false);
-  const [showSpecialsEditor, setShowSpecialsEditor] = useState(false);
-  const [showTrainSignEditor, setShowTrainSignEditor] = useState(false);
-  const [hash, setHash] = useState(() => window.location.hash);
-
-  useEffect(() => {
-    const onHashChange = () => setHash(window.location.hash);
-    window.addEventListener('hashchange', onHashChange);
-    return () => window.removeEventListener('hashchange', onHashChange);
-  }, []);
-
-  const isAdminRoute = hash === '#/admin';
 
   const theme = THEMES[themeMode];
+  const isMenuPage = activePage === 'menu';
 
-  const handleAdminClick = () => {
-    if (hash !== '#/admin') {
-      window.location.hash = '#/admin';
-      setIsAdmin(true);
-    } else {
-      setIsAdmin((prev) => !prev);
+  // Hash-based navigation: /#jackpot goes straight to the owner dashboard
+  useEffect(() => {
+    const go = () => {
+      if (window.location.hash === '#jackpot') setActivePage('jackpot');
+    };
+    go();
+    window.addEventListener('hashchange', go);
+    return () => window.removeEventListener('hashchange', go);
+  }, []);
+
+  // Sync hash when page changes
+  useEffect(() => {
+    if (activePage === 'jackpot') {
+      window.location.hash = 'jackpot';
+    } else if (window.location.hash === '#jackpot') {
+      history.replaceState(null, '', window.location.pathname);
     }
-  };
+  }, [activePage]);
 
   const cycleTheme = () => {
     setThemeMode(prev => {
@@ -62,37 +58,80 @@ const App = () => {
     });
   };
 
-  const isMenuPage = activePage === 'menu';
-
   const renderPage = () => {
     switch (activePage) {
-      case 'about': return <AboutPage theme={theme} onNavigate={(page) => setActivePage(page)} />;
-      case 'connect4': return <Connect4Page theme={theme} />;
-      case 'booking': return <BookingPage theme={theme} />;
-      case 'drinks': return (
-        <DrinksPage
-          theme={theme}
-          drinks={store.drinks}
-          isAdmin={isAdmin}
-          onUpdateDrinkItem={(cat, idx, field, value) => store.updateDrinkItem(cat, idx, field as string, value)}
-          onAddDrinkItem={store.addDrinkItem}
-          onRemoveDrinkItem={store.removeDrinkItem}
-        />
-      );
-      case 'specials': return (
-        <SpecialsPage
-          theme={theme}
-          data={store.chalkboard}
-          isAdmin={isAdmin}
-          onUpdateMeta={(field, value) => store.updateChalkboardMeta(field, value)}
-          onUpdateItem={(idx, field, value) => store.updateChalkboardItem(idx, field, value)}
-          onAddItem={store.addChalkboardItem}
-          onRemoveItem={store.removeChalkboardItem}
-          onMoveItem={store.moveChalkboardItem}
-          onPrintChalkboard={() => setShowChalkboard(true)}
-        />
-      );
-      default: return null;
+      case 'about':
+        return <AboutPage theme={theme} onNavigate={setActivePage} />;
+
+      case 'connect4':
+        return <Connect4Page theme={theme} />;
+
+      case 'booking':
+        return <BookingPage theme={theme} />;
+
+      case 'jackpot':
+        return (
+          <JackpotPage
+            theme={theme}
+            themeMode={themeMode}
+            isAdmin={isAdmin}
+            isDirty={store.isDirty}
+            lastSaved={store.lastSaved}
+            customBgColor={customBgColor}
+            specials={store.specials}
+            openHours={store.openHours}
+            events={store.events}
+            onToggleAdmin={() => setIsAdmin(prev => !prev)}
+            onCycleTheme={cycleTheme}
+            onSetTheme={setThemeMode}
+            onSave={store.save}
+            onDiscard={store.discard}
+            onPrint={() => setShowPrint(true)}
+            onChalkboard={() => setShowChalkboard(true)}
+            onColorChange={setCustomBgColor}
+            onUpdateSpecial={(idx, field, value) =>
+              store.updateSpecial(idx, field as 'day' | 'dish' | 'price', value)
+            }
+            onUpdateOpenHours={store.setOpenHours}
+            onUpdateEvent={(idx, field, value) => store.updateEvent(idx, field, value)}
+            onAddEvent={store.addEvent}
+            onRemoveEvent={store.removeEvent}
+            onMoveEvent={store.moveEvent}
+            onRestoreVersion={store.restoreVersion}
+          />
+        );
+
+      case 'drinks':
+        return (
+          <DrinksPage
+            theme={theme}
+            drinks={store.drinks}
+            isAdmin={isAdmin}
+            onUpdateDrinkItem={(cat, idx, field, value) =>
+              store.updateDrinkItem(cat, idx, field as string, value)
+            }
+            onAddDrinkItem={store.addDrinkItem}
+            onRemoveDrinkItem={store.removeDrinkItem}
+          />
+        );
+
+      case 'specials':
+        return (
+          <SpecialsPage
+            theme={theme}
+            data={store.chalkboard}
+            isAdmin={isAdmin}
+            onUpdateMeta={(field, value) => store.updateChalkboardMeta(field, value)}
+            onUpdateItem={(idx, field, value) => store.updateChalkboardItem(idx, field, value)}
+            onAddItem={store.addChalkboardItem}
+            onRemoveItem={store.removeChalkboardItem}
+            onMoveItem={store.moveChalkboardItem}
+            onPrintChalkboard={() => setShowChalkboard(true)}
+          />
+        );
+
+      default:
+        return null;
     }
   };
 
@@ -111,7 +150,7 @@ const App = () => {
       className={`min-h-screen h-screen flex flex-col transition-colors duration-300 overflow-hidden font-sans relative safe-top safe-bottom ${customBgColor ? '' : theme.bg} ${theme.text}`}
       style={customBgColor ? { backgroundColor: customBgColor } : undefined}
     >
-      {/* Background image */}
+      {/* Background image — subtle texture */}
       <div
         className="fixed inset-0 pointer-events-none transition-opacity duration-500"
         style={{
@@ -124,13 +163,8 @@ const App = () => {
 
       <Header
         theme={theme}
-        isAdmin={isAdmin}
         activePage={activePage}
-        showAdminControls={isAdminRoute}
         trainSignEvents={store.events}
-        onOpenTrainSignEditor={() => setShowTrainSignEditor(true)}
-        onCycleTheme={cycleTheme}
-        onToggleAdmin={handleAdminClick}
         onOpenNav={() => setIsNavOpen(true)}
         onNavigate={setActivePage}
       />
@@ -171,7 +205,7 @@ const App = () => {
             ))}
           </div>
 
-          {/* Consumer advisory — below the menu, above the footer */}
+          {/* Consumer advisory */}
           <div className={`max-w-6xl mx-auto border-t px-4 py-3 mb-24 ${theme.isDark ? 'border-white/10' : theme.mode === 'apple' ? 'border-[#d2d2d7]' : 'border-black/10'}`}>
             <p className={`text-[8px] leading-relaxed ${theme.textMuted}`}>
               <span className="font-bold">Consumer advisory:</span> Consuming raw or undercooked meats, poultry, seafood, shellfish, or eggs may increase your risk of foodborne illness, especially if you have certain medical conditions. Menu items may contain or come into contact with allergens including wheat, eggs, peanuts, tree nuts, milk, soy, fish, and shellfish. Please inform your server of any dietary restrictions or allergies.
@@ -193,58 +227,10 @@ const App = () => {
           onUpdateSpecial={(idx, field, value) =>
             store.updateSpecial(idx, field as 'day' | 'dish' | 'price', value)
           }
-          onOpenSpecialsEditor={() => setShowSpecialsEditor(true)}
+          onOpenSpecialsEditor={() => setActivePage('jackpot')}
+          onGoJackpot={() => setActivePage('jackpot')}
         />
       )}
-
-      {/* Admin overlays */}
-      {isAdminRoute && (
-        <BgColorPicker theme={theme} onColorChange={setCustomBgColor} currentColor={customBgColor} />
-      )}
-
-      {isAdmin && (
-        <AdminToolbar
-          theme={theme}
-          isDirty={store.isDirty}
-          lastSaved={store.lastSaved}
-          onSave={store.save}
-          onDiscard={store.discard}
-          onPrint={() => setShowPrint(true)}
-          onChalkboard={() => setShowChalkboard(true)}
-          onHistory={() => setShowHistory(true)}
-        />
-      )}
-
-      {/* Drawers & modals */}
-      <VersionHistory
-        isOpen={showHistory}
-        onClose={() => setShowHistory(false)}
-        onRestore={store.restoreVersion}
-        theme={theme}
-      />
-
-      <SpecialsEditor
-        isOpen={showSpecialsEditor && isAdmin}
-        specials={store.specials}
-        openHours={store.openHours}
-        onUpdateOpenHours={(v) => store.setOpenHours(v)}
-        theme={theme}
-        onUpdate={(idx, field, value) =>
-          store.updateSpecial(idx, field as 'day' | 'dish' | 'price', value)
-        }
-        onClose={() => setShowSpecialsEditor(false)}
-      />
-
-      <TrainSignEditor
-        isOpen={showTrainSignEditor && isAdmin}
-        events={store.events}
-        theme={theme}
-        onUpdate={(idx, field, value) => store.updateEvent(idx, field, value)}
-        onAdd={store.addEvent}
-        onRemove={store.removeEvent}
-        onMove={store.moveEvent}
-        onClose={() => setShowTrainSignEditor(false)}
-      />
 
       {showPrint && (
         <PrintMenuPage

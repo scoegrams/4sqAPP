@@ -1,6 +1,6 @@
 import React from 'react';
-import { LucideIcon, Palette } from 'lucide-react';
-import { Settings, Menu, Info, Grid2x2, CalendarDays, GlassWater, Sparkles } from 'lucide-react';
+import { LucideIcon } from 'lucide-react';
+import { Menu, Info, Grid2x2, CalendarDays, GlassWater, Sparkles } from 'lucide-react';
 import TrainSign from './TrainSign';
 import FourSquares from './FourSquares';
 import { Page } from './NavDrawer';
@@ -9,13 +9,8 @@ import { TrainSignEvent } from '../types';
 
 interface HeaderProps {
   theme: Theme;
-  isAdmin: boolean;
   activePage: Page;
-  showAdminControls: boolean;
   trainSignEvents?: TrainSignEvent[];
-  onOpenTrainSignEditor?: () => void;
-  onCycleTheme: () => void;
-  onToggleAdmin: () => void;
   onOpenNav: () => void;
   onNavigate: (page: Page) => void;
 }
@@ -29,14 +24,7 @@ const NAV_ITEMS: { id: Page; label: string; icon: LucideIcon | React.FC<{ size?:
   { id: 'connect4', label: 'Connect 4', icon: Grid2x2 },
 ];
 
-const THEME_LABELS: Record<string, string> = {
-  dark: 'Dark',
-  light: 'Light',
-  modern: 'Modern',
-  mbta: 'Apple',
-};
-
-const Header: React.FC<HeaderProps> = ({ theme, isAdmin, activePage, showAdminControls, trainSignEvents = [], onOpenTrainSignEditor, onCycleTheme, onToggleAdmin, onOpenNav, onNavigate }) => {
+const Header: React.FC<HeaderProps> = ({ theme, activePage, trainSignEvents = [], onOpenNav, onNavigate }) => {
   const isApple = theme.mode === 'apple';
   const btnBase = theme.isDark
     ? 'bg-slate-800 border-slate-700'
@@ -52,7 +40,7 @@ const Header: React.FC<HeaderProps> = ({ theme, isAdmin, activePage, showAdminCo
       <div className="px-4 sm:px-6 py-2.5 sm:py-2 flex items-center justify-between gap-2">
         <div className="flex items-center gap-4">
           <div className="flex flex-col leading-none gap-1 sm:gap-1.5 items-center min-w-0">
-            <h1 className={`text-2xl sm:text-3xl font-black tracking-tighter uppercase italic leading-none truncate ${isApple ? 'text-white' : theme.text}`}>FOUR SQUARE</h1>
+            <h1 className={`font-barWordmark text-2xl sm:text-3xl font-black tracking-tighter uppercase italic leading-none truncate ${isApple ? 'text-white' : theme.text}`}>FOUR SQUARE</h1>
             <FourSquares />
           </div>
           <span className={`hidden lg:block text-sm font-black tracking-widest uppercase border-l pl-4 ${isApple ? 'text-white/60 border-white/20' : `${theme.textMuted} ${theme.border}`}`}>
@@ -61,36 +49,13 @@ const Header: React.FC<HeaderProps> = ({ theme, isAdmin, activePage, showAdminCo
         </div>
 
         <div className="flex items-center gap-2">
-          <TrainSign theme={theme} events={trainSignEvents} isAdmin={isAdmin} onEditClick={onOpenTrainSignEditor} />
-
-          {showAdminControls && (
-            <button
-              onClick={onCycleTheme}
-              title={`Theme: ${THEME_LABELS[theme.mode]} — click to switch`}
-              className={`flex items-center gap-1.5 px-2.5 min-h-[44px] sm:min-h-0 py-2 sm:py-1.5 border transition-all active:scale-95 ${btnBase} ${btnText}`}
-            >
-              <Palette size={12} />
-              <span className="text-[9px] font-black uppercase tracking-widest hidden sm:block">
-                {THEME_LABELS[theme.mode]}
-              </span>
-            </button>
-          )}
-
+          <TrainSign theme={theme} events={trainSignEvents} isAdmin={false} />
           <button
             onClick={onOpenNav}
             className={`min-h-[44px] min-w-[44px] flex items-center justify-center p-2 border transition-all active:scale-95 ${btnBase} ${btnText}`}
             aria-label="Open navigation"
           >
             <Menu size={18} />
-          </button>
-
-          <button
-            onClick={onToggleAdmin}
-            title={showAdminControls ? (isAdmin ? 'Exit admin mode' : 'Enter admin mode') : 'Open admin'}
-            className={`flex items-center gap-2 px-3 min-h-[44px] sm:min-h-0 py-2 sm:py-1.5 border font-black uppercase text-[10px] tracking-widest transition-all active:scale-95 ${isAdmin ? 'bg-[#0071e3] text-white border-[#0071e3]' : (theme.isDark ? 'bg-slate-800 border-slate-700 text-white' : isApple ? 'bg-white/10 text-white border-white/20' : theme.mode === 'modern' ? 'bg-[#2b6777] text-white border-[#2b6777]' : 'bg-slate-900 text-white shadow-[2px_2px_0px_#000]')}`}
-          >
-            <Settings size={12} />
-            {isAdmin ? 'Exit' : 'Admin'}
           </button>
         </div>
       </div>

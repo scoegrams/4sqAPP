@@ -3,7 +3,7 @@ import { LucideIcon } from 'lucide-react';
 import { X, UtensilsCrossed, GlassWater, CalendarDays, Info, Grid2x2, Sparkles } from 'lucide-react';
 import { Theme } from '../theme';
 
-export type Page = 'menu' | 'about' | 'connect4' | 'booking' | 'drinks' | 'specials';
+export type Page = 'menu' | 'about' | 'connect4' | 'booking' | 'drinks' | 'specials' | 'jackpot';
 
 interface NavDrawerProps {
   isOpen: boolean;

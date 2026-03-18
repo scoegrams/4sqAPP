@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { MapPin, Phone, Clock, Pencil } from 'lucide-react';
 import { Special } from '../types';
 import { Theme } from '../theme';
@@ -10,6 +10,7 @@ interface FooterProps {
   isAdmin: boolean;
   onUpdateSpecial: (idx: number, field: string, value: string | number) => void;
   onOpenSpecialsEditor?: () => void;
+  onGoJackpot?: () => void;
 }
 
 const DAY_COLORS: Record<string, string> = {
@@ -22,9 +23,22 @@ const DAY_COLORS: Record<string, string> = {
   Sun: 'bg-rose-600',
 };
 
-const Footer: React.FC<FooterProps> = ({ specials, openHours, theme, isAdmin, onUpdateSpecial, onOpenSpecialsEditor }) => {
+const Footer: React.FC<FooterProps> = ({ specials, openHours, theme, isAdmin, onUpdateSpecial, onOpenSpecialsEditor, onGoJackpot }) => {
   const isApple = theme.mode === 'apple';
   const doubled = [...specials, ...specials];
+  const tapCount = useRef(0);
+  const tapTimer = useRef<ReturnType<typeof setTimeout>>();
+
+  const handleSecretTap = () => {
+    tapCount.current += 1;
+    clearTimeout(tapTimer.current);
+    if (tapCount.current >= 5) {
+      tapCount.current = 0;
+      onGoJackpot?.();
+    } else {
+      tapTimer.current = setTimeout(() => { tapCount.current = 0; }, 2000);
+    }
+  };
 
   return (
     <div className={`z-20 border-t-2 transition-colors duration-300 ${theme.footerBg} ${theme.footerBorder}`}>
@@ -93,6 +107,16 @@ const Footer: React.FC<FooterProps> = ({ specials, openHours, theme, isAdmin, on
           <Clock size={10} />
           Open: Wednesday through Saturday
         </div>
+        {/* Secret 5-tap — no visible affordance */}
+        <button
+          type="button"
+          onClick={handleSecretTap}
+          className={`text-[9px] font-bold uppercase tracking-[0.15em] select-none focus:outline-none ${theme.textMuted}`}
+          aria-hidden="true"
+          tabIndex={-1}
+        >
+          Four Square
+        </button>
       </div>
     </div>
   );
