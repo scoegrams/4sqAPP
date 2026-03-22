@@ -505,11 +505,9 @@ const JackpotPage: React.FC<JackpotPageProps> = ({
         </Section>
 
         {/* Live design tokens */}
-        <Section title="Theme Studio" icon={<Sparkles size={16} className="text-amber-600" />} defaultOpen={false}>
+        <Section title="Custom colors" icon={<Sparkles size={16} className="text-amber-600" />} defaultOpen={false}>
           <p className="text-xs text-[#5c564d] mb-4">
-            All UI colors flow from one token map (<code className="text-[10px] bg-white px-1 py-0.5 border border-[#c4beb5]">src/theme/presets.ts</code>).
-            Turn on <strong>Custom colors</strong> to tune any value live in this browser; export JSON to save a scheme. New named themes: duplicate a preset block and wire it in{' '}
-            <code className="text-[10px] bg-white px-1 py-0.5 border border-[#c4beb5]">ThemeMode</code> + app theme buttons.
+            Fine-tune individual colors. Changes save to the database and apply live for every visitor — or hit <strong>Reset all</strong> to go back to the default look.
           </p>
           <ThemeStudioPanel onRequestTheme={onSetTheme} />
         </Section>

@@ -76,7 +76,7 @@ const Header: React.FC<HeaderProps> = ({ theme, activePage, trainSignEvents = []
             <button
               key={id}
               onClick={() => onNavigate(id)}
-              style={{ fontFamily: "'Hamon', system-ui, sans-serif", fontWeight: 400 }}
+              style={{ fontFamily: "'Hamon', system-ui, sans-serif", fontWeight: 700 }}
               className={`flex items-center gap-1.5 px-3 py-3 sm:py-1.5 text-[11px] sm:text-[12px] uppercase tracking-widest transition-all duration-200 border-b-2 -mb-px shrink-0 min-h-[44px] sm:min-h-0 active:scale-[0.98] ${
                 isActive
                   ? 'text-[color:var(--fs-nav-active-text)] border-[color:var(--fs-nav-active-border)]'
