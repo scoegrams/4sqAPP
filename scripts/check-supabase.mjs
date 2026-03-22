@@ -33,14 +33,24 @@ function loadEnvFile(filePath) {
 
 const root = resolve(__dirname, '..');
 const env = loadEnvFile(resolve(root, '.env'));
-const url = (env.VITE_SUPABASE_URL || '').replace(/\/$/, '');
-const key = env.VITE_SUPABASE_ANON_KEY || '';
+const url = (
+  env.VITE_SUPABASE_URL ||
+  env.SUPABASE_URL ||
+  env.NEXT_PUBLIC_SUPABASE_URL ||
+  ''
+).replace(/\/$/, '');
+const key =
+  env.VITE_SUPABASE_ANON_KEY ||
+  env.SUPABASE_ANON_KEY ||
+  env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  '';
 
 console.log('Supabase connection check (reads .env in project root)\n');
 
 if (!url || !key) {
-  console.error('❌ Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY in .env');
-  console.error('   Copy .env.example → .env and paste keys from Supabase → Settings → API.');
+  console.error('❌ Missing Supabase URL + anon key in .env');
+  console.error('   Use VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY, or SUPABASE_URL + SUPABASE_ANON_KEY.');
+  console.error('   Values: Supabase → Settings → API.');
   process.exit(1);
 }
 

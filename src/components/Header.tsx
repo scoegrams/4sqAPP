@@ -27,20 +27,35 @@ const NAV_ITEMS: { id: Page; label: string; icon: LucideIcon | React.FC<{ size?:
 const Header: React.FC<HeaderProps> = ({ theme, activePage, trainSignEvents = [], onOpenNav, onNavigate }) => {
   return (
     <div className={`z-20 transition-colors duration-300 safe-top ${theme.headerBg} ${theme.headerBorder}`}>
-      <div className="px-4 sm:px-6 py-2.5 sm:py-2 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-4">
-          <div className="flex flex-col leading-none gap-1 sm:gap-1.5 items-center min-w-0">
-            <h1 className="font-barWordmark text-2xl sm:text-3xl font-black tracking-tighter uppercase italic leading-none truncate text-[color:var(--fs-header-wordmark)]">
-              FOUR SQUARE
+      {/* items-start + self-start logo = pinned top-left; safe-left keeps clear of notches */}
+      <div className="px-4 sm:px-6 py-2 sm:py-2.5 flex items-start justify-between gap-3 safe-left">
+        <div className="flex items-start gap-3 sm:gap-4 min-w-0 flex-1">
+          {/* Stacked Hamon wordmark + square tech — matches brand lockup */}
+          <div
+            className="shrink-0 self-start font-barDisplay font-bold text-center text-[color:var(--fs-header-wordmark)] w-fit max-w-[92vw]"
+            style={{ fontSize: 'clamp(1.45rem, 4.6vw, 1.95rem)' }}
+          >
+            <h1
+              className="m-0 p-0 leading-[0.88] tracking-[0.04em]"
+              aria-label="Four Square, Restaurant and Bar"
+            >
+              <span className="block">FOUR</span>
+              <span className="block">SQUARE</span>
             </h1>
-            <FourSquares />
+            <div aria-hidden="true">
+              <FourSquares unit="0.24em" className="mt-[0.07em]" />
+            </div>
           </div>
-          <span className="hidden lg:block text-sm font-black tracking-widest uppercase border-l pl-4 text-[color:var(--fs-header-tagline)] border-[color:var(--fs-header-tagline-border)]">
+          {/* Hamon-Bold.otf @ 700 — explicit family so it never inherits DM Sans from page root */}
+          <span
+            className="hidden lg:block self-center font-barDisplay text-sm font-bold tracking-widest uppercase border-l pl-4 text-[color:var(--fs-header-tagline)] border-[color:var(--fs-header-tagline-border)]"
+            style={{ fontFamily: "'Hamon', system-ui, sans-serif" }}
+          >
             Restaurant + Bar
           </span>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-start gap-2 shrink-0 pt-0.5">
           <TrainSign theme={theme} events={trainSignEvents} isAdmin={false} />
           <button
             onClick={onOpenNav}
@@ -59,13 +74,14 @@ const Header: React.FC<HeaderProps> = ({ theme, activePage, trainSignEvents = []
             <button
               key={id}
               onClick={() => onNavigate(id)}
-              className={`flex items-center gap-1.5 px-3 py-3 sm:py-1.5 text-[10px] font-black uppercase tracking-widest transition-all duration-200 border-b-2 -mb-px shrink-0 min-h-[44px] sm:min-h-0 active:scale-[0.98] ${
+              className={`flex items-center gap-1.5 px-3 py-3 sm:py-1.5 font-barDisplay text-[11px] sm:text-xs font-normal uppercase tracking-widest transition-all duration-200 border-b-2 -mb-px shrink-0 min-h-[44px] sm:min-h-0 active:scale-[0.98] ${
                 isActive
                   ? theme.navActive
                   : `${theme.navInactive} ${theme.navInactiveHover}`
               }`}
+              style={{ fontFamily: "'Hamon', system-ui, sans-serif", fontWeight: 400 }}
             >
-              <Icon size={10} />
+              <Icon size={12} />
               {label}
             </button>
           );

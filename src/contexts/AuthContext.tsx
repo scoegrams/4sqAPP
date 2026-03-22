@@ -28,7 +28,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
  * Must match an entry under Authentication → URL Configuration → Redirect URLs.
  */
 function getEmailMagicLinkRedirectUrl(): string {
-  const fixed = import.meta.env.VITE_AUTH_REDIRECT_URL?.trim();
+  const fixed = __FOURSQ_AUTH_REDIRECT_URL__?.trim();
   if (fixed) return fixed;
   if (typeof window === 'undefined') return '';
   const { origin, pathname, hash } = window.location;
@@ -88,7 +88,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signInWithEmail = useCallback(async (email: string): Promise<{ error: string | null }> => {
     setError(null);
     if (!supabase) {
-      setError('Social features not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env');
+      setError('Social features not configured. Add Supabase URL + anon key (VITE_SUPABASE_* or SUPABASE_*). See .env.example.');
       return { error: 'Not configured' };
     }
     const emailRedirectTo = getEmailMagicLinkRedirectUrl();

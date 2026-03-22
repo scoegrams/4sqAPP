@@ -38,7 +38,7 @@ const NavDrawer: React.FC<NavDrawerProps> = ({ isOpen, onClose, activePage, onNa
         }`}
       >
         <div className="p-4 flex justify-between items-center border-b-2 border-inherit">
-          <span className="text-xs font-black uppercase tracking-[0.3em] text-[color:var(--fs-drawer-text)]">
+          <span className="font-barDisplay text-xs font-bold uppercase tracking-[0.3em] text-[color:var(--fs-drawer-text)]">
             Navigate
           </span>
           <button
@@ -59,7 +59,7 @@ const NavDrawer: React.FC<NavDrawerProps> = ({ isOpen, onClose, activePage, onNa
                   onNavigate(id);
                   onClose();
                 }}
-                className="w-full flex items-center gap-3 px-4 min-h-[48px] py-3 text-sm font-bold uppercase tracking-widest transition-all active:scale-[0.99]"
+                className="font-barDisplay w-full flex items-center gap-3 px-4 min-h-[48px] py-3 text-sm font-bold uppercase tracking-widest transition-all active:scale-[0.99]"
                 style={{
                   backgroundColor: isActive ? 'var(--fs-drawer-active-bg)' : 'transparent',
                   color: isActive ? 'var(--fs-drawer-active-text)' : 'var(--fs-drawer-inactive-text)',

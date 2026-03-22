@@ -159,8 +159,10 @@ const JackpotPage: React.FC<JackpotPageProps> = ({
           <Lock size={32} className="mx-auto text-[#5c564d]" />
           <h2 className="font-barDisplay text-2xl font-bold text-[#2d3d2d]">Not configured</h2>
           <p className="text-sm text-[#5c564d]">
-            Add <code className="bg-white px-1 py-0.5 border border-[#c4beb5] text-xs">VITE_SUPABASE_URL</code> and{' '}
-            <code className="bg-white px-1 py-0.5 border border-[#c4beb5] text-xs">VITE_SUPABASE_ANON_KEY</code> to your{' '}
+            Add Supabase <code className="bg-white px-1 py-0.5 border border-[#c4beb5] text-xs">URL</code> +{' '}
+            <code className="bg-white px-1 py-0.5 border border-[#c4beb5] text-xs">anon key</code> to env (e.g.{' '}
+            <code className="text-[10px] bg-white px-1 border border-[#c4beb5]">SUPABASE_URL</code> /{' '}
+            <code className="text-[10px] bg-white px-1 border border-[#c4beb5]">VITE_SUPABASE_URL</code>) in your{' '}
             <code className="bg-white px-1 py-0.5 border border-[#c4beb5] text-xs">.env</code> file to enable the Jackpot dashboard.
           </p>
           <p className="text-xs text-[#5c564d]">See <strong>DEPLOY.md</strong> for setup instructions.</p>

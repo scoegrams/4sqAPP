@@ -8,7 +8,13 @@ const CYCLE_MS = 350;
 const HOLD_MS = 4000;
 const POP_MS = 400;
 
-const FourSquares: React.FC = () => {
+export interface FourSquaresProps {
+  /** Square side length (e.g. `0.24em` vs wordmark, or `0.75rem` fixed) */
+  unit?: string;
+  className?: string;
+}
+
+const FourSquares: React.FC<FourSquaresProps> = ({ unit = '0.75rem', className = '' }) => {
   const [phase, setPhase] = useState<Phase>('cycleIn');
   const [litCount, setLitCount] = useState(0);
   const [greenPop, setGreenPop] = useState(false);
@@ -70,8 +76,12 @@ const FourSquares: React.FC = () => {
     };
   }, []);
 
+  /* Square side = 1 unit (--fs-sq-unit); gap = 0.5 unit */
   return (
-    <div className="flex gap-[3px]">
+    <div
+      className={`flex w-fit justify-center gap-[calc(var(--fs-sq-unit)*0.5)] mx-auto ${className}`.trim()}
+      style={{ ['--fs-sq-unit' as string]: unit }}
+    >
       {LOGO_VAR_NAMES.map((varName, i) => {
         const isLit = phase === 'cycleOut' ? i >= 4 - litCount : i < litCount;
         const showPop = greenPop && i === 0;
@@ -79,8 +89,10 @@ const FourSquares: React.FC = () => {
         return (
           <div
             key={varName}
-            className="w-3.5 h-3.5 transition-all duration-300 ease-out"
+            className="shrink-0 transition-all duration-300 ease-out"
             style={{
+              width: 'var(--fs-sq-unit)',
+              height: 'var(--fs-sq-unit)',
               backgroundColor: showPop
                 ? 'var(--fs-logo-sq-pop)'
                 : isLit

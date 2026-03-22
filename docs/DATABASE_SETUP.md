@@ -4,10 +4,10 @@ The app does **not** use a Postgres connection string in code. It uses the **HTT
 
 | Variable | Where to get it |
 |----------|------------------|
-| `VITE_SUPABASE_URL` | Supabase → **Settings** → **API** → Project URL |
-| `VITE_SUPABASE_ANON_KEY` | Same page → `anon` `public` key |
+| `VITE_SUPABASE_URL` or `SUPABASE_URL` (or `NEXT_PUBLIC_SUPABASE_URL`) | Supabase → **Settings** → **API** → Project URL |
+| `VITE_SUPABASE_ANON_KEY` or `SUPABASE_ANON_KEY` (or `NEXT_PUBLIC_SUPABASE_ANON_KEY`) | Same page → `anon` `public` key |
 
-Put both in **`.env`** at the project root (see `.env.example`).
+The build reads these in **`vite.config.ts`** — you don’t have to use the `VITE_` prefix on Vercel if you prefer `SUPABASE_*`. Put values in **`.env`** locally (see `.env.example`).
 
 ## 1. Verify connectivity
 
@@ -57,6 +57,6 @@ Use the **same email** you’ll type on the Jackpot page. The trigger in migrati
 
 ## 5. Production
 
-Set **`VITE_SUPABASE_URL`** and **`VITE_SUPABASE_ANON_KEY`** in your host (e.g. Vercel → Environment Variables) for production builds.
+Set **URL + anon key** in your host (e.g. Vercel → Environment Variables) for production builds — either **`VITE_SUPABASE_*`** or **`SUPABASE_URL` / `SUPABASE_ANON_KEY`**.
 
 Never commit `.env` or use the **service_role** key in the frontend.
