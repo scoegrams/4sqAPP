@@ -46,7 +46,7 @@ const Header: React.FC<HeaderProps> = ({ theme, activePage, trainSignEvents = []
               <FourSquares unit="0.24em" className="mt-[0.07em]" />
             </div>
           </div>
-          {/* Hamon-Bold.otf @ 700 — explicit family so it never inherits DM Sans from page root */}
+          {/* Hamon-Bold.otf @ 700 */}
           <span
             className="hidden lg:block self-center font-barDisplay text-sm font-bold tracking-widest uppercase border-l pl-4 text-[color:var(--fs-header-tagline)] border-[color:var(--fs-header-tagline-border)]"
             style={{ fontFamily: "'Hamon', system-ui, sans-serif" }}

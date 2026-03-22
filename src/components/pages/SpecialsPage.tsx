@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import { Plus, Trash2, ChevronUp, ChevronDown, Printer, ImagePlus, X } from 'lucide-react';
+import { FONT_HAMON } from '../../fontTokens';
 import { Theme } from '../../theme';
 import { ChalkboardData, ChalkboardSpecial } from '../../types';
 
@@ -79,7 +80,9 @@ const ItemPhotoSquares: React.FC<{
         title="Add photo"
       >
         <ImagePlus size={22} style={{ color: `${CHALK_MINT}60` }} className="group-hover:scale-110 transition-transform" />
-        <span className="font-chalkBody text-xs" style={{ color: `${CHALK_GRAY}80` }}>Add photo</span>
+        <span className="font-bar text-xs font-normal" style={{ color: `${CHALK_GRAY}80` }}>
+          Add photo
+        </span>
       </button>
     </div>
   );
@@ -131,7 +134,7 @@ const SpecialsPage: React.FC<SpecialsPageProps> = ({
           <div className="flex justify-end mb-4">
             <button
               onClick={onPrintChalkboard}
-              className="flex items-center gap-2 px-5 py-2.5 font-chalkBody text-sm tracking-widest uppercase transition-all active:scale-95 hover:scale-[1.02] rounded-lg"
+              className="flex items-center gap-2 px-5 py-2.5 font-bar text-sm font-normal tracking-widest uppercase transition-all active:scale-95 hover:scale-[1.02] rounded-lg"
               style={{ color: CHALK_MINT, border: `2px solid ${CHALK_MINT}40`, background: 'rgba(158,211,199,0.06)' }}
             >
               <Printer size={15} />
@@ -153,11 +156,11 @@ const SpecialsPage: React.FC<SpecialsPageProps> = ({
               value={data.title}
               onChange={(e) => onUpdateMeta('title', e.target.value)}
               className="bg-transparent border-none text-center w-full focus:outline-none"
-              style={{ fontFamily: 'Special Gothic Expanded One, Impact, sans-serif', fontSize: 'clamp(52px, 10vw, 80px)', color: CHALK_WHITE, textShadow: '2px 2px 8px rgba(0,0,0,0.4), 0 0 20px rgba(255,255,255,0.03)', lineHeight: 1 }}
+              style={{ fontFamily: FONT_HAMON, fontWeight: 700, fontSize: 'clamp(52px, 10vw, 80px)', color: CHALK_WHITE, textShadow: '2px 2px 8px rgba(0,0,0,0.4), 0 0 20px rgba(255,255,255,0.03)', lineHeight: 1 }}
             />
           ) : (
             <h1 style={{
-              fontFamily: 'Special Gothic Expanded One, Impact, sans-serif', fontSize: 'clamp(52px, 10vw, 80px)',
+              fontFamily: FONT_HAMON, fontWeight: 700, fontSize: 'clamp(52px, 10vw, 80px)',
               color: CHALK_WHITE, margin: 0, lineHeight: 1,
               textShadow: '2px 2px 8px rgba(0,0,0,0.4), 0 0 20px rgba(255,255,255,0.03)',
             }}>
@@ -184,11 +187,11 @@ const SpecialsPage: React.FC<SpecialsPageProps> = ({
               value={data.price}
               onChange={(e) => onUpdateMeta('price', e.target.value)}
               className="bg-transparent border-none text-center w-full focus:outline-none relative"
-              style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: 'clamp(28px, 6vw, 44px)', color: CHALK_MINT, letterSpacing: '4px', textTransform: 'uppercase', textShadow: `0 0 25px ${CHALK_MINT}25, 2px 2px 6px rgba(0,0,0,0.3)` }}
+              style={{ fontFamily: FONT_HAMON, fontWeight: 700, fontSize: 'clamp(28px, 6vw, 44px)', color: CHALK_MINT, letterSpacing: '4px', textTransform: 'uppercase', textShadow: `0 0 25px ${CHALK_MINT}25, 2px 2px 6px rgba(0,0,0,0.3)` }}
             />
           ) : (
             <h2 className="relative" style={{
-              fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: 'clamp(28px, 6vw, 44px)',
+              fontFamily: FONT_HAMON, fontWeight: 700, fontSize: 'clamp(28px, 6vw, 44px)',
               color: CHALK_MINT, margin: 0, letterSpacing: '4px',
               textTransform: 'uppercase',
               textShadow: `0 0 25px ${CHALK_MINT}25, 2px 2px 6px rgba(0,0,0,0.3)`,
@@ -205,11 +208,11 @@ const SpecialsPage: React.FC<SpecialsPageProps> = ({
               value={data.subtitle}
               onChange={(e) => onUpdateMeta('subtitle', e.target.value)}
               className="bg-transparent border-none text-center w-full focus:outline-none"
-              style={{ fontFamily: 'Patrick Hand, cursive', fontSize: 'clamp(16px, 3vw, 22px)', color: CHALK_GRAY, letterSpacing: '5px', textTransform: 'uppercase' }}
+              style={{ fontFamily: FONT_HAMON, fontWeight: 400, fontSize: 'clamp(16px, 3vw, 22px)', color: CHALK_GRAY, letterSpacing: '5px', textTransform: 'uppercase' }}
             />
           ) : (
             <p style={{
-              fontFamily: 'Patrick Hand, cursive', fontSize: 'clamp(16px, 3vw, 22px)',
+              fontFamily: FONT_HAMON, fontWeight: 400, fontSize: 'clamp(16px, 3vw, 22px)',
               color: CHALK_GRAY, margin: 0, letterSpacing: '5px', textTransform: 'uppercase',
             }}>
               {data.subtitle}
@@ -227,7 +230,7 @@ const SpecialsPage: React.FC<SpecialsPageProps> = ({
           const dateStr = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
           return (
             <div className="mt-5 mb-2 text-center">
-              <p className="font-chalkBody text-sm tracking-[3px] mb-3" style={{ color: `${CHALK_GRAY}70` }}>
+              <p className="font-bar text-sm font-normal tracking-[3px] mb-3" style={{ color: `${CHALK_GRAY}70` }}>
                 {dateStr}
               </p>
               <div className="flex justify-center gap-3 sm:gap-5">
@@ -236,7 +239,7 @@ const SpecialsPage: React.FC<SpecialsPageProps> = ({
                   return (
                     <div key={d} className="flex flex-col items-center gap-1">
                       <span
-                        className="font-chalkBody text-sm sm:text-base uppercase tracking-widest"
+                        className="font-bar text-sm sm:text-base font-normal uppercase tracking-widest"
                         style={{
                           color: isToday ? CHALK_MINT : `${CHALK_GRAY}50`,
                           textShadow: isToday ? `0 0 12px ${CHALK_MINT}30` : 'none',
@@ -323,7 +326,8 @@ const SpecialsPage: React.FC<SpecialsPageProps> = ({
                             onChange={(e) => onUpdateItem(idx, 'heading', e.target.value)}
                             className={`bg-transparent border-none w-full focus:outline-none ${item.image ? 'text-left' : 'text-center'}`}
                             style={{
-                              fontFamily: 'Bebas Neue, Impact, sans-serif',
+                              fontFamily: FONT_HAMON,
+                              fontWeight: 700,
                               fontSize: 'clamp(22px, 4vw, 34px)',
                               color: CHALK_WHITE,
                               letterSpacing: '2px',
@@ -337,7 +341,8 @@ const SpecialsPage: React.FC<SpecialsPageProps> = ({
                             onChange={(e) => onUpdateItem(idx, 'description', e.target.value)}
                             className={`bg-transparent border-none w-full focus:outline-none mt-2 ${item.image ? 'text-left' : 'text-center'}`}
                             style={{
-                              fontFamily: 'Patrick Hand, cursive',
+                              fontFamily: FONT_HAMON,
+                              fontWeight: 400,
                               fontSize: 'clamp(16px, 2.5vw, 20px)',
                               color: CHALK_GRAY,
                               letterSpacing: '1px',
@@ -348,7 +353,8 @@ const SpecialsPage: React.FC<SpecialsPageProps> = ({
                       ) : (
                         <>
                           <h3 style={{
-                            fontFamily: 'Bebas Neue, Impact, sans-serif',
+                            fontFamily: FONT_HAMON,
+                            fontWeight: 700,
                             fontSize: 'clamp(22px, 4vw, 34px)',
                             color: CHALK_WHITE,
                             margin: '0 0 8px',
@@ -360,7 +366,8 @@ const SpecialsPage: React.FC<SpecialsPageProps> = ({
                             {item.heading}
                           </h3>
                           <p style={{
-                            fontFamily: 'Patrick Hand, cursive',
+                            fontFamily: FONT_HAMON,
+                            fontWeight: 400,
                             fontSize: 'clamp(16px, 2.5vw, 20px)',
                             color: CHALK_GRAY,
                             margin: 0, letterSpacing: '1px', lineHeight: 1.6,
@@ -383,7 +390,8 @@ const SpecialsPage: React.FC<SpecialsPageProps> = ({
             onClick={onAddItem}
             className="w-full mt-8 py-4 flex items-center justify-center gap-3 transition-all hover:scale-[1.01] active:scale-[0.99] rounded-xl"
             style={{
-              fontFamily: 'Patrick Hand, cursive',
+              fontFamily: FONT_HAMON,
+              fontWeight: 400,
               fontSize: '18px',
               letterSpacing: '3px',
               textTransform: 'uppercase',
@@ -411,10 +419,10 @@ const SpecialsPage: React.FC<SpecialsPageProps> = ({
           </div>
 
           <div className="text-center space-y-1.5">
-            <p className="font-chalkBody text-sm tracking-[2px]" style={{ color: `${CHALK_WHITE}55` }}>
+            <p className="font-bar text-sm font-normal tracking-[2px]" style={{ color: `${CHALK_WHITE}55` }}>
               16 Commercial Street · Weymouth Landing · Braintree, MA
             </p>
-            <p className="font-chalkBody text-sm tracking-[2px]" style={{ color: `${CHALK_MINT}60` }}>
+            <p className="font-bar text-sm font-normal tracking-[2px]" style={{ color: `${CHALK_MINT}60` }}>
               foursquare.bar &nbsp;·&nbsp; 781-848-4448
             </p>
           </div>

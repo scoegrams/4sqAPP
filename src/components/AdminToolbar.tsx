@@ -74,7 +74,7 @@ const AdminToolbar: React.FC<AdminToolbarProps> = ({
           onClick={handleSave}
           disabled={saving || !isDirty}
           title="Save & create version"
-          className={`flex items-center gap-1.5 px-3 py-1.5 text-[9px] font-black uppercase tracking-widest transition-all border ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 text-[9px] font-barDisplay font-bold uppercase tracking-widest transition-all border ${
             isDirty
               ? 'bg-emerald-600 text-white border-emerald-500 hover:bg-emerald-500'
               : `${mutedText} border-transparent cursor-not-allowed opacity-40`

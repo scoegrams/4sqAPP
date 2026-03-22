@@ -210,7 +210,7 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <div>
-          <h2 className={`text-2xl font-black uppercase tracking-[0.1em] ${accent}`}>Connect 4</h2>
+          <h2 className={`text-2xl font-barDisplay font-bold uppercase tracking-[0.1em] ${accent}`}>Connect 4</h2>
           <p className={`text-[10px] uppercase tracking-widest mt-0.5 font-bold ${isRanked ? accent : theme.textMuted}`}>
             {isRanked ? '★ Ranked — wins count' : isSocial ? 'Sign in to play ranked' : 'Local play'}
           </p>
@@ -218,7 +218,7 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
         {isLoggedIn && (
           <div className="flex items-center gap-3">
             <div className={`flex items-center gap-1.5 text-xs font-bold ${theme.text}`}>
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-black text-white ${accentBg}`}>
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-barDisplay font-bold text-white ${accentBg}`}>
                 {(profile?.display_name || profile?.email || 'P')[0].toUpperCase()}
               </div>
               {profile?.display_name || profile?.email}
@@ -247,7 +247,7 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
                   : theme.isDark ? 'border-red-500/30 text-red-400/70' : 'border-red-400/30 text-red-500/70'
               }`}
             />
-            <span className={`text-[10px] font-black uppercase shrink-0 ${theme.textMuted}`}>vs</span>
+            <span className={`text-[10px] font-barDisplay font-bold uppercase shrink-0 ${theme.textMuted}`}>vs</span>
             <input
               type="text"
               value={rightName}
@@ -295,7 +295,7 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
           <div className="mt-4 text-center space-y-2.5">
             {winner ? (
               <div>
-                <p className={`text-lg font-black uppercase ${winner === 'red' ? 'text-red-500' : 'text-yellow-400'}`}>
+                <p className={`text-lg font-barDisplay font-bold uppercase ${winner === 'red' ? 'text-red-500' : 'text-yellow-400'}`}>
                   {winner === 'red' ? leftName : rightName} wins!
                 </p>
                 {isRanked && winner === 'red' && (
@@ -304,7 +304,7 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
               </div>
             ) : (
               <p className={`text-sm ${theme.textMuted}`}>
-                <span className={`font-black ${turn === 'red' ? 'text-red-400' : 'text-yellow-400'}`}>
+                <span className={`font-barDisplay font-bold ${turn === 'red' ? 'text-red-400' : 'text-yellow-400'}`}>
                   {turn === 'red' ? leftName : rightName}
                 </span>
                 {' '}to move
@@ -312,7 +312,7 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
             )}
             <button
               onClick={reset}
-              className={`px-6 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-colors ${
+              className={`px-6 py-2 text-[10px] font-barDisplay font-bold uppercase tracking-widest rounded-lg transition-colors ${
                 isApple ? 'bg-[#0071e3] text-white hover:bg-[#0077ed]' : theme.isDark ? 'bg-emerald-600 text-white hover:bg-emerald-500' : 'bg-slate-800 text-white hover:bg-slate-700'
               }`}
             >
@@ -327,7 +327,7 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
           {/* Sign-in CTA */}
           {isSocial && !isLoggedIn && !authLoading && (
             <div className={`border-2 rounded-xl p-4 ${cardBg}`}>
-              <p className={`text-sm font-black uppercase tracking-tight mb-0.5 ${theme.text}`}>
+              <p className={`text-sm font-barDisplay font-bold uppercase tracking-tight mb-0.5 ${theme.text}`}>
                 Play here or play ranked
               </p>
               <p className={`text-[11px] mb-4 leading-relaxed ${theme.textMuted}`}>
@@ -361,7 +361,7 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
                     required
                     className={`w-full px-3 py-2 border rounded-lg text-xs ${inputClass}`}
                   />
-                  <button type="submit" className={`w-full py-2.5 text-[10px] font-black uppercase tracking-widest rounded-lg ${accentBg} text-white`}>
+                  <button type="submit" className={`w-full py-2.5 text-[10px] font-barDisplay font-bold uppercase tracking-widest rounded-lg ${accentBg} text-white`}>
                     Send magic link
                   </button>
                 </form>
@@ -384,7 +384,7 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
                       className={`w-full px-3 py-2 border rounded-lg text-xs ${inputClass}`}
                     />
                   )}
-                  <button type="submit" className={`w-full py-2.5 text-[10px] font-black uppercase tracking-widest rounded-lg ${accentBg} text-white`}>
+                  <button type="submit" className={`w-full py-2.5 text-[10px] font-barDisplay font-bold uppercase tracking-widest rounded-lg ${accentBg} text-white`}>
                     {phoneSent ? 'Verify code' : 'Send code'}
                   </button>
                 </form>
@@ -400,7 +400,7 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
             <div className={`border-2 rounded-xl p-4 ${cardBg}`}>
               <div className="flex items-center gap-2 mb-1">
                 <User size={13} className={accent} />
-                <p className={`text-xs font-black uppercase tracking-wider ${theme.text}`}>Choose your @handle</p>
+                <p className={`text-xs font-barDisplay font-bold uppercase tracking-wider ${theme.text}`}>Choose your @handle</p>
               </div>
               <p className={`text-[10px] mb-3 ${theme.textMuted}`}>
                 This is how you'll appear on the leaderboard and in chat.
@@ -421,7 +421,7 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
                   type="button"
                   onClick={saveHandle}
                   disabled={settingHandle || !handleInput.trim()}
-                  className={`px-3 py-2 text-[10px] font-black uppercase rounded-lg ${accentBg} text-white disabled:opacity-40 transition-opacity`}
+                  className={`px-3 py-2 text-[10px] font-barDisplay font-bold uppercase rounded-lg ${accentBg} text-white disabled:opacity-40 transition-opacity`}
                 >
                   Set
                 </button>
@@ -433,7 +433,7 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
           {isSocial && isLoggedIn && !needsHandle && (
             <div className={`border-2 rounded-xl p-3 ${cardBg}`}>
               <div className="flex items-center gap-2.5 mb-2.5">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black text-white shrink-0 ${accentBg}`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-barDisplay font-bold text-white shrink-0 ${accentBg}`}>
                   {(profile?.display_name || profile?.email || 'P')[0].toUpperCase()}
                 </div>
                 <div className="min-w-0">
@@ -445,7 +445,7 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
                 <button
                   type="button"
                   onClick={() => { updateProfile({ rewards_opted_in: true }); setRewardsJoined(true); }}
-                  className={`w-full py-2 text-[9px] font-black uppercase tracking-wider rounded-lg border flex items-center justify-center gap-1.5 transition-colors ${
+                  className={`w-full py-2 text-[9px] font-barDisplay font-bold uppercase tracking-wider rounded-lg border flex items-center justify-center gap-1.5 transition-colors ${
                     theme.isDark ? 'border-emerald-700/50 text-emerald-400 hover:bg-emerald-900/20' : 'border-emerald-600/50 text-emerald-700 hover:bg-emerald-50'
                   }`}
                 >
@@ -462,7 +462,7 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
             <div className={`border-2 rounded-xl overflow-hidden ${cardBg}`}>
               <div className={`px-3 py-2.5 border-b flex items-center gap-2 ${theme.isDark ? 'border-slate-700' : 'border-slate-200'}`}>
                 <Trophy size={13} className={accent} />
-                <span className={`text-[10px] font-black uppercase tracking-wider ${theme.text}`}>Leaderboard</span>
+                <span className={`text-[10px] font-barDisplay font-bold uppercase tracking-wider ${theme.text}`}>Leaderboard</span>
                 {!isLoggedIn && (
                   <span className={`ml-auto text-[9px] italic ${theme.textMuted}`}>Sign in to compete</span>
                 )}
@@ -479,14 +479,14 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
                         } ${isMe ? (theme.isDark ? 'bg-emerald-900/20' : 'bg-emerald-50') : ''}`}
                       >
                         <div className="flex items-center gap-2">
-                          <span className={`w-4 shrink-0 text-[9px] font-black ${
+                          <span className={`w-4 shrink-0 text-[9px] font-barDisplay font-bold ${
                             i === 0 ? 'text-yellow-400' : i === 1 ? 'text-slate-400' : i === 2 ? 'text-amber-600' : theme.textMuted
                           }`}>
                             {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`}
                           </span>
                           <span className={`${isMe ? `font-bold ${accent}` : theme.text}`}>{s.display_name}</span>
                         </div>
-                        <span className={`font-black tabular-nums ${isMe ? accent : theme.textMuted}`}>{s.wins}W</span>
+                        <span className={`font-barDisplay font-bold tabular-nums ${isMe ? accent : theme.textMuted}`}>{s.wins}W</span>
                       </li>
                     );
                   })}
@@ -507,7 +507,7 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
         <div className={`mt-5 border-2 rounded-xl overflow-hidden ${cardBg}`}>
           <div className={`px-3 py-2.5 border-b flex items-center gap-2 ${theme.isDark ? 'border-slate-700' : 'border-slate-200'}`}>
             <MessageCircle size={13} className={accent} />
-            <span className={`text-[10px] font-black uppercase tracking-wider ${theme.text}`}>Chat</span>
+            <span className={`text-[10px] font-barDisplay font-bold uppercase tracking-wider ${theme.text}`}>Chat</span>
             {!isLoggedIn && (
               <span className={`ml-auto text-[9px] italic ${theme.textMuted}`}>Sign in to send messages</span>
             )}

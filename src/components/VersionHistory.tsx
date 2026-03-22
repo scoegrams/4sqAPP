@@ -75,7 +75,7 @@ const VersionHistory: React.FC<VersionHistoryProps> = ({ isOpen, onClose, onRest
         <div className={`flex items-center justify-between px-4 py-3 border-b-2 ${borderColor} shrink-0`}>
           <div className="flex items-center gap-2">
             <Clock size={14} className={theme.isDark ? 'text-blue-400' : 'text-blue-600'} />
-            <span className={`text-xs font-black uppercase tracking-widest ${theme.text}`}>Version History</span>
+            <span className={`text-xs font-barDisplay font-bold uppercase tracking-widest ${theme.text}`}>Version History</span>
           </div>
           <button onClick={onClose} className={theme.textMuted}>
             <X size={16} />
@@ -136,13 +136,13 @@ const VersionHistory: React.FC<VersionHistoryProps> = ({ isOpen, onClose, onRest
                           <div className="flex gap-2">
                             <button
                               onClick={() => handleRestore(v)}
-                              className="flex-1 py-1.5 text-[9px] font-black uppercase tracking-widest bg-emerald-600 text-white hover:bg-emerald-500 transition-colors"
+                              className="flex-1 py-1.5 text-[9px] font-barDisplay font-bold uppercase tracking-widest bg-emerald-600 text-white hover:bg-emerald-500 transition-colors"
                             >
                               Restore
                             </button>
                             <button
                               onClick={() => setRestoreConfirm(null)}
-                              className={`flex-1 py-1.5 text-[9px] font-black uppercase tracking-widest border transition-colors ${isDark ? 'border-slate-600 text-white/60 hover:text-white' : 'border-slate-300 text-slate-500 hover:text-slate-700'}`}
+                              className={`flex-1 py-1.5 text-[9px] font-barDisplay font-bold uppercase tracking-widest border transition-colors ${isDark ? 'border-slate-600 text-white/60 hover:text-white' : 'border-slate-300 text-slate-500 hover:text-slate-700'}`}
                             >
                               Cancel
                             </button>
@@ -151,7 +151,7 @@ const VersionHistory: React.FC<VersionHistoryProps> = ({ isOpen, onClose, onRest
                       ) : (
                         <button
                           onClick={() => setRestoreConfirm(v)}
-                          className={`flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest transition-colors ${isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'}`}
+                          className={`flex items-center gap-1.5 text-[9px] font-barDisplay font-bold uppercase tracking-widest transition-colors ${isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'}`}
                         >
                           <RotateCcw size={10} />
                           Restore this version

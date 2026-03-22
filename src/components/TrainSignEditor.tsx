@@ -32,7 +32,7 @@ const TrainSignEditor: React.FC<TrainSignEditorProps> = ({
         } ${panelBg} ${borderColor}`}
       >
         <div className={`flex items-center justify-between px-4 py-3 border-b-2 ${borderColor} shrink-0`}>
-          <span className={`text-xs font-black uppercase tracking-widest ${theme.text}`}>
+          <span className={`text-xs font-barDisplay font-bold uppercase tracking-widest ${theme.text}`}>
             Sign events
           </span>
           <button onClick={onClose} className={theme.textMuted}><X size={16} /></button>

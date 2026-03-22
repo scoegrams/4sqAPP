@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Mail, LogOut, ShieldCheck, ShieldOff, Save, Printer, History,
   RotateCcw, PencilLine, Palette, Check, AlertCircle, ChevronDown,
-  ChevronUp, CalendarDays, Train, Eye, Lock, Sparkles,
+  ChevronUp, CalendarDays, Train, Eye, Lock, Sparkles, KeyRound,
 } from 'lucide-react';
 import { Theme, ThemeMode } from '../../theme';
 import type { Special, TrainSignEvent, MenuVersion } from '../../types';
@@ -11,6 +11,7 @@ import SpecialsEditor from '../SpecialsEditor';
 import TrainSignEditor from '../TrainSignEditor';
 import ThemeStudioPanel from '../ThemeStudioPanel';
 import { supabase, hasSupabase } from '../../lib/supabase';
+import { getJackpotClientId, signInWithJackpotPin } from '../../lib/jackpotPinAuth';
 import { useAuth } from '../../contexts/AuthContext';
 
 const PRESETS = [
@@ -94,9 +95,23 @@ const JackpotPage: React.FC<JackpotPageProps> = ({
   onRestoreVersion,
 }) => {
   const auth = useAuth();
-  const { user, profile, loading, error: authError, signInWithEmail, signOut, clearError } = auth;
+  const {
+    user,
+    profile,
+    loading,
+    error: authError,
+    signInWithEmail,
+    signOut,
+    clearError,
+  } = auth;
 
   const [emailInput, setEmailInput] = useState('');
+  const [pinInput, setPinInput] = useState('');
+  const [pinSubmitting, setPinSubmitting] = useState(false);
+  const [pinMessage, setPinMessage] = useState<string | null>(null);
+  const [attemptsLeft, setAttemptsLeft] = useState<number | null>(null);
+  const [pinLocked, setPinLocked] = useState(false);
+  const [useMagicLink, setUseMagicLink] = useState(false);
   const [authSent, setAuthSent] = useState(false);
   const [authSuccess, setAuthSuccess] = useState('');
   const [isOwner, setIsOwner] = useState(false);
@@ -124,6 +139,39 @@ const JackpotPage: React.FC<JackpotPageProps> = ({
         setCheckingRole(false);
       });
   }, [user]);
+
+  const handlePinSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPinMessage(null);
+    if (!supabase || pinLocked) return;
+    const clientId = getJackpotClientId();
+    if (!clientId) {
+      setPinMessage('Allow session storage for this site (not full private mode).');
+      return;
+    }
+    setPinSubmitting(true);
+    const result = await signInWithJackpotPin(supabase, pinInput, clientId);
+    setPinSubmitting(false);
+    if (result.ok) {
+      const { error: sessionErr } = await supabase.auth.setSession({
+        access_token: result.access_token,
+        refresh_token: result.refresh_token,
+      });
+      if (sessionErr) {
+        setPinMessage(sessionErr.message);
+        return;
+      }
+      setPinInput('');
+      setAttemptsLeft(null);
+      setPinLocked(false);
+      return;
+    }
+    setPinMessage(result.message);
+    setAttemptsLeft(typeof result.attemptsLeft === 'number' ? result.attemptsLeft : null);
+    if (result.locked || result.attemptsLeft === 0) {
+      setPinLocked(true);
+    }
+  };
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -185,10 +233,13 @@ const JackpotPage: React.FC<JackpotPageProps> = ({
     return (
       <div className="min-h-[60vh] bg-[#F4F1EA] font-bar py-10 sm:py-14">
         <div className="max-w-sm mx-auto px-5 sm:px-8">
-          <div className="mb-8">
+          <div className="mb-8 text-center sm:text-left">
             <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#5c564d] mb-1.5">Four Square</p>
             <h2 className="font-barDisplay text-3xl font-bold text-[#2d3d2d]">Jackpot</h2>
-            <p className="text-sm text-[#5c564d] mt-2">Owner &amp; staff login. Enter your email to receive a sign-in link.</p>
+            <p className="text-base text-[#2d3d2d] mt-3 font-semibold">Enter your PIN.</p>
+            <p className="text-sm text-[#5c564d] mt-1.5 leading-relaxed">
+              No email needed. You get <strong>3 tries</strong> per browser session; then it locks for a little while.
+            </p>
           </div>
 
           {authSent ? (
@@ -196,34 +247,108 @@ const JackpotPage: React.FC<JackpotPageProps> = ({
               <Check size={24} className="mx-auto text-emerald-600" />
               <p className="font-barDisplay text-lg font-bold text-[#2d3d2d]">Check your email</p>
               <p className="text-sm text-[#5c564d]">{authSuccess}</p>
-              <button type="button" onClick={() => { setAuthSent(false); setEmailInput(''); }} className={`${btnOutline} mt-2 text-[10px]`}>
-                Use a different email
+              <button
+                type="button"
+                onClick={() => {
+                  setAuthSent(false);
+                  setEmailInput('');
+                }}
+                className={`${btnOutline} mt-2 text-[10px]`}
+              >
+                Back
+              </button>
+            </div>
+          ) : !useMagicLink ? (
+            <div className="space-y-5">
+              <form onSubmit={handlePinSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-bold text-[#2d3d2d] mb-2">PIN</label>
+                  <input
+                    type="password"
+                    required
+                    autoComplete="off"
+                    value={pinInput}
+                    onChange={e => setPinInput(e.target.value)}
+                    placeholder="••••••••"
+                    disabled={pinLocked}
+                    className={`${input} text-lg tracking-widest`}
+                  />
+                  {attemptsLeft !== null && attemptsLeft > 0 && !pinLocked && (
+                    <p className="text-xs text-amber-800 mt-2 font-semibold">
+                      {attemptsLeft === 1 ? '1 try left' : `${attemptsLeft} tries left`}
+                    </p>
+                  )}
+                </div>
+                {pinMessage && (
+                  <p className="text-sm text-red-600 flex items-start gap-2">
+                    <AlertCircle size={16} className="shrink-0 mt-0.5" /> {pinMessage}
+                  </p>
+                )}
+                <button
+                  type="submit"
+                  disabled={pinSubmitting || pinLocked}
+                  className={`${btnTan} w-full justify-center py-4 text-sm disabled:opacity-60`}
+                >
+                  <KeyRound size={16} /> {pinSubmitting ? 'Signing in…' : 'Sign in'}
+                </button>
+              </form>
+              <details className="text-xs text-[#8a8580] border-t border-[#c4beb5] pt-4">
+                <summary className="cursor-pointer font-semibold text-[#5c564d] hover:text-[#2d3d2d]">
+                  For the owner (set up PINs)
+                </summary>
+                <p className="mt-2 leading-relaxed pl-1">
+                  Add up to 4 rows in <code className="bg-white px-1 border border-[#c4beb5] text-[10px]">jackpot_pins</code> in Supabase (hashed
+                  PINs — see <strong>DEPLOY.md</strong>). Deploy the <code className="text-[10px]">jackpot-pin</code> Edge Function. Staff sign in as
+                  one shared dashboard user; PINs only pick who’s allowed through the door.
+                </p>
+              </details>
+              <button
+                type="button"
+                onClick={() => {
+                  clearError();
+                  setPinMessage(null);
+                  setUseMagicLink(true);
+                }}
+                className="w-full text-center text-sm text-[#5c564d] hover:text-[#2d3d2d] underline underline-offset-2"
+              >
+                Owner? Sign in with email link instead
               </button>
             </div>
           ) : (
-            <form onSubmit={handleEmailSubmit} className="space-y-3">
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-[#5c564d] mb-1.5">
-                  Email address
-                </label>
-                <input
-                  type="email"
-                  required
-                  value={emailInput}
-                  onChange={e => setEmailInput(e.target.value)}
-                  placeholder="owner@foursquarebar.com"
-                  className={input}
-                />
-              </div>
-              {authError && (
-                <p className="text-xs text-red-600 flex items-center gap-1.5">
-                  <AlertCircle size={12} /> {authError}
-                </p>
-              )}
-              <button type="submit" className={`${btnTan} w-full justify-center py-3`}>
-                <Mail size={14} /> Send magic link
+            <div className="space-y-4">
+              <p className="text-sm text-[#5c564d]">We’ll email you a link. Open it on this phone or computer to finish signing in.</p>
+              <form onSubmit={handleEmailSubmit} className="space-y-3">
+                <div>
+                  <label className="block text-sm font-bold text-[#2d3d2d] mb-2">Email</label>
+                  <input
+                    type="email"
+                    required
+                    value={emailInput}
+                    onChange={e => setEmailInput(e.target.value)}
+                    placeholder="you@restaurant.com"
+                    className={input}
+                  />
+                </div>
+                {authError && (
+                  <p className="text-sm text-red-600 flex items-start gap-2">
+                    <AlertCircle size={16} className="shrink-0 mt-0.5" /> {authError}
+                  </p>
+                )}
+                <button type="submit" className={`${btnTan} w-full justify-center py-4 text-sm`}>
+                  <Mail size={16} /> Send link
+                </button>
+              </form>
+              <button
+                type="button"
+                onClick={() => {
+                  clearError();
+                  setUseMagicLink(false);
+                }}
+                className="w-full text-center text-sm text-[#5c564d] hover:text-[#2d3d2d] underline underline-offset-2"
+              >
+                ← Back to PIN
               </button>
-            </form>
+            </div>
           )}
         </div>
       </div>

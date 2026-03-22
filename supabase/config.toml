@@ -1,0 +1,5 @@
+# Supabase CLI / Edge Functions (see DEPLOY.md)
+# Staff PIN login must be callable before the user has a JWT.
+
+[functions.jackpot-pin]
+verify_jwt = false

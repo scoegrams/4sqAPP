@@ -158,14 +158,14 @@ const AppInner: React.FC<AppInnerProps> = ({ themeMode, setThemeMode }) => {
   if (store.isLoading) {
     return (
       <div className={`h-screen flex items-center justify-center ${theme.bg} ${theme.text}`}>
-        <span className="text-xs font-black uppercase tracking-[0.3em] opacity-40">Loading…</span>
+        <span className="text-xs font-barDisplay font-bold uppercase tracking-[0.3em] opacity-40">Loading…</span>
       </div>
     );
   }
 
   return (
     <div
-      className={`min-h-screen h-screen flex flex-col transition-colors duration-300 overflow-hidden font-sans relative safe-top safe-bottom ${customBgColor ? '' : theme.bg} ${theme.text}`}
+      className={`min-h-screen h-screen flex flex-col transition-colors duration-300 overflow-hidden font-bar relative safe-top safe-bottom ${customBgColor ? '' : theme.bg} ${theme.text}`}
       style={customBgColor ? { backgroundColor: customBgColor } : undefined}
     >
       <div

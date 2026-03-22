@@ -42,7 +42,7 @@ const SpecialsEditor: React.FC<SpecialsEditorProps> = ({ isOpen, specials, openH
         <div className={`flex items-center justify-between px-4 py-3 border-b-2 ${borderColor} shrink-0`}>
           <div className="flex items-center gap-2">
             <CalendarDays size={14} className={isDark ? 'text-emerald-400' : 'text-emerald-600'} />
-            <span className={`text-xs font-black uppercase tracking-widest ${theme.text}`}>Daily Specials</span>
+            <span className={`text-xs font-barDisplay font-bold uppercase tracking-widest ${theme.text}`}>Daily Specials</span>
           </div>
           <button onClick={onClose} className={theme.textMuted}><X size={16} /></button>
         </div>
@@ -60,7 +60,7 @@ const SpecialsEditor: React.FC<SpecialsEditorProps> = ({ isOpen, specials, openH
           {specials.map((s, i) => (
             <div key={s.day} className={`p-3 border ${isDark ? 'border-slate-700 bg-slate-800/40' : 'border-slate-200 bg-slate-50'}`}>
               <div className="flex items-center gap-2 mb-2">
-                <span className={`${DAY_COLORS[s.day] || 'bg-slate-600'} text-white text-[9px] font-black uppercase tracking-widest px-2 py-1`}>
+                <span className={`${DAY_COLORS[s.day] || 'bg-slate-600'} text-white text-[9px] font-barDisplay font-bold uppercase tracking-widest px-2 py-1`}>
                   {s.day}
                 </span>
               </div>

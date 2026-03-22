@@ -44,7 +44,7 @@ const Quadrant: React.FC<QuadrantProps> = ({
       <div className={`px-5 py-3 border-b-2 ${quadrantTheme.border} ${quadrantTheme.headerBg} flex items-center justify-between`}>
         <div className="flex items-center gap-2">
           {Icon && <Icon size={14} className={quadrantTheme.accent} />}
-          <h2 className={`text-sm font-black uppercase tracking-[0.2em] ${quadrantTheme.accent}`}>
+          <h2 className={`text-sm font-barDisplay font-bold uppercase tracking-[0.2em] ${quadrantTheme.accent}`}>
             {data.title}
           </h2>
         </div>
@@ -65,7 +65,7 @@ const Quadrant: React.FC<QuadrantProps> = ({
                     <input
                       value={section.name}
                       onChange={e => onUpdateSection(id, si, 'name', e.target.value)}
-                      className={`text-[11px] font-black uppercase tracking-[0.15em] bg-transparent border-b border-dashed w-full focus:outline-none ${adminDashBorder} ${theme.text}`}
+                      className={`text-[11px] font-barDisplay font-bold uppercase tracking-[0.15em] bg-transparent border-b border-dashed w-full focus:outline-none ${adminDashBorder} ${theme.text}`}
                     />
                     <input
                       value={section.note || ''}
@@ -80,7 +80,7 @@ const Quadrant: React.FC<QuadrantProps> = ({
                 </div>
               ) : (
                 <div className="flex items-baseline gap-2">
-                  <span className={`text-[11px] font-black uppercase tracking-[0.15em] ${theme.text}`}>
+                  <span className={`text-[11px] font-barDisplay font-bold uppercase tracking-[0.15em] ${theme.text}`}>
                     {section.name}
                   </span>
                   {section.note && (

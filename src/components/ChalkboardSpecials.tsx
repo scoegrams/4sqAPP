@@ -1,5 +1,6 @@
 import React from 'react';
 import { X, Plus, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
+import { FONT_HAMON } from '../fontTokens';
 import { ChalkboardData } from '../types';
 
 interface ChalkboardSpecialsProps {
@@ -33,21 +34,26 @@ const ChalkboardSpecials: React.FC<ChalkboardSpecialsProps> = ({
         style={{ background: '#0f0f0f', borderBottom: '1px solid #333' }}
       >
         <div className="flex items-center gap-3">
-          <span className="font-chalkScript text-lg" style={{ color: CHALK_MINT }}>Chalkboard Specials</span>
-          <span className="text-[11px] tracking-[4px] uppercase" style={{ color: '#666', fontFamily: 'Patrick Hand, cursive' }}>
+          <span className="text-lg font-bold" style={{ color: CHALK_MINT, fontFamily: FONT_HAMON }}>
+            Chalkboard Specials
+          </span>
+          <span
+            className="text-[11px] tracking-[4px] uppercase font-normal"
+            style={{ color: '#666', fontFamily: FONT_HAMON }}
+          >
             Print Preview — 8.5 × 11"
           </span>
         </div>
         <div className="flex items-center gap-3">
           <button onClick={handlePrint}
             className="px-5 py-2 text-[11px] font-bold uppercase tracking-[2px]"
-            style={{ background: CHALK_MINT, color: BOARD_BG, border: 'none', cursor: 'pointer' }}
+            style={{ background: CHALK_MINT, color: BOARD_BG, border: 'none', cursor: 'pointer', fontFamily: FONT_HAMON }}
           >
             Print / Save PDF
           </button>
           <button onClick={onClose}
             className="px-4 py-2 text-[11px] font-bold uppercase tracking-[2px]"
-            style={{ background: '#333', color: '#999', border: 'none', cursor: 'pointer' }}
+            style={{ background: '#333', color: '#999', border: 'none', cursor: 'pointer', fontFamily: FONT_HAMON }}
           >
             Close
           </button>
@@ -95,11 +101,11 @@ const ChalkboardSpecials: React.FC<ChalkboardSpecialsProps> = ({
                   value={data.title}
                   onChange={(e) => onUpdateMeta('title', e.target.value)}
                   className="bg-transparent border-none text-center w-full focus:outline-none"
-                  style={{ fontFamily: 'Special Gothic Expanded One, Impact, sans-serif', fontSize: '56px', color: CHALK_WHITE, lineHeight: 1.1 }}
+                  style={{ fontFamily: FONT_HAMON, fontWeight: 700, fontSize: '56px', color: CHALK_WHITE, lineHeight: 1.1 }}
                 />
               ) : (
                 <h1 style={{
-                  fontFamily: 'Special Gothic Expanded One, Impact, sans-serif', fontSize: '56px',
+                  fontFamily: FONT_HAMON, fontWeight: 700, fontSize: '56px',
                   color: CHALK_WHITE, margin: 0, lineHeight: 1.1,
                   textShadow: '0 0 10px rgba(255,255,255,0.05)',
                 }}>
@@ -115,11 +121,11 @@ const ChalkboardSpecials: React.FC<ChalkboardSpecialsProps> = ({
                   value={data.price}
                   onChange={(e) => onUpdateMeta('price', e.target.value)}
                   className="bg-transparent border-none text-center w-full focus:outline-none"
-                  style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '38px', color: CHALK_MINT, letterSpacing: '3px', textTransform: 'uppercase' }}
+                  style={{ fontFamily: FONT_HAMON, fontWeight: 700, fontSize: '38px', color: CHALK_MINT, letterSpacing: '3px', textTransform: 'uppercase' }}
                 />
               ) : (
                 <h2 style={{
-                  fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '38px',
+                  fontFamily: FONT_HAMON, fontWeight: 700, fontSize: '38px',
                   color: CHALK_MINT, margin: 0, letterSpacing: '3px',
                   textTransform: 'uppercase',
                   textShadow: '0 0 15px rgba(158,211,199,0.15)',
@@ -136,11 +142,11 @@ const ChalkboardSpecials: React.FC<ChalkboardSpecialsProps> = ({
                   value={data.subtitle}
                   onChange={(e) => onUpdateMeta('subtitle', e.target.value)}
                   className="bg-transparent border-none text-center w-full focus:outline-none"
-                  style={{ fontFamily: 'Patrick Hand, cursive', fontSize: '18px', color: CHALK_GRAY, letterSpacing: '4px', textTransform: 'uppercase' }}
+                  style={{ fontFamily: FONT_HAMON, fontWeight: 400, fontSize: '18px', color: CHALK_GRAY, letterSpacing: '4px', textTransform: 'uppercase' }}
                 />
               ) : (
                 <p style={{
-                  fontFamily: 'Patrick Hand, cursive', fontSize: '18px',
+                  fontFamily: FONT_HAMON, fontWeight: 400, fontSize: '18px',
                   color: CHALK_GRAY, margin: 0, letterSpacing: '4px',
                   textTransform: 'uppercase',
                 }}>
@@ -207,14 +213,14 @@ const ChalkboardSpecials: React.FC<ChalkboardSpecialsProps> = ({
                           onChange={(e) => onUpdateItem(idx, 'heading', e.target.value)}
                           className="bg-transparent border-none w-full focus:outline-none"
                           style={{
-                            fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '28px', color: CHALK_WHITE,
+                            fontFamily: FONT_HAMON, fontWeight: 700, fontSize: '28px', color: CHALK_WHITE,
                             letterSpacing: '2px', textTransform: 'uppercase',
                             textAlign: item.image ? 'left' : 'center',
                           }}
                         />
                       ) : (
                         <h3 style={{
-                          fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '28px',
+                          fontFamily: FONT_HAMON, fontWeight: 700, fontSize: '28px',
                           color: CHALK_WHITE, margin: '0 0 8px', letterSpacing: '2px',
                           textTransform: 'uppercase', lineHeight: 1.3,
                           textShadow: '0 0 8px rgba(255,255,255,0.04)',
@@ -230,14 +236,14 @@ const ChalkboardSpecials: React.FC<ChalkboardSpecialsProps> = ({
                           onChange={(e) => onUpdateItem(idx, 'description', e.target.value)}
                           className="bg-transparent border-none w-full focus:outline-none"
                           style={{
-                            fontFamily: 'Patrick Hand, cursive', fontSize: '17px', color: CHALK_GRAY,
+                            fontFamily: FONT_HAMON, fontWeight: 400, fontSize: '17px', color: CHALK_GRAY,
                             letterSpacing: '1px',
                             textAlign: item.image ? 'left' : 'center',
                           }}
                         />
                       ) : (
                         <p style={{
-                          fontFamily: 'Patrick Hand, cursive', fontSize: '17px',
+                          fontFamily: FONT_HAMON, fontWeight: 400, fontSize: '17px',
                           color: CHALK_GRAY, margin: 0, letterSpacing: '1px',
                           lineHeight: 1.5,
                           maxWidth: item.image ? '100%' : '80%',
@@ -270,7 +276,7 @@ const ChalkboardSpecials: React.FC<ChalkboardSpecialsProps> = ({
                 <button
                   onClick={onAddItem}
                   className="inline-flex items-center gap-2 px-4 py-2 transition-opacity hover:opacity-100 opacity-60"
-                  style={{ border: `1px dashed ${CHALK_GRAY}40`, color: CHALK_GRAY, fontFamily: 'Patrick Hand, cursive', fontSize: '15px', background: 'transparent', cursor: 'pointer' }}
+                  style={{ border: `1px dashed ${CHALK_GRAY}40`, color: CHALK_GRAY, fontFamily: FONT_HAMON, fontWeight: 400, fontSize: '15px', background: 'transparent', cursor: 'pointer' }}
                 >
                   <Plus size={14} /> Add special
                 </button>

@@ -12,6 +12,8 @@ interface AuthState {
 }
 
 interface AuthContextValue extends AuthState {
+  /** Email + password (e.g. Jackpot “access code” = account password). */
+  signInWithPassword: (email: string, password: string) => Promise<{ error: string | null }>;
   signInWithEmail: (email: string) => Promise<{ error: string | null }>;
   signInWithPhone: (phone: string) => Promise<{ error: string | null }>;
   verifyPhoneOtp: (phone: string, token: string) => Promise<{ error: string | null }>;
@@ -84,6 +86,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
     return () => subscription.unsubscribe();
   }, [loadProfile]);
+
+  const signInWithPassword = useCallback(async (email: string, password: string): Promise<{ error: string | null }> => {
+    setError(null);
+    if (!supabase) {
+      setError('Social features not configured. Add Supabase URL + anon key (VITE_SUPABASE_* or SUPABASE_*). See .env.example.');
+      return { error: 'Not configured' };
+    }
+    const { data, error: e } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+    if (e) {
+      setError(e.message);
+      return { error: e.message };
+    }
+    if (data?.user) await ensureProfile(data.user.id, data.user.email ?? null, data.user.phone ?? null);
+    setError(null);
+    return { error: null };
+  }, []);
 
   const signInWithEmail = useCallback(async (email: string): Promise<{ error: string | null }> => {
     setError(null);
@@ -161,6 +182,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     profile,
     loading,
     error,
+    signInWithPassword,
     signInWithEmail,
     signInWithPhone,
     verifyPhoneOtp,

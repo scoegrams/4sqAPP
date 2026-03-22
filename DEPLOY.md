@@ -33,9 +33,50 @@ In the Supabase dashboard → **SQL Editor**, run these files **in order**:
 supabase/migrations/001_connect4_social.sql
 supabase/migrations/002_owner_roles_and_menu.sql
 supabase/migrations/003_site_theme.sql
+supabase/migrations/004_jackpot_pins.sql
+supabase/migrations/005_jackpot_pin_48177.sql
 ```
 
-Paste each file's contents and click **Run**.
+Paste each file's contents and click **Run**. (If `004` already included the `48177` seed, `005` does nothing.)
+
+### Jackpot staff PINs (no email for bar staff)
+
+1. **Create one Auth user** everyone shares after a correct PIN (e.g. `jackpot-staff@yourdomain.com`). In **Authentication → Users** → *Add user* → set email + a long random password (staff never use this password).
+2. **Grant that user access** in SQL:
+
+```sql
+INSERT INTO public.owner_roles (email, role)
+VALUES ('jackpot-staff@yourdomain.com', 'staff')
+ON CONFLICT (email) DO NOTHING;
+```
+
+3. **Add up to 4 PINs** (hashed — replace the example strings with your own):
+
+```sql
+INSERT INTO public.jackpot_pins (pin_hash, label, sort_order) VALUES
+  (extensions.crypt('YOUR-PIN-1', extensions.gen_salt('bf')), 'Staff 1', 1),
+  (extensions.crypt('YOUR-PIN-2', extensions.gen_salt('bf')), 'Staff 2', 2),
+  (extensions.crypt('YOUR-PIN-3', extensions.gen_salt('bf')), 'Staff 3', 3),
+  (extensions.crypt('YOUR-PIN-4', extensions.gen_salt('bf')), 'Staff 4', 4);
+```
+
+4. **Deploy the Edge Function** `jackpot-pin` (from `supabase/functions/jackpot-pin/`):
+
+```bash
+supabase functions deploy jackpot-pin --no-verify-jwt
+```
+
+5. In **Supabase → Edge Functions → jackpot-pin → Secrets**, set:
+
+| Secret | Value |
+|--------|--------|
+| `JACKPOT_STAFF_USER_EMAIL` | Same email as step 1 (e.g. `jackpot-staff@yourdomain.com`) |
+
+(`SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are usually injected automatically.)
+
+6. **`supabase/config.toml`** in this repo already sets `[functions.jackpot-pin] verify_jwt = false` so unauthenticated staff can call the function (PIN + rate limit protect it).
+
+**Security (honest summary):** Good enough for a **small internal** dashboard if PINs are **long random** (not `1234`), you **rotate** a PIN when someone leaves, and you accept that **all staff share one Auth user** after entry (no per-person audit in Supabase). The function is public; **3 wrong tries** then **30 minutes** lockout is enforced **per browser session ID** (new tab = new tries — not perfect against a determined attacker). For stronger security, use per-user logins only.
 
 ### Grant yourself owner access
 
@@ -157,12 +198,11 @@ The app works fully offline without Supabase (menu editing uses IndexedDB). Supa
 
 ## 8. Accessing the Jackpot dashboard
 
-The Jackpot page is **not linked in the public navigation**. To access it:
+The Jackpot page is **not linked in the public navigation**. Open: `https://yourdomain.com/#jackpot`
 
-- Navigate directly: `https://yourdomain.com/#jackpot` (or scroll to it in the nav drawer when logged in)
-- Or: ask the developer to add a direct bookmark
+**Staff (typical):** Enter the **PIN** you were given — **no email**. After **3 wrong tries** in the same browser session, sign-in locks for **30 minutes** for that session.
 
-Once at the Jackpot page, enter the owner email → receive a magic link → click it → you're in.
+**Owner:** Tap **Owner? Sign in with email link instead** and use the same magic-link flow as before (your personal email must be in `owner_roles`).
 
 ---
 
@@ -173,10 +213,12 @@ Once at the Jackpot page, enter the owner email → receive a magic link → cli
 | `VITE_SUPABASE_URL` | Yes (for auth) | Supabase project URL |
 | `VITE_SUPABASE_ANON_KEY` | Yes (for auth) | Supabase public anon key |
 
+Edge Function secret **`JACKPOT_STAFF_USER_EMAIL`** is set in the Supabase dashboard (not in Vercel).
+
 ---
 
 ## Architecture notes
 
 - **Menu data** is stored in browser IndexedDB (Dexie) — this means each device/browser has its own copy. Future work: sync to `menu_versions` Postgres table on save.
 - **Owner roles** are managed directly in the database — there is no self-signup. You must manually add emails to `owner_roles`.
-- **The Jackpot URL is not secret**, but access is fully gated by the `owner_roles` table. Anyone who navigates there and is not in the table sees "Access denied."
+- **The Jackpot URL is not secret.** Staff PINs gate access via the **`jackpot-pin`** Edge Function + **`jackpot_pins`** table; a correct PIN issues a real session for the shared **`JACKPOT_STAFF_USER_EMAIL`** user (must be in `owner_roles`). Owners can still use magic link.

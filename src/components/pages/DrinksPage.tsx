@@ -33,7 +33,7 @@ const DrinksPage: React.FC<DrinksPageProps> = ({
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
-      <h2 className={`text-2xl font-black uppercase tracking-[0.15em] mb-6 ${accent}`}>Drinks</h2>
+      <h2 className={`text-2xl font-barDisplay font-bold uppercase tracking-[0.15em] mb-6 ${accent}`}>Drinks</h2>
       {/* Four rectangles across on web, 2x2 on tablet, stack on mobile */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {Object.entries(drinks).map(([cat, items], i) => {
@@ -41,7 +41,7 @@ const DrinksPage: React.FC<DrinksPageProps> = ({
           return (
           <div key={cat} className={`border-2 overflow-hidden min-h-0 flex flex-col ${cardBg} ${colors.border}`}>
             <div className={`px-3 sm:px-4 py-2.5 sm:py-3 border-b-2 shrink-0 ${colors.header} ${colors.border}`}>
-              <h3 className={`text-[11px] sm:text-xs font-black uppercase tracking-[0.2em] ${colors.accent}`}>
+              <h3 className={`text-[11px] sm:text-xs font-barDisplay font-bold uppercase tracking-[0.2em] ${colors.accent}`}>
                 {DRINK_CATEGORY_LABELS[cat] || cat}
               </h3>
             </div>
@@ -131,7 +131,7 @@ const DrinksPage: React.FC<DrinksPageProps> = ({
       {/* Canned & Bottled Beer strip — matches menu export */}
       <div className={`mt-6 border-2 overflow-hidden ${cardBg} ${theme.isDark ? 'border-blue-700' : 'border-blue-600'}`}>
         <div className={`px-4 py-2.5 border-b-2 ${headerBg} ${theme.isDark ? 'border-blue-700 bg-blue-900/30' : 'border-blue-600 bg-blue-50'}`}>
-          <h3 className={`text-xs font-black uppercase tracking-[0.2em] ${theme.isDark ? 'text-blue-400' : 'text-blue-700'}`}>
+          <h3 className={`text-xs font-barDisplay font-bold uppercase tracking-[0.2em] ${theme.isDark ? 'text-blue-400' : 'text-blue-700'}`}>
             Canned &amp; Bottled Beer
           </h3>
         </div>

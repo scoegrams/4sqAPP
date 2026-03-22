@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { FONT_HAMON } from '../fontTokens';
 import { MenuData, Special } from '../types';
 interface PrintMenuPageProps {
   menu: MenuData;
@@ -73,9 +74,9 @@ const PrintMenuPage: React.FC<PrintMenuPageProps> = ({ menu, specials, drinks, o
 
   const handlePrint = () => window.print();
 
-  const displayFont = "'Special Gothic Expanded One', Impact, 'Arial Black', sans-serif";
-  const bodyFont    = "'Special Gothic Expanded One', Impact, 'Arial Black', sans-serif";
-  const gothicFont  = "'Special Gothic Expanded One', Impact, 'Arial Black', sans-serif";
+  const displayFont = FONT_HAMON;
+  const bodyFont = FONT_HAMON;
+  const gothicFont = FONT_HAMON;
 
   const SECTION_COLORS: Record<string, { accent: string; border: string }> = {
     apps:    { accent: C.green, border: C.greenBorder },
@@ -97,7 +98,7 @@ const PrintMenuPage: React.FC<PrintMenuPageProps> = ({ menu, specials, drinks, o
       <div className="no-print flex items-center justify-between px-6 py-3 sticky top-0 z-10" style={{ background: '#0f172a', borderBottom: '1px solid #334155' }}>
         <div className="flex items-center gap-3">
           <span style={{ fontFamily: gothicFont, fontSize: '18px', color: '#34d399', letterSpacing: '2px' }}>FOUR SQUARE</span>
-          <span style={{ fontSize: '11px', letterSpacing: '4px', textTransform: 'uppercase', color: '#94a3b8', fontFamily: "'Libre Baskerville', serif" }}>
+          <span style={{ fontSize: '11px', letterSpacing: '4px', textTransform: 'uppercase', color: '#94a3b8', fontFamily: FONT_HAMON }}>
             Print Preview — Legal 8.5 × 14"
           </span>
         </div>
@@ -109,7 +110,7 @@ const PrintMenuPage: React.FC<PrintMenuPageProps> = ({ menu, specials, drinks, o
               background: mode === 'dark' ? '#1e3a5f' : '#e2e8f0',
               color: mode === 'dark' ? '#60a5fa' : '#0f172a',
               fontSize: '11px',
-              fontFamily: "'Libre Baskerville', serif",
+              fontFamily: FONT_HAMON,
               fontWeight: 700,
               letterSpacing: '2px',
               textTransform: 'uppercase',
@@ -121,13 +122,13 @@ const PrintMenuPage: React.FC<PrintMenuPageProps> = ({ menu, specials, drinks, o
           </button>
           <button
             onClick={handlePrint}
-            style={{ padding: '8px 20px', background: '#059669', color: '#fff', fontSize: '11px', fontFamily: "'Libre Baskerville', serif", fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', border: 'none', cursor: 'pointer' }}
+            style={{ padding: '8px 20px', background: '#059669', color: '#fff', fontSize: '11px', fontFamily: FONT_HAMON, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', border: 'none', cursor: 'pointer' }}
           >
             Print / Save PDF
           </button>
           <button
             onClick={onClose}
-            style={{ padding: '8px 16px', background: '#334155', color: '#94a3b8', fontSize: '11px', fontFamily: "'Libre Baskerville', serif", fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', border: 'none', cursor: 'pointer' }}
+            style={{ padding: '8px 16px', background: '#334155', color: '#94a3b8', fontSize: '11px', fontFamily: FONT_HAMON, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', border: 'none', cursor: 'pointer' }}
           >
             Close
           </button>

@@ -25,6 +25,8 @@ npm run check:db
    - `supabase/migrations/001_connect4_social.sql`
    - `supabase/migrations/002_owner_roles_and_menu.sql`
    - `supabase/migrations/003_site_theme.sql` — global Theme Studio + active preset (public read, owners update)
+   - `supabase/migrations/004_jackpot_pins.sql` — staff PIN table + rate limit + first PIN **48177** (see **DEPLOY.md** for Edge Function)
+   - `supabase/migrations/005_jackpot_pin_48177.sql` — no-op if `004` already seeded; use if you ran an older `004` without the PIN
 
 (New → paste → **Run**.)
 
