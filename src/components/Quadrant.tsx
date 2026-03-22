@@ -137,7 +137,7 @@ const Quadrant: React.FC<QuadrantProps> = ({
                   ) : (
                     <div className="flex items-center gap-1.5 flex-wrap">
                       {item.isAddon && <span className={`text-xs ${theme.textMuted}`}>+</span>}
-                      <span className={`text-sm uppercase ${item.isAddon ? `${theme.textMuted} font-normal` : 'font-bold'}`}>
+                      <span className={`text-sm uppercase ${item.isAddon ? `${theme.textMuted} font-normal` : `${theme.text} font-bold`}`}>
                         {item.name}
                       </span>
                       {item.isNew && (

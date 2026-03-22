@@ -1,6 +1,6 @@
 import React from 'react';
 import { LucideIcon } from 'lucide-react';
-import { Menu, Info, Grid2x2, CalendarDays, GlassWater, Sparkles } from 'lucide-react';
+import { Menu, Info, Grid2x2, CalendarDays, GlassWater, Sparkles, ShieldCheck, LogOut, X } from 'lucide-react';
 import TrainSign from './TrainSign';
 import FourSquares from './FourSquares';
 import { Page } from './NavDrawer';
@@ -11,8 +11,11 @@ interface HeaderProps {
   theme: Theme;
   activePage: Page;
   trainSignEvents?: TrainSignEvent[];
+  isAdmin?: boolean;
   onOpenNav: () => void;
   onNavigate: (page: Page) => void;
+  onExitAdmin?: () => void;
+  onSignOut?: () => void;
 }
 
 const NAV_ITEMS: { id: Page; label: string; icon: LucideIcon | React.FC<{ size?: number }> }[] = [
@@ -24,7 +27,7 @@ const NAV_ITEMS: { id: Page; label: string; icon: LucideIcon | React.FC<{ size?:
   { id: 'connect4', label: 'Connect 4', icon: Grid2x2 },
 ];
 
-const Header: React.FC<HeaderProps> = ({ theme, activePage, trainSignEvents = [], onOpenNav, onNavigate }) => {
+const Header: React.FC<HeaderProps> = ({ theme, activePage, trainSignEvents = [], isAdmin, onOpenNav, onNavigate, onExitAdmin, onSignOut }) => {
   return (
     <div className={`z-20 transition-colors duration-300 safe-top ${theme.headerBg} ${theme.headerBorder}`}>
       {/* items-start + self-start logo = pinned top-left; safe-left keeps clear of notches */}
@@ -46,12 +49,11 @@ const Header: React.FC<HeaderProps> = ({ theme, activePage, trainSignEvents = []
               <FourSquares unit="0.24em" className="mt-[0.07em]" />
             </div>
           </div>
-          {/* Hamon-Bold.otf @ 700 */}
           <span
-            className="hidden lg:block self-center font-barDisplay text-sm font-bold tracking-widest uppercase border-l pl-4 text-[color:var(--fs-header-tagline)] border-[color:var(--fs-header-tagline-border)]"
-            style={{ fontFamily: "'Hamon', system-ui, sans-serif" }}
+            className="hidden md:block self-center font-barDisplay font-bold border-l pl-4 text-[color:var(--fs-header-tagline)] border-[color:var(--fs-header-tagline-border)]"
+            style={{ fontSize: 'clamp(1.05rem, 2.4vw, 1.35rem)', letterSpacing: '0.02em' }}
           >
-            Restaurant + Bar
+            Restaurant &amp; Bar
           </span>
         </div>
 
@@ -67,19 +69,19 @@ const Header: React.FC<HeaderProps> = ({ theme, activePage, trainSignEvents = []
         </div>
       </div>
 
-      <div className={`px-2 sm:px-6 border-t overflow-x-auto no-scrollbar flex items-center gap-0.5 sm:gap-1 ${theme.navUnderline}`}>
+      <div className={`px-2 sm:px-6 border-t overflow-x-auto no-scrollbar flex items-center justify-center gap-0.5 sm:gap-1 ${theme.navUnderline}`}>
         {NAV_ITEMS.map(({ id, label, icon: Icon }) => {
           const isActive = activePage === id;
           return (
             <button
               key={id}
               onClick={() => onNavigate(id)}
-              className={`flex items-center gap-1.5 px-3 py-3 sm:py-1.5 font-barDisplay text-[11px] sm:text-xs font-normal uppercase tracking-widest transition-all duration-200 border-b-2 -mb-px shrink-0 min-h-[44px] sm:min-h-0 active:scale-[0.98] ${
-                isActive
-                  ? theme.navActive
-                  : `${theme.navInactive} ${theme.navInactiveHover}`
-              }`}
               style={{ fontFamily: "'Hamon', system-ui, sans-serif", fontWeight: 400 }}
+              className={`flex items-center gap-1.5 px-3 py-3 sm:py-1.5 text-[11px] sm:text-[12px] uppercase tracking-widest transition-all duration-200 border-b-2 -mb-px shrink-0 min-h-[44px] sm:min-h-0 active:scale-[0.98] ${
+                isActive
+                  ? 'text-[color:var(--fs-nav-active-text)] border-[color:var(--fs-nav-active-border)]'
+                  : 'text-[color:var(--fs-nav-active-text)] opacity-50 border-transparent hover:opacity-80 hover:border-[color:var(--fs-nav-active-border)]'
+              }`}
             >
               <Icon size={12} />
               {label}
@@ -87,6 +89,36 @@ const Header: React.FC<HeaderProps> = ({ theme, activePage, trainSignEvents = []
           );
         })}
       </div>
+
+      {/* Admin mode indicator strip */}
+      {isAdmin && (
+        <div className="flex items-center justify-between gap-2 px-4 py-1.5 bg-amber-50 border-t border-amber-200 safe-left">
+          <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-amber-800">
+            <ShieldCheck size={12} className="shrink-0" />
+            Admin mode active
+          </div>
+          <div className="flex items-center gap-1">
+            {onExitAdmin && (
+              <button
+                type="button"
+                onClick={onExitAdmin}
+                className="flex items-center gap-1 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-amber-800 border border-amber-300 hover:bg-amber-100 transition-colors"
+              >
+                <X size={10} /> Exit admin
+              </button>
+            )}
+            {onSignOut && (
+              <button
+                type="button"
+                onClick={onSignOut}
+                className="flex items-center gap-1 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-red-700 border border-red-200 hover:bg-red-50 transition-colors"
+              >
+                <LogOut size={10} /> Sign out
+              </button>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

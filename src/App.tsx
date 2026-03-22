@@ -15,6 +15,7 @@ import { MenuData, MenuItem, MenuSection } from './types';
 import { ThemeMode, getTheme } from './theme';
 import { useMenuStore } from './hooks/useMenuStore';
 import { DesignTokensProvider, useDesignTokens } from './contexts/DesignTokensContext';
+import { useAuth } from './contexts/AuthContext';
 
 const App = () => {
   const [themeMode, setThemeMode] = useState<ThemeMode>('light');
@@ -33,6 +34,7 @@ interface AppInnerProps {
 const AppInner: React.FC<AppInnerProps> = ({ themeMode, setThemeMode }) => {
   const store = useMenuStore();
   const { effectiveTokens } = useDesignTokens();
+  const { signOut } = useAuth();
 
   const [isAdmin, setIsAdmin] = useState(false);
   const [activePage, setActivePage] = useState<Page>('menu');
@@ -182,8 +184,11 @@ const AppInner: React.FC<AppInnerProps> = ({ themeMode, setThemeMode }) => {
         theme={theme}
         activePage={activePage}
         trainSignEvents={store.events}
+        isAdmin={isAdmin}
         onOpenNav={() => setIsNavOpen(true)}
         onNavigate={setActivePage}
+        onExitAdmin={() => setIsAdmin(false)}
+        onSignOut={signOut}
       />
 
       <NavDrawer
@@ -221,8 +226,8 @@ const AppInner: React.FC<AppInnerProps> = ({ themeMode, setThemeMode }) => {
             ))}
           </div>
 
-          <div className="max-w-6xl mx-auto border-t border-[color:var(--fs-advisory-border)] px-4 py-3 mb-24">
-            <p className={`text-[8px] leading-relaxed ${theme.textMuted}`}>
+          <div className="max-w-6xl mx-auto border-t border-[color:var(--fs-advisory-border)] px-4 py-4 mb-24">
+            <p className={`text-xs leading-relaxed ${theme.text}`}>
               <span className="font-bold">Consumer advisory:</span> Consuming raw or undercooked meats, poultry,
               seafood, shellfish, or eggs may increase your risk of foodborne illness, especially if you have certain
               medical conditions. Menu items may contain or come into contact with allergens including wheat, eggs,

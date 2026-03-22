@@ -13,10 +13,61 @@ import ThemeStudioPanel from '../ThemeStudioPanel';
 import { supabase, hasSupabase } from '../../lib/supabase';
 import { getJackpotClientId, signInWithJackpotPin } from '../../lib/jackpotPinAuth';
 import { useAuth } from '../../contexts/AuthContext';
+import { useDesignTokens } from '../../contexts/DesignTokensContext';
+import type { DesignTokens } from '../../theme/designTokenTypes';
 
 const PRESETS = [
   null, '#0f172a', '#1e293b', '#18181b', '#1c1917', '#1a1a2e', '#0c0a09',
   '#ffffff', '#f8fafc', '#F4F1EA', '#f5f5f4', '#fef2f2', '#eff6ff', '#ecfdf5',
+];
+
+type ColorScheme = { id: string; label: string; dot: string; mode: ThemeMode; overrides: Partial<DesignTokens> };
+
+const COLOR_SCHEMES: ColorScheme[] = [
+  { id: 'green', label: 'Forest', dot: '#059669', mode: 'light', overrides: {} },
+  {
+    id: 'blue', label: 'Ocean', dot: '#2563eb', mode: 'light', overrides: {
+      navActiveText: '#2563eb', navActiveBorder: '#2563eb',
+      quadrantGreenAccent: '#1d4ed8', quadrantGreenBorder: '#2563eb', quadrantGreenBg: '#eff6ff', quadrantGreenHeaderBg: '#dbeafe',
+      quadrantBlueAccent: '#1e40af', quadrantBlueBorder: '#1d4ed8', quadrantBlueBg: '#dbeafe', quadrantBlueHeaderBg: '#bfdbfe',
+      footerScheduleBg: '#1d4ed8', footerScheduleBorder: '#2563eb', footerScheduleHoverBg: '#2563eb',
+      footerPriceAccent: '#1d4ed8', trainSignAccent: '#2563eb',
+      logoSq0: '#3b82f6', logoSq1: '#1d4ed8', logoSq2: '#1d4ed8', logoSq3: '#3b82f6', logoSqPop: '#2563eb',
+    },
+  },
+  {
+    id: 'purple', label: 'Violet', dot: '#7c3aed', mode: 'light', overrides: {
+      navActiveText: '#7c3aed', navActiveBorder: '#7c3aed',
+      quadrantGreenAccent: '#6d28d9', quadrantGreenBorder: '#7c3aed', quadrantGreenBg: '#f5f3ff', quadrantGreenHeaderBg: '#ede9fe',
+      quadrantBlueAccent: '#7c3aed', quadrantBlueBorder: '#8b5cf6', quadrantBlueBg: '#ede9fe', quadrantBlueHeaderBg: '#ddd6fe',
+      footerScheduleBg: '#7c3aed', footerScheduleBorder: '#8b5cf6', footerScheduleHoverBg: '#8b5cf6',
+      footerPriceAccent: '#7c3aed', trainSignAccent: '#8b5cf6',
+      logoSq0: '#8b5cf6', logoSq1: '#7c3aed', logoSq2: '#7c3aed', logoSq3: '#8b5cf6', logoSqPop: '#7c3aed',
+    },
+  },
+  {
+    id: 'amber', label: 'Amber', dot: '#d97706', mode: 'light', overrides: {
+      navActiveText: '#b45309', navActiveBorder: '#d97706',
+      quadrantGreenAccent: '#b45309', quadrantGreenBorder: '#d97706', quadrantGreenBg: '#fffbeb', quadrantGreenHeaderBg: '#fde68a',
+      quadrantBlueAccent: '#92400e', quadrantBlueBorder: '#b45309', quadrantBlueBg: '#fef3c7', quadrantBlueHeaderBg: '#fde68a',
+      footerScheduleBg: '#b45309', footerScheduleBorder: '#d97706', footerScheduleHoverBg: '#d97706',
+      footerPriceAccent: '#b45309', trainSignAccent: '#d97706',
+      logoSq0: '#f59e0b', logoSq1: '#d97706', logoSq2: '#d97706', logoSq3: '#f59e0b', logoSqPop: '#d97706',
+    },
+  },
+  {
+    id: 'rose', label: 'Rose', dot: '#e11d48', mode: 'light', overrides: {
+      navActiveText: '#be123c', navActiveBorder: '#e11d48',
+      quadrantGreenAccent: '#be123c', quadrantGreenBorder: '#e11d48', quadrantGreenBg: '#fff1f2', quadrantGreenHeaderBg: '#ffe4e6',
+      quadrantBlueAccent: '#9f1239', quadrantBlueBorder: '#be123c', quadrantBlueBg: '#ffe4e6', quadrantBlueHeaderBg: '#fecdd3',
+      footerScheduleBg: '#be123c', footerScheduleBorder: '#e11d48', footerScheduleHoverBg: '#e11d48',
+      footerPriceAccent: '#be123c', trainSignAccent: '#f43f5e',
+      logoSq0: '#f43f5e', logoSq1: '#e11d48', logoSq2: '#e11d48', logoSq3: '#f43f5e', logoSqPop: '#e11d48',
+    },
+  },
+  { id: 'dark', label: 'Dark', dot: '#0f172a', mode: 'dark', overrides: {} },
+  { id: 'slate', label: 'Slate', dot: '#3F444E', mode: 'modern', overrides: {} },
+  { id: 'apple', label: 'Apple', dot: '#1d1d1f', mode: 'apple', overrides: {} },
 ];
 
 const THEME_LABELS: Record<ThemeMode, string> = {
@@ -96,6 +147,7 @@ const JackpotPage: React.FC<JackpotPageProps> = ({
 }) => {
   const auth = useAuth();
   const { user, profile, loading, signOut } = auth;
+  const { setTokens, clearOverrides, setStudioEnabled, themeMode: activeSchemeMode, overrides: activeOverrides } = useDesignTokens();
 
   const [pinInput, setPinInput] = useState('');
   const [pinSubmitting, setPinSubmitting] = useState(false);
@@ -408,26 +460,47 @@ const JackpotPage: React.FC<JackpotPageProps> = ({
         </Section>
 
         {/* Theme */}
-        <Section title="App theme" icon={<Palette size={16} />}>
-          <p className="text-xs text-[#5c564d] mb-3">Controls how the app looks for all visitors.</p>
-          <div className="flex flex-wrap gap-2 mb-4">
-            {(['light', 'dark', 'modern', 'apple'] as ThemeMode[]).map(m => (
-              <button
-                key={m}
-                type="button"
-                onClick={() => onSetTheme(m)}
-                className={`px-4 py-2 text-xs font-bold uppercase tracking-wider border-2 transition-colors ${
-                  themeMode === m
-                    ? 'bg-[#c9b896] text-[#1a1918] border-[#c9b896]'
-                    : 'border-[#c4beb5] text-[#5c564d] hover:border-[#2d3d2d]'
-                }`}
-              >
-                {THEME_LABELS[m]}
-              </button>
-            ))}
+        <Section title="App theme &amp; colors" icon={<Palette size={16} />}>
+          <p className="text-xs text-[#5c564d] mb-4">Pick a color scheme — changes accent colors, backgrounds, and nav for all visitors.</p>
+
+          {/* Color scheme swatches */}
+          <div className="grid grid-cols-4 sm:grid-cols-8 gap-2 mb-4">
+            {COLOR_SCHEMES.map(scheme => {
+              const isActive = activeSchemeMode === scheme.mode &&
+                (Object.keys(scheme.overrides).length === 0
+                  ? Object.keys(activeOverrides).length === 0
+                  : Object.keys(scheme.overrides).some(k => activeOverrides[k as keyof typeof activeOverrides] === scheme.overrides[k as keyof typeof scheme.overrides]));
+              return (
+                <button
+                  key={scheme.id}
+                  type="button"
+                  title={scheme.label}
+                  onClick={() => {
+                    clearOverrides();
+                    if (Object.keys(scheme.overrides).length > 0) {
+                      setStudioEnabled(true);
+                      setTokens(scheme.overrides);
+                    } else {
+                      setStudioEnabled(false);
+                    }
+                    onSetTheme(scheme.mode);
+                  }}
+                  className={`flex flex-col items-center gap-1.5 p-2 border-2 transition-all hover:scale-105 active:scale-95 ${
+                    isActive ? 'border-[#2d3d2d] bg-white' : 'border-[#c4beb5] hover:border-[#2d3d2d]'
+                  }`}
+                >
+                  <span
+                    className="w-6 h-6 rounded-full border border-black/10 shrink-0"
+                    style={{ background: scheme.dot }}
+                  />
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-[#5c564d] leading-none">{scheme.label}</span>
+                  {isActive && <span className="w-1.5 h-1.5 rounded-full bg-[#2d3d2d] shrink-0" />}
+                </button>
+              );
+            })}
           </div>
-          <button type="button" onClick={onCycleTheme} className={btnOutline}>
-            <Eye size={13} /> Cycle through themes
+          <button type="button" onClick={onCycleTheme} className={`${btnOutline} text-[11px]`}>
+            <Eye size={13} /> Cycle through
           </button>
         </Section>
 
