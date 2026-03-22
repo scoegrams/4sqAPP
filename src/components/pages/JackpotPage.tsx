@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Mail, LogOut, ShieldCheck, ShieldOff, Save, Printer, History,
+  LogOut, ShieldCheck, ShieldOff, Save, Printer, History,
   RotateCcw, PencilLine, Palette, Check, AlertCircle, ChevronDown,
   ChevronUp, CalendarDays, Train, Eye, Lock, Sparkles, KeyRound,
 } from 'lucide-react';
@@ -95,25 +95,13 @@ const JackpotPage: React.FC<JackpotPageProps> = ({
   onRestoreVersion,
 }) => {
   const auth = useAuth();
-  const {
-    user,
-    profile,
-    loading,
-    error: authError,
-    signInWithEmail,
-    signOut,
-    clearError,
-  } = auth;
+  const { user, profile, loading, signOut } = auth;
 
-  const [emailInput, setEmailInput] = useState('');
   const [pinInput, setPinInput] = useState('');
   const [pinSubmitting, setPinSubmitting] = useState(false);
   const [pinMessage, setPinMessage] = useState<string | null>(null);
   const [attemptsLeft, setAttemptsLeft] = useState<number | null>(null);
   const [pinLocked, setPinLocked] = useState(false);
-  const [useMagicLink, setUseMagicLink] = useState(false);
-  const [authSent, setAuthSent] = useState(false);
-  const [authSuccess, setAuthSuccess] = useState('');
   const [isOwner, setIsOwner] = useState(false);
   const [checkingRole, setCheckingRole] = useState(false);
 
@@ -173,17 +161,6 @@ const JackpotPage: React.FC<JackpotPageProps> = ({
     }
   };
 
-  const handleEmailSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    clearError();
-    setAuthSuccess('');
-    const { error } = await signInWithEmail(emailInput);
-    if (!error) {
-      setAuthSent(true);
-      setAuthSuccess('Magic link sent — check your email.');
-    }
-  };
-
   const handleSave = async () => {
     setSaving(true);
     await onSave(note);
@@ -238,118 +215,54 @@ const JackpotPage: React.FC<JackpotPageProps> = ({
             <h2 className="font-barDisplay text-3xl font-bold text-[#2d3d2d]">Jackpot</h2>
             <p className="text-base text-[#2d3d2d] mt-3 font-semibold">Enter your PIN.</p>
             <p className="text-sm text-[#5c564d] mt-1.5 leading-relaxed">
-              No email needed. You get <strong>3 tries</strong> per browser session; then it locks for a little while.
+              <strong>3 tries</strong> per browser session, then a short lockout. No email — PIN only.
             </p>
           </div>
 
-          {authSent ? (
-            <div className="border-2 border-[#c4beb5] p-6 text-center space-y-2 bg-white">
-              <Check size={24} className="mx-auto text-emerald-600" />
-              <p className="font-barDisplay text-lg font-bold text-[#2d3d2d]">Check your email</p>
-              <p className="text-sm text-[#5c564d]">{authSuccess}</p>
-              <button
-                type="button"
-                onClick={() => {
-                  setAuthSent(false);
-                  setEmailInput('');
-                }}
-                className={`${btnOutline} mt-2 text-[10px]`}
-              >
-                Back
-              </button>
-            </div>
-          ) : !useMagicLink ? (
-            <div className="space-y-5">
-              <form onSubmit={handlePinSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-bold text-[#2d3d2d] mb-2">PIN</label>
-                  <input
-                    type="password"
-                    required
-                    autoComplete="off"
-                    value={pinInput}
-                    onChange={e => setPinInput(e.target.value)}
-                    placeholder="••••••••"
-                    disabled={pinLocked}
-                    className={`${input} text-lg tracking-widest`}
-                  />
-                  {attemptsLeft !== null && attemptsLeft > 0 && !pinLocked && (
-                    <p className="text-xs text-amber-800 mt-2 font-semibold">
-                      {attemptsLeft === 1 ? '1 try left' : `${attemptsLeft} tries left`}
-                    </p>
-                  )}
-                </div>
-                {pinMessage && (
-                  <p className="text-sm text-red-600 flex items-start gap-2">
-                    <AlertCircle size={16} className="shrink-0 mt-0.5" /> {pinMessage}
+          <div className="space-y-5">
+            <form onSubmit={handlePinSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-bold text-[#2d3d2d] mb-2">PIN</label>
+                <input
+                  type="password"
+                  required
+                  autoComplete="off"
+                  value={pinInput}
+                  onChange={e => setPinInput(e.target.value)}
+                  placeholder="••••••••"
+                  disabled={pinLocked}
+                  className={`${input} text-lg tracking-widest`}
+                />
+                {attemptsLeft !== null && attemptsLeft > 0 && !pinLocked && (
+                  <p className="text-xs text-amber-800 mt-2 font-semibold">
+                    {attemptsLeft === 1 ? '1 try left' : `${attemptsLeft} tries left`}
                   </p>
                 )}
-                <button
-                  type="submit"
-                  disabled={pinSubmitting || pinLocked}
-                  className={`${btnTan} w-full justify-center py-4 text-sm disabled:opacity-60`}
-                >
-                  <KeyRound size={16} /> {pinSubmitting ? 'Signing in…' : 'Sign in'}
-                </button>
-              </form>
-              <details className="text-xs text-[#8a8580] border-t border-[#c4beb5] pt-4">
-                <summary className="cursor-pointer font-semibold text-[#5c564d] hover:text-[#2d3d2d]">
-                  For the owner (set up PINs)
-                </summary>
-                <p className="mt-2 leading-relaxed pl-1">
-                  Add up to 4 rows in <code className="bg-white px-1 border border-[#c4beb5] text-[10px]">jackpot_pins</code> in Supabase (hashed
-                  PINs — see <strong>DEPLOY.md</strong>). Deploy the <code className="text-[10px]">jackpot-pin</code> Edge Function. Staff sign in as
-                  one shared dashboard user; PINs only pick who’s allowed through the door.
+              </div>
+              {pinMessage && (
+                <p className="text-sm text-red-600 flex items-start gap-2">
+                  <AlertCircle size={16} className="shrink-0 mt-0.5" /> {pinMessage}
                 </p>
-              </details>
+              )}
               <button
-                type="button"
-                onClick={() => {
-                  clearError();
-                  setPinMessage(null);
-                  setUseMagicLink(true);
-                }}
-                className="w-full text-center text-sm text-[#5c564d] hover:text-[#2d3d2d] underline underline-offset-2"
+                type="submit"
+                disabled={pinSubmitting || pinLocked}
+                className={`${btnTan} w-full justify-center py-4 text-sm disabled:opacity-60`}
               >
-                Owner? Sign in with email link instead
+                <KeyRound size={16} /> {pinSubmitting ? 'Signing in…' : 'Sign in'}
               </button>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <p className="text-sm text-[#5c564d]">We’ll email you a link. Open it on this phone or computer to finish signing in.</p>
-              <form onSubmit={handleEmailSubmit} className="space-y-3">
-                <div>
-                  <label className="block text-sm font-bold text-[#2d3d2d] mb-2">Email</label>
-                  <input
-                    type="email"
-                    required
-                    value={emailInput}
-                    onChange={e => setEmailInput(e.target.value)}
-                    placeholder="you@restaurant.com"
-                    className={input}
-                  />
-                </div>
-                {authError && (
-                  <p className="text-sm text-red-600 flex items-start gap-2">
-                    <AlertCircle size={16} className="shrink-0 mt-0.5" /> {authError}
-                  </p>
-                )}
-                <button type="submit" className={`${btnTan} w-full justify-center py-4 text-sm`}>
-                  <Mail size={16} /> Send link
-                </button>
-              </form>
-              <button
-                type="button"
-                onClick={() => {
-                  clearError();
-                  setUseMagicLink(false);
-                }}
-                className="w-full text-center text-sm text-[#5c564d] hover:text-[#2d3d2d] underline underline-offset-2"
-              >
-                ← Back to PIN
-              </button>
-            </div>
-          )}
+            </form>
+            <details className="text-xs text-[#8a8580] border-t border-[#c4beb5] pt-4">
+              <summary className="cursor-pointer font-semibold text-[#5c564d] hover:text-[#2d3d2d]">
+                Admin: set up PINs &amp; function
+              </summary>
+              <p className="mt-2 leading-relaxed pl-1">
+                Add PINs in <code className="bg-white px-1 border border-[#c4beb5] text-[10px]">jackpot_pins</code>, deploy{' '}
+                <code className="text-[10px]">jackpot-pin</code>, set the function secret (technical staff user — see{' '}
+                <strong>DEPLOY.md</strong>). Nobody types an email on this screen.
+              </p>
+            </details>
+          </div>
         </div>
       </div>
     );
@@ -363,8 +276,8 @@ const JackpotPage: React.FC<JackpotPageProps> = ({
           <Lock size={32} className="mx-auto text-[#5c564d]" />
           <h2 className="font-barDisplay text-2xl font-bold text-[#2d3d2d]">Access denied</h2>
           <p className="text-sm text-[#5c564d]">
-            <strong>{user.email}</strong> is not registered as an owner or staff member.
-            Contact the account administrator to be added.
+            This sign-in isn’t allowed for Jackpot. Ask your admin to add the staff account to{' '}
+            <code className="bg-white px-1 py-0.5 border border-[#c4beb5] text-xs">owner_roles</code> in Supabase.
           </p>
           <button type="button" onClick={() => signOut()} className={`${btnOutline} mx-auto`}>
             <LogOut size={14} /> Sign out
@@ -385,7 +298,13 @@ const JackpotPage: React.FC<JackpotPageProps> = ({
             <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#5c564d] mb-1">Four Square</p>
             <h2 className="font-barDisplay text-3xl font-bold text-[#2d3d2d]">Jackpot</h2>
             <p className="text-xs text-[#5c564d] mt-1">
-              Signed in as <strong>{profile?.display_name || user.email}</strong>
+              {profile?.display_name ? (
+                <>
+                  Signed in as <strong>{profile.display_name}</strong>
+                </>
+              ) : (
+                <>Signed in</>
+              )}
             </p>
           </div>
           <button type="button" onClick={() => signOut()} className={btnOutline}>

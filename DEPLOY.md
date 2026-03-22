@@ -66,6 +66,10 @@ INSERT INTO public.jackpot_pins (pin_hash, label, sort_order) VALUES
 supabase functions deploy jackpot-pin --no-verify-jwt
 ```
 
+**Important:** `--no-verify-jwt` (or turning **JWT verification OFF** for `jackpot-pin` in the Supabase Dashboard) is required. If JWT stays on, the **OPTIONS** preflight often returns **401**, and the browser reports a **CORS** error (`preflight doesn't pass`). Staff are not logged in yet when they call this function.
+
+If you still see CORS errors after redeploying: **Edge Functions** → **jackpot-pin** → disable **Verify JWT** / **Enforce JWT**, then deploy again. See `supabase/functions/jackpot-pin/README.md`.
+
 5. In **Supabase → Edge Functions → jackpot-pin → Secrets**, set:
 
 | Secret | Value |
@@ -200,9 +204,7 @@ The app works fully offline without Supabase (menu editing uses IndexedDB). Supa
 
 The Jackpot page is **not linked in the public navigation**. Open: `https://yourdomain.com/#jackpot`
 
-**Staff (typical):** Enter the **PIN** you were given — **no email**. After **3 wrong tries** in the same browser session, sign-in locks for **30 minutes** for that session.
-
-**Owner:** Tap **Owner? Sign in with email link instead** and use the same magic-link flow as before (your personal email must be in `owner_roles`).
+**Everyone:** Enter the **PIN** you were given — **no email on this page**. After **3 wrong tries** in the same browser session, sign-in locks for **30 minutes** for that session.
 
 ---
 
@@ -221,4 +223,4 @@ Edge Function secret **`JACKPOT_STAFF_USER_EMAIL`** is set in the Supabase dashb
 
 - **Menu data** is stored in browser IndexedDB (Dexie) — this means each device/browser has its own copy. Future work: sync to `menu_versions` Postgres table on save.
 - **Owner roles** are managed directly in the database — there is no self-signup. You must manually add emails to `owner_roles`.
-- **The Jackpot URL is not secret.** Staff PINs gate access via the **`jackpot-pin`** Edge Function + **`jackpot_pins`** table; a correct PIN issues a real session for the shared **`JACKPOT_STAFF_USER_EMAIL`** user (must be in `owner_roles`). Owners can still use magic link.
+- **The Jackpot URL is not secret.** Staff PINs gate access via the **`jackpot-pin`** Edge Function + **`jackpot_pins`** table; a correct PIN issues a real session for the shared **`JACKPOT_STAFF_USER_EMAIL`** user (must be in `owner_roles`). Staff never see that email in the app.

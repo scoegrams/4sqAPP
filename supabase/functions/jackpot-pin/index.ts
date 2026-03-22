@@ -6,21 +6,28 @@
  *   JACKPOT_STAFF_USER_EMAIL  — e.g. jackpot-staff@yourdomain.com
  *
  * Auto-provided: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
+ *
+ * CORS: uses official SDK headers (see supabase.com/docs/guides/functions/cors).
+ * If preflight still fails: disable "Verify JWT" for this function (CLI --no-verify-jwt
+ * or Dashboard → Edge Functions → jackpot-pin → Details).
  */
-import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.1';
-
-const cors = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { createClient } from 'jsr:@supabase/supabase-js@2';
+import { corsHeaders } from 'jsr:@supabase/supabase-js@2/cors';
 
 const MAX_FAILS = 3;
 const LOCK_MINUTES = 30;
 
-serve(async (req) => {
+function json(body: Record<string, unknown>, status: number) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
+}
+
+Deno.serve(async (req) => {
+  // Preflight — must return 2xx with CORS headers (browser requirement).
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: cors });
+    return new Response('ok', { headers: corsHeaders });
   }
 
   try {
@@ -121,16 +128,9 @@ serve(async (req) => {
     return json({
       access_token: sessionData.session.access_token,
       refresh_token: sessionData.session.refresh_token,
-    });
+    }, 200);
   } catch (e) {
     console.error(e);
     return json({ error: 'Server error' }, 500);
   }
 });
-
-function json(body: Record<string, unknown>, status: number) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { ...cors, 'Content-Type': 'application/json' },
-  });
-}
