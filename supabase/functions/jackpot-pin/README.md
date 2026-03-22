@@ -26,7 +26,15 @@ In **Project Settings → Edge Functions → Secrets** (or CLI `supabase secrets
 
 `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are provided automatically in the Edge runtime.
 
-## CORS errors
+## CORS / “preflight failed” in the browser
+
+Chrome often labels any failed preflight as **CORS**. Check the **status code**:
+
+| Status | Meaning |
+|--------|---------|
+| **404** | Function **not deployed** on this project (or wrong `*.supabase.co` URL in Vercel env). Run `npm run deploy:jackpot-pin` from repo root after `supabase link`. |
+| **401** on `OPTIONS` | **JWT verification** still ON — use `--no-verify-jwt` and/or Dashboard → turn **Verify JWT** off for `jackpot-pin`. |
+| **200** / **204** | Preflight OK; if the app still fails, check the **POST** response and secrets. |
 
 1. Redeploy this function after pulling the latest `index.ts` (uses `corsHeaders` from `@supabase/supabase-js`).
 2. Confirm **JWT verification is off** for `jackpot-pin` (above).
@@ -40,4 +48,4 @@ curl -i -X OPTIONS \
   -H 'Access-Control-Request-Headers: authorization,content-type,apikey,x-client-info'
 ```
 
-You should see **HTTP/2 200** (or 204) and `access-control-allow-origin` in the response.
+You should see **HTTP/2 200** (or 204) and `access-control-allow-origin` in the response — **not 404**.

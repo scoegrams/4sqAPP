@@ -68,6 +68,8 @@ supabase functions deploy jackpot-pin --no-verify-jwt
 
 **Important:** `--no-verify-jwt` (or turning **JWT verification OFF** for `jackpot-pin` in the Supabase Dashboard) is required. If JWT stays on, the **OPTIONS** preflight often returns **401**, and the browser reports a **CORS** error (`preflight doesn't pass`). Staff are not logged in yet when they call this function.
 
+**If the browser says CORS / “preflight doesn't have HTTP ok status”:** check the real HTTP status. A **404** means the function is **not deployed** (or wrong project URL) — fix by linking this repo to the right project and running `npm run deploy:jackpot-pin` (or `supabase functions deploy jackpot-pin --no-verify-jwt`). A **401** on OPTIONS usually means **JWT verification is still ON** for this function.
+
 If you still see CORS errors after redeploying: **Edge Functions** → **jackpot-pin** → disable **Verify JWT** / **Enforce JWT**, then deploy again. See `supabase/functions/jackpot-pin/README.md`.
 
 5. In **Supabase → Edge Functions → jackpot-pin → Secrets**, set:
