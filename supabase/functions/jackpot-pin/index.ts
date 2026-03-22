@@ -1,14 +1,13 @@
 /**
- * Staff Jackpot login: verify PIN (hashed in DB) → return real Supabase session
- * for JACKPOT_STAFF_USER_EMAIL (must exist in auth.users + owner_roles).
+ * Staff Jackpot login: verify PIN (hashed in DB) → return real Supabase session.
  *
- * Secrets (Dashboard → Edge Functions → jackpot-pin):
- *   JACKPOT_STAFF_USER_EMAIL  — e.g. jackpot-staff@yourdomain.com
+ * No secrets to configure. The function auto-creates/manages an internal staff
+ * Auth user (email derived from SUPABASE_URL) and ensures it has an owner_roles
+ * row. Staff only ever enter a PIN — no email involved anywhere.
  *
  * Auto-provided: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
  *
- * CORS: uses official SDK headers (see supabase.com/docs/guides/functions/cors).
- * If preflight still fails: disable "Verify JWT" for this function (CLI --no-verify-jwt
+ * CORS: If preflight fails, disable "Verify JWT" for this function (CLI --no-verify-jwt
  * or Dashboard → Edge Functions → jackpot-pin → Details).
  */
 import { createClient } from 'jsr:@supabase/supabase-js@2';
@@ -22,6 +21,16 @@ function json(body: Record<string, unknown>, status: number) {
     status,
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   });
+}
+
+/** Derive a stable internal-only staff email from the project URL. */
+function staffEmail(supabaseUrl: string): string {
+  try {
+    const ref = new URL(supabaseUrl).hostname.split('.')[0];
+    return `jackpot-staff+${ref}@jackpot.internal`;
+  } catch {
+    return 'jackpot-staff@jackpot.internal';
+  }
 }
 
 Deno.serve(async (req) => {
@@ -41,10 +50,9 @@ Deno.serve(async (req) => {
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    const staffEmail = Deno.env.get('JACKPOT_STAFF_USER_EMAIL')?.trim();
 
-    if (!supabaseUrl || !serviceKey || !staffEmail) {
-      console.error('jackpot-pin: missing SUPABASE_URL, SERVICE_ROLE_KEY, or JACKPOT_STAFF_USER_EMAIL');
+    if (!supabaseUrl || !serviceKey) {
+      console.error('jackpot-pin: missing SUPABASE_URL or SERVICE_ROLE_KEY');
       return json({ error: 'Server not configured' }, 503);
     }
 
@@ -54,6 +62,7 @@ Deno.serve(async (req) => {
 
     const now = new Date();
 
+    // ── Rate limiting ────────────────────────────────────────────────────────
     let { data: row } = await admin
       .from('jackpot_pin_attempts')
       .select('fail_count, locked_until')
@@ -69,14 +78,15 @@ Deno.serve(async (req) => {
       row = null;
     }
 
-    const { data: ok, error: rpcErr } = await admin.rpc('check_jackpot_pin', { p_pin: pin });
+    // ── Verify PIN ───────────────────────────────────────────────────────────
+    const { data: pinOk, error: rpcErr } = await admin.rpc('check_jackpot_pin', { p_pin: pin });
 
     if (rpcErr) {
       console.error('check_jackpot_pin', rpcErr);
       return json({ error: 'Could not verify PIN' }, 500);
     }
 
-    if (!ok) {
+    if (!pinOk) {
       const fails = (row?.fail_count ?? 0) + 1;
       const lockedUntil =
         fails >= MAX_FAILS
@@ -84,12 +94,7 @@ Deno.serve(async (req) => {
           : null;
 
       await admin.from('jackpot_pin_attempts').upsert(
-        {
-          client_id: clientId,
-          fail_count: fails,
-          locked_until: lockedUntil,
-          updated_at: now.toISOString(),
-        },
+        { client_id: clientId, fail_count: fails, locked_until: lockedUntil, updated_at: now.toISOString() },
         { onConflict: 'client_id' },
       );
 
@@ -103,11 +108,49 @@ Deno.serve(async (req) => {
       );
     }
 
+    // ── PIN correct — clear attempts ─────────────────────────────────────────
     await admin.from('jackpot_pin_attempts').delete().eq('client_id', clientId);
 
+    // ── Find or auto-create the internal staff Auth user ─────────────────────
+    const email = staffEmail(supabaseUrl);
+    let staffUserId: string;
+
+    const { data: existingUser, error: getUserErr } = await admin.auth.admin.getUserByEmail(email);
+    if (getUserErr && getUserErr.message !== 'User not found') {
+      console.error('getUserByEmail', getUserErr);
+      return json({ error: 'Could not prepare staff session' }, 500);
+    }
+
+    if (existingUser?.user?.id) {
+      staffUserId = existingUser.user.id;
+    } else {
+      const { data: newUser, error: createErr } = await admin.auth.admin.createUser({
+        email,
+        email_confirm: true,
+      });
+      if (createErr || !newUser?.user?.id) {
+        console.error('createUser', createErr);
+        return json({ error: 'Could not create staff session' }, 500);
+      }
+      staffUserId = newUser.user.id;
+    }
+
+    // ── Ensure owner_roles row exists for this user ───────────────────────────
+    const { error: roleErr } = await admin
+      .from('owner_roles')
+      .upsert(
+        { email, user_id: staffUserId, role: 'staff' },
+        { onConflict: 'email' },
+      );
+    if (roleErr) {
+      console.error('owner_roles upsert', roleErr);
+      return json({ error: 'Could not assign staff role' }, 500);
+    }
+
+    // ── Issue a real session for the staff user ───────────────────────────────
     const { data: linkData, error: linkErr } = await admin.auth.admin.generateLink({
       type: 'magiclink',
-      email: staffEmail,
+      email,
     });
 
     if (linkErr || !linkData?.properties?.hashed_token) {
