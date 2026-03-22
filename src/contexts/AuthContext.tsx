@@ -22,6 +22,19 @@ interface AuthContextValue extends AuthState {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+/**
+ * Where the magic link should send the user. Uses the current browser URL so
+ * production logins get production links (Supabase otherwise uses Dashboard Site URL).
+ * Must match an entry under Authentication → URL Configuration → Redirect URLs.
+ */
+function getEmailMagicLinkRedirectUrl(): string {
+  const fixed = import.meta.env.VITE_AUTH_REDIRECT_URL?.trim();
+  if (fixed) return fixed;
+  if (typeof window === 'undefined') return '';
+  const { origin, pathname, hash } = window.location;
+  return `${origin}${pathname || '/'}${hash || ''}`;
+}
+
 async function ensureProfile(userId: string, email?: string | null, phone?: string | null): Promise<Profile | null> {
   if (!supabase) return null;
   const { data: existing } = await supabase.from('profiles').select('*').eq('id', userId).single();
@@ -78,9 +91,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setError('Social features not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env');
       return { error: 'Not configured' };
     }
+    const emailRedirectTo = getEmailMagicLinkRedirectUrl();
     const { error: e } = await supabase.auth.signInWithOtp({
       email: email.trim(),
-      options: { shouldCreateUser: true },
+      options: {
+        shouldCreateUser: true,
+        ...(emailRedirectTo ? { emailRedirectTo } : {}),
+      },
     });
     if (e) {
       setError(e.message);

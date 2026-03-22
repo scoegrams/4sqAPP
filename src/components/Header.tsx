@@ -25,25 +25,17 @@ const NAV_ITEMS: { id: Page; label: string; icon: LucideIcon | React.FC<{ size?:
 ];
 
 const Header: React.FC<HeaderProps> = ({ theme, activePage, trainSignEvents = [], onOpenNav, onNavigate }) => {
-  const isApple = theme.mode === 'apple';
-  const btnBase = theme.isDark
-    ? 'bg-slate-800 border-slate-700'
-    : isApple
-    ? 'bg-white/10 border-white/20'
-    : theme.mode === 'modern'
-    ? 'bg-white border-[#c8d8e4]'
-    : 'bg-white border-slate-900 shadow-[2px_2px_0px_#000]';
-  const btnText = (theme.isDark || isApple) ? 'text-white' : theme.text;
-
   return (
-    <div className={`z-20 border-b-2 transition-colors duration-300 safe-top ${theme.headerBg} ${theme.headerBorder}`}>
+    <div className={`z-20 transition-colors duration-300 safe-top ${theme.headerBg} ${theme.headerBorder}`}>
       <div className="px-4 sm:px-6 py-2.5 sm:py-2 flex items-center justify-between gap-2">
         <div className="flex items-center gap-4">
           <div className="flex flex-col leading-none gap-1 sm:gap-1.5 items-center min-w-0">
-            <h1 className={`font-barWordmark text-2xl sm:text-3xl font-black tracking-tighter uppercase italic leading-none truncate ${isApple ? 'text-white' : theme.text}`}>FOUR SQUARE</h1>
+            <h1 className="font-barWordmark text-2xl sm:text-3xl font-black tracking-tighter uppercase italic leading-none truncate text-[color:var(--fs-header-wordmark)]">
+              FOUR SQUARE
+            </h1>
             <FourSquares />
           </div>
-          <span className={`hidden lg:block text-sm font-black tracking-widest uppercase border-l pl-4 ${isApple ? 'text-white/60 border-white/20' : `${theme.textMuted} ${theme.border}`}`}>
+          <span className="hidden lg:block text-sm font-black tracking-widest uppercase border-l pl-4 text-[color:var(--fs-header-tagline)] border-[color:var(--fs-header-tagline-border)]">
             Restaurant + Bar
           </span>
         </div>
@@ -52,7 +44,7 @@ const Header: React.FC<HeaderProps> = ({ theme, activePage, trainSignEvents = []
           <TrainSign theme={theme} events={trainSignEvents} isAdmin={false} />
           <button
             onClick={onOpenNav}
-            className={`min-h-[44px] min-w-[44px] flex items-center justify-center p-2 border transition-all active:scale-95 ${btnBase} ${btnText}`}
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center p-2 border-2 transition-all active:scale-95 bg-[var(--fs-header-menu-btn-bg)] border-[color:var(--fs-header-menu-btn-border)] text-[color:var(--fs-header-menu-btn-icon)]"
             aria-label="Open navigation"
           >
             <Menu size={18} />

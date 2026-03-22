@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-const COLORS = ['#10b981', '#3b82f6', '#3b82f6', '#10b981'];
-const GREY = '#64748b';
+const LOGO_VAR_NAMES = ['--fs-logo-sq-0', '--fs-logo-sq-1', '--fs-logo-sq-2', '--fs-logo-sq-3'] as const;
 
 type Phase = 'cycleIn' | 'hold' | 'cycleOut' | 'greenPop';
 
@@ -61,7 +60,7 @@ const FourSquares: React.FC = () => {
       }
 
       if (p === 'greenPop') {
-        // next tick already scheduled above
+        // scheduled above
       }
     };
 
@@ -73,23 +72,23 @@ const FourSquares: React.FC = () => {
 
   return (
     <div className="flex gap-[3px]">
-      {COLORS.map((color, i) => {
-        const isLit =
-          phase === 'cycleOut'
-            ? i >= 4 - litCount
-            : i < litCount;
-        const isFirstGreen = i === 0;
-        const showPop = greenPop && isFirstGreen;
+      {LOGO_VAR_NAMES.map((varName, i) => {
+        const isLit = phase === 'cycleOut' ? i >= 4 - litCount : i < litCount;
+        const showPop = greenPop && i === 0;
 
         return (
           <div
-            key={i}
+            key={varName}
             className="w-3.5 h-3.5 transition-all duration-300 ease-out"
             style={{
-              backgroundColor: isLit ? color : GREY,
-              opacity: isLit ? 1 : 0.5,
+              backgroundColor: showPop
+                ? 'var(--fs-logo-sq-pop)'
+                : isLit
+                  ? `var(${varName})`
+                  : 'var(--fs-logo-sq-muted)',
+              opacity: isLit || showPop ? 1 : 0.5,
               transform: showPop ? 'scale(1.35)' : 'scale(1)',
-              boxShadow: showPop ? `0 0 8px ${color}` : 'none',
+              boxShadow: showPop ? '0 0 8px var(--fs-logo-sq-pop)' : 'none',
             }}
           />
         );

@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import {
   Mail, LogOut, ShieldCheck, ShieldOff, Save, Printer, History,
   RotateCcw, PencilLine, Palette, Check, AlertCircle, ChevronDown,
-  ChevronUp, CalendarDays, Train, Eye, Lock,
+  ChevronUp, CalendarDays, Train, Eye, Lock, Sparkles,
 } from 'lucide-react';
 import { Theme, ThemeMode } from '../../theme';
 import type { Special, TrainSignEvent, MenuVersion } from '../../types';
 import VersionHistory from '../VersionHistory';
 import SpecialsEditor from '../SpecialsEditor';
 import TrainSignEditor from '../TrainSignEditor';
+import ThemeStudioPanel from '../ThemeStudioPanel';
 import { supabase, hasSupabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -384,9 +385,21 @@ const JackpotPage: React.FC<JackpotPageProps> = ({
           </button>
         </Section>
 
+        {/* Live design tokens */}
+        <Section title="Theme Studio" icon={<Sparkles size={16} className="text-amber-600" />} defaultOpen={false}>
+          <p className="text-xs text-[#5c564d] mb-4">
+            All UI colors flow from one token map (<code className="text-[10px] bg-white px-1 py-0.5 border border-[#c4beb5]">src/theme/presets.ts</code>).
+            Turn on <strong>Custom colors</strong> to tune any value live in this browser; export JSON to save a scheme. New named themes: duplicate a preset block and wire it in{' '}
+            <code className="text-[10px] bg-white px-1 py-0.5 border border-[#c4beb5]">ThemeMode</code> + app theme buttons.
+          </p>
+          <ThemeStudioPanel onRequestTheme={onSetTheme} />
+        </Section>
+
         {/* Background color */}
-        <Section title="Background color" icon={<Palette size={16} />}>
-          <p className="text-xs text-[#5c564d] mb-3">Override the theme background with a custom color.</p>
+        <Section title="Background color (quick override)" icon={<Palette size={16} />}>
+          <p className="text-xs text-[#5c564d] mb-3">
+            Paints the main canvas only (bypasses the <strong>Page background</strong> token). Clear to use tokens again.
+          </p>
           <div className="flex flex-wrap gap-2 mb-3">
             {PRESETS.map((color, i) => (
               <button

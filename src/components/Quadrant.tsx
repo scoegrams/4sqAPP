@@ -33,9 +33,10 @@ const Quadrant: React.FC<QuadrantProps> = ({
   onUpdateSection, onAddSection, onRemoveSection, onMoveSection,
 }) => {
   const Icon = QUADRANT_ICONS[id];
-  const borderMuted = theme.isDark ? 'border-white/10' : 'border-black/10';
-  const btnMuted = theme.isDark ? 'text-white/30 hover:text-white/60' : 'text-black/30 hover:text-black/60';
+  const borderMuted = 'border-[color:var(--fs-divider-muted)]';
+  const btnMuted = 'text-[color:var(--fs-btn-muted)] hover:text-[color:var(--fs-btn-muted-hover)]';
   const btnDanger = 'text-red-500/50 hover:text-red-400';
+  const adminDashBorder = 'border-[color:var(--fs-input-border)]';
 
   return (
     <div className={`border-2 overflow-hidden ${quadrantTheme.bg} ${quadrantTheme.border}`}>
@@ -64,13 +65,13 @@ const Quadrant: React.FC<QuadrantProps> = ({
                     <input
                       value={section.name}
                       onChange={e => onUpdateSection(id, si, 'name', e.target.value)}
-                      className={`text-[11px] font-black uppercase tracking-[0.15em] bg-transparent border-b border-dashed w-full focus:outline-none ${theme.isDark ? 'border-white/30' : 'border-black/30'} ${theme.text}`}
+                      className={`text-[11px] font-black uppercase tracking-[0.15em] bg-transparent border-b border-dashed w-full focus:outline-none ${adminDashBorder} ${theme.text}`}
                     />
                     <input
                       value={section.note || ''}
                       onChange={e => onUpdateSection(id, si, 'note', e.target.value)}
                       placeholder="section note..."
-                      className={`text-[9px] uppercase tracking-wider bg-transparent border-b border-dashed w-full focus:outline-none mt-0.5 ${theme.isDark ? 'border-white/20' : 'border-black/20'} ${theme.textMuted}`}
+                      className={`text-[9px] uppercase tracking-wider bg-transparent border-b border-dashed w-full focus:outline-none mt-0.5 ${adminDashBorder} opacity-90 ${theme.textMuted}`}
                     />
                   </div>
                   <button onClick={() => onRemoveSection(id, si)} className={`${btnDanger} transition-colors ml-1`}>
@@ -113,14 +114,14 @@ const Quadrant: React.FC<QuadrantProps> = ({
                         <input
                           value={item.name}
                           onChange={e => onUpdateItem(id, si, ii, 'name', e.target.value)}
-                          className={`text-sm font-bold bg-transparent border-b border-dashed flex-1 min-w-0 focus:outline-none ${theme.isDark ? 'border-white/30' : 'border-black/30'} ${theme.text}`}
+                          className={`text-sm font-bold bg-transparent border-b border-dashed flex-1 min-w-0 focus:outline-none ${adminDashBorder} ${theme.text}`}
                         />
                       </div>
                       <input
                         value={item.description || ''}
                         onChange={e => onUpdateItem(id, si, ii, 'description', e.target.value)}
                         placeholder="description..."
-                        className={`text-[10px] italic bg-transparent border-b border-dashed w-full focus:outline-none ${theme.isDark ? 'border-white/20' : 'border-black/20'} ${theme.textMuted}`}
+                        className={`text-[10px] italic bg-transparent border-b border-dashed w-full focus:outline-none ${adminDashBorder} ${theme.textMuted}`}
                       />
                       <div className="flex items-center gap-3 pt-0.5">
                         <label className={`flex items-center gap-1 text-[9px] uppercase tracking-wider cursor-pointer ${theme.textMuted}`}>
@@ -159,7 +160,7 @@ const Quadrant: React.FC<QuadrantProps> = ({
                           type="number"
                           value={item.price}
                           onChange={e => onUpdateItem(id, si, ii, 'price', parseFloat(e.target.value) || 0)}
-                          className={`text-sm font-bold w-14 text-right bg-transparent border-b border-dashed focus:outline-none ${theme.isDark ? 'border-white/30' : 'border-black/30'} ${quadrantTheme.accent}`}
+                          className={`text-sm font-bold w-14 text-right bg-transparent border-b border-dashed focus:outline-none ${adminDashBorder} ${quadrantTheme.accent}`}
                         />
                       </div>
                       <button onClick={() => onRemoveItem(id, si, ii)} className={`${btnDanger} transition-colors mt-0.5`}>
@@ -191,7 +192,7 @@ const Quadrant: React.FC<QuadrantProps> = ({
         {isAdmin && (
           <button
             onClick={() => onAddSection(id)}
-            className={`mt-3 w-full flex items-center justify-center gap-1 text-[9px] font-bold uppercase tracking-widest py-2 border border-dashed transition-colors ${theme.isDark ? 'border-white/20 text-white/40 hover:text-white/70 hover:border-white/40' : 'border-black/20 text-black/40 hover:text-black/60 hover:border-black/40'}`}
+            className={`mt-3 w-full flex items-center justify-center gap-1 text-[9px] font-bold uppercase tracking-widest py-2 border border-dashed transition-colors border-[color:var(--fs-input-border)] text-[color:var(--fs-btn-muted)] hover:text-[color:var(--fs-btn-muted-hover)] hover:border-[color:var(--fs-text-muted)]`}
           >
             <Plus size={10} /> Add Section
           </button>

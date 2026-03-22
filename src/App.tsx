@@ -12,25 +12,44 @@ import JackpotPage from './components/pages/JackpotPage';
 import PrintMenuPage from './components/PrintMenuPage';
 import ChalkboardSpecials from './components/ChalkboardSpecials';
 import { MenuData, MenuItem, MenuSection } from './types';
-import { ThemeMode, THEMES } from './theme';
+import { ThemeMode, getTheme } from './theme';
 import { useMenuStore } from './hooks/useMenuStore';
+import { DesignTokensProvider, useDesignTokens } from './contexts/DesignTokensContext';
 
 const App = () => {
-  const store = useMenuStore();
-
-  // isAdmin is only ever true when the Jackpot page grants it
-  const [isAdmin, setIsAdmin] = useState(false);
   const [themeMode, setThemeMode] = useState<ThemeMode>('light');
+  return (
+    <DesignTokensProvider themeMode={themeMode} setThemeMode={setThemeMode}>
+      <AppInner themeMode={themeMode} setThemeMode={setThemeMode} />
+    </DesignTokensProvider>
+  );
+};
+
+interface AppInnerProps {
+  themeMode: ThemeMode;
+  setThemeMode: React.Dispatch<React.SetStateAction<ThemeMode>>;
+}
+
+const AppInner: React.FC<AppInnerProps> = ({ themeMode, setThemeMode }) => {
+  const store = useMenuStore();
+  const { effectiveTokens } = useDesignTokens();
+
+  const [isAdmin, setIsAdmin] = useState(false);
   const [activePage, setActivePage] = useState<Page>('menu');
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [customBgColor, setCustomBgColor] = useState<string | null>(null);
   const [showPrint, setShowPrint] = useState(false);
   const [showChalkboard, setShowChalkboard] = useState(false);
 
-  const theme = THEMES[themeMode];
+  const theme = getTheme(themeMode);
   const isMenuPage = activePage === 'menu';
 
-  // Hash-based navigation: /#jackpot goes straight to the owner dashboard
+  const bgImageOpacity = theme.isDark
+    ? parseFloat(effectiveTokens.bgImageOpacityDark) || 0.12
+    : themeMode === 'modern' || themeMode === 'apple'
+      ? parseFloat(effectiveTokens.bgImageOpacitySoft) || 0.04
+      : parseFloat(effectiveTokens.bgImageOpacityLight) || 0.15;
+
   useEffect(() => {
     const go = () => {
       if (window.location.hash === '#jackpot') setActivePage('jackpot');
@@ -40,7 +59,6 @@ const App = () => {
     return () => window.removeEventListener('hashchange', go);
   }, []);
 
-  // Sync hash when page changes
   useEffect(() => {
     if (activePage === 'jackpot') {
       window.location.hash = 'jackpot';
@@ -50,7 +68,7 @@ const App = () => {
   }, [activePage]);
 
   const cycleTheme = () => {
-    setThemeMode(prev => {
+    setThemeMode((prev) => {
       if (prev === 'dark') return 'light';
       if (prev === 'light') return 'modern';
       if (prev === 'modern') return 'apple';
@@ -81,7 +99,7 @@ const App = () => {
             specials={store.specials}
             openHours={store.openHours}
             events={store.events}
-            onToggleAdmin={() => setIsAdmin(prev => !prev)}
+            onToggleAdmin={() => setIsAdmin((prev) => !prev)}
             onCycleTheme={cycleTheme}
             onSetTheme={setThemeMode}
             onSave={store.save}
@@ -150,14 +168,13 @@ const App = () => {
       className={`min-h-screen h-screen flex flex-col transition-colors duration-300 overflow-hidden font-sans relative safe-top safe-bottom ${customBgColor ? '' : theme.bg} ${theme.text}`}
       style={customBgColor ? { backgroundColor: customBgColor } : undefined}
     >
-      {/* Background image — subtle texture */}
       <div
         className="fixed inset-0 pointer-events-none transition-opacity duration-500"
         style={{
           backgroundImage: `url(${bgImage})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          opacity: theme.isDark ? 0.12 : (themeMode === 'modern' || themeMode === 'apple' ? 0.04 : 0.15),
+          opacity: bgImageOpacity,
         }}
       />
 
@@ -177,7 +194,6 @@ const App = () => {
         theme={theme}
       />
 
-      {/* Main content */}
       {isMenuPage ? (
         <div className="flex-grow overflow-y-auto overflow-x-hidden p-4 md:p-6 no-scrollbar safe-left safe-right">
           <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch mb-6">
@@ -205,10 +221,13 @@ const App = () => {
             ))}
           </div>
 
-          {/* Consumer advisory */}
-          <div className={`max-w-6xl mx-auto border-t px-4 py-3 mb-24 ${theme.isDark ? 'border-white/10' : theme.mode === 'apple' ? 'border-[#d2d2d7]' : 'border-black/10'}`}>
+          <div className="max-w-6xl mx-auto border-t border-[color:var(--fs-advisory-border)] px-4 py-3 mb-24">
             <p className={`text-[8px] leading-relaxed ${theme.textMuted}`}>
-              <span className="font-bold">Consumer advisory:</span> Consuming raw or undercooked meats, poultry, seafood, shellfish, or eggs may increase your risk of foodborne illness, especially if you have certain medical conditions. Menu items may contain or come into contact with allergens including wheat, eggs, peanuts, tree nuts, milk, soy, fish, and shellfish. Please inform your server of any dietary restrictions or allergies.
+              <span className="font-bold">Consumer advisory:</span> Consuming raw or undercooked meats, poultry,
+              seafood, shellfish, or eggs may increase your risk of foodborne illness, especially if you have certain
+              medical conditions. Menu items may contain or come into contact with allergens including wheat, eggs,
+              peanuts, tree nuts, milk, soy, fish, and shellfish. Please inform your server of any dietary restrictions
+              or allergies.
             </p>
           </div>
         </div>

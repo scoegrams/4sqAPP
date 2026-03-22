@@ -6,10 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "check:db": "node scripts/check-supabase.mjs"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.97.0",
+    "@supabase/supabase-js": "^2.99.2",
     "dexie": "^4.3.0",
     "lucide-react": "^0.460.0",
     "react": "^18.3.1",

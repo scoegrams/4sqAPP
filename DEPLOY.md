@@ -12,6 +12,8 @@
 | Database & Auth | Supabase (Postgres + Auth) |
 | Local storage | Dexie (IndexedDB) — offline-first menu editing |
 
+**Local checklist:** copy `.env.example` → `.env`, add API keys, then `npm run check:db`. Full walkthrough: [`docs/DATABASE_SETUP.md`](docs/DATABASE_SETUP.md).
+
 ---
 
 ## 1. Create a Supabase project
@@ -30,6 +32,7 @@ In the Supabase dashboard → **SQL Editor**, run these files **in order**:
 ```
 supabase/migrations/001_connect4_social.sql
 supabase/migrations/002_owner_roles_and_menu.sql
+supabase/migrations/003_site_theme.sql
 ```
 
 Paste each file's contents and click **Run**.
