@@ -160,6 +160,7 @@ const JackpotPage: React.FC<JackpotPageProps> = ({
   const [note, setNote] = useState('');
   const [saving, setSaving] = useState(false);
   const [savedFlash, setSavedFlash] = useState(false);
+  const [saveErrMsg, setSaveErrMsg] = useState<string | null>(null);
 
   const [showHistory, setShowHistory] = useState(false);
   const [showSpecials, setShowSpecials] = useState(false);
@@ -215,11 +216,17 @@ const JackpotPage: React.FC<JackpotPageProps> = ({
 
   const handleSave = async () => {
     setSaving(true);
-    await onSave(note);
-    setNote('');
-    setSaving(false);
-    setSavedFlash(true);
-    setTimeout(() => setSavedFlash(false), 2500);
+    setSaveErrMsg(null);
+    try {
+      await onSave(note);
+      setNote('');
+      setSavedFlash(true);
+      setTimeout(() => setSavedFlash(false), 2500);
+    } catch (err) {
+      setSaveErrMsg(err instanceof Error ? err.message : 'Save failed. Try again.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   // ── Button styles ──
@@ -404,6 +411,12 @@ const JackpotPage: React.FC<JackpotPageProps> = ({
             <div className="flex items-center gap-2 px-3 py-2 bg-emerald-50 border border-emerald-300 mb-3">
               <Check size={12} className="text-emerald-600 shrink-0" />
               <span className="text-xs font-semibold text-emerald-700">Saved!</span>
+            </div>
+          )}
+          {saveErrMsg && (
+            <div className="flex items-center gap-2 px-3 py-2 bg-red-50 border border-red-300 mb-3">
+              <AlertCircle size={12} className="text-red-500 shrink-0" />
+              <span className="text-xs font-semibold text-red-700">Save failed: {saveErrMsg}</span>
             </div>
           )}
           <div className="space-y-3">

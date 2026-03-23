@@ -41,6 +41,7 @@ export function useMenuStore() {
   const [isDirty, setIsDirty] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
   const savedRef = useRef({ menu, specials, drinks, events: [] as TrainSignEvent[], openHours: DEFAULT_OPEN_HOURS, chalkboard: deepClone(DEFAULT_CHALKBOARD) as ChalkboardData });
@@ -76,6 +77,7 @@ export function useMenuStore() {
   // ── Save ────────────────────────────────────────────────────────────────────
   const save = useCallback(async (note = '') => {
     setIsSaving(true);
+    setSaveError(null);
     try {
       const now = new Date();
       const snapshot = { menu: deepClone(menu), specials: deepClone(specials), drinks: deepClone(drinks), events: deepClone(events), openHours, chalkboard: deepClone(chalkboard) };
@@ -84,6 +86,10 @@ export function useMenuStore() {
       savedRef.current = { ...snapshot };
       setLastSaved(now);
       setIsDirty(false);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setSaveError(msg);
+      throw err;
     } finally {
       setIsSaving(false);
     }
@@ -107,6 +113,7 @@ export function useMenuStore() {
     setDrinks(deepClone(version.drinks));
     setEvents(version.events?.length ? deepClone(version.events) : deepClone(DEFAULT_TRAIN_EVENTS));
     setOpenHours(version.openHours ?? DEFAULT_OPEN_HOURS);
+    if (version.chalkboard) setChalkboard(deepClone(version.chalkboard));
     setIsDirty(true);
   }, []);
 
@@ -290,7 +297,7 @@ export function useMenuStore() {
     menu, specials, drinks, events, openHours, setOpenHours,
     chalkboard, setChalkboard,
     updateChalkboardMeta, updateChalkboardItem, addChalkboardItem, removeChalkboardItem, moveChalkboardItem,
-    isDirty, isLoading, isSaving, lastSaved,
+    isDirty, isLoading, isSaving, saveError, lastSaved,
     save, discard, restoreVersion,
     updateItem, addItem, removeItem, moveItem,
     updateSection, addSection, removeSection, moveSection,

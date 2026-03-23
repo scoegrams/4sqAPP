@@ -51,6 +51,7 @@ export interface MenuVersion {
   drinks: DrinksData;
   events?: TrainSignEvent[];
   openHours?: string;
+  chalkboard?: ChalkboardData;
 }
 
 export interface TrainSignEvent {
