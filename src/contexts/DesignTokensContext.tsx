@@ -9,6 +9,8 @@ import React, {
 import type { ThemeMode } from '../theme/types';
 import type { DesignTokens, DesignTokenKey } from '../theme/designTokenTypes';
 import { THEME_STUDIO_ENABLED_KEY } from '../theme/designTokenTypes';
+
+const THEME_MODE_KEY = '4sq-theme-mode';
 import { PRESET_TOKENS } from '../theme/presets';
 import {
   applyDesignTokens,
@@ -82,6 +84,11 @@ export function DesignTokensProvider({
   useEffect(() => {
     applyDesignTokens(effectiveTokens);
   }, [effectiveTokens]);
+
+  // Persist theme mode so the blocking init script uses the right preset on next load
+  useEffect(() => {
+    try { localStorage.setItem(THEME_MODE_KEY, themeMode); } catch { /* ignore */ }
+  }, [themeMode]);
 
   /* Hydrate from Supabase (public read) — wins over localStorage when a row exists */
   useEffect(() => {

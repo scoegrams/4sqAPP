@@ -3,8 +3,31 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<meta name="theme-color" content="#0f172a" />
+    <meta name="theme-color" content="#0f172a" />
     <title>Four Square — Restaurant &amp; Bar</title>
+    <style>
+      /*
+        Smooth crossfade when Supabase rehydrates and changes tokens after first paint.
+        Keep durations short so it's invisible rather than an animation.
+      */
+      *, *::before, *::after {
+        transition:
+          background-color 0.12s ease,
+          border-color 0.12s ease,
+          color 0.12s ease,
+          box-shadow 0.12s ease;
+      }
+      /* Exclude transforms and dimensions from the blanket transition */
+      button, a, [role="button"] {
+        transition:
+          background-color 0.12s ease,
+          border-color 0.12s ease,
+          color 0.12s ease,
+          box-shadow 0.12s ease,
+          opacity 0.15s ease,
+          transform 0.1s ease;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
