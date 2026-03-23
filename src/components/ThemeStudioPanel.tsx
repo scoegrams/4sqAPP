@@ -189,6 +189,8 @@ const ThemeStudioPanel: React.FC<{ onRequestTheme?: (mode: ThemeMode) => void }>
   // Parse slider values from token strings
   const fontSizePx = Math.round(parseFloat(effectiveTokens.menuItemFontSize) * 16);
   const paddingYPx = Math.round(parseFloat(effectiveTokens.menuItemPaddingY) * 16);
+  const radiusPx = parseInt(effectiveTokens.borderRadius) || 0;
+  const blurPx = parseInt(effectiveTokens.navBlur) || 0;
 
   return (
     <div className="space-y-5">
@@ -326,6 +328,120 @@ const ThemeStudioPanel: React.FC<{ onRequestTheme?: (mode: ThemeMode) => void }>
               <span>Airy (16)</span>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Style & shape */}
+      <div className="space-y-4">
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#5c564d]">
+          Style &amp; shape
+        </p>
+
+        <div className="space-y-5 p-4 bg-white border-2 border-[#c4beb5]">
+
+          {/* Corner radius */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-[#2d3d2d]">
+                Corner radius
+              </label>
+              <span className="text-[11px] font-mono font-bold text-[#2d3d2d] bg-[#f5f5f4] px-2 py-0.5 border border-[#c4beb5]">
+                {radiusPx}px
+              </span>
+            </div>
+            <input
+              type="range"
+              min={0}
+              max={20}
+              step={1}
+              value={radiusPx}
+              onChange={e => {
+                setStudioEnabled(true);
+                setTokens({ borderRadius: `${e.target.value}px` });
+              }}
+              className="w-full accent-[#2d3d2d] h-1.5 cursor-pointer"
+            />
+            <div className="flex justify-between text-[9px] text-[#8a8580] mt-1">
+              <span>Sharp (0)</span>
+              <span>Soft (8)</span>
+              <span>Round (20)</span>
+            </div>
+            {/* Live preview */}
+            <div className="flex gap-2 mt-2.5">
+              {[0, 6, 12, 20].map(r => (
+                <button
+                  key={r}
+                  type="button"
+                  onClick={() => { setStudioEnabled(true); setTokens({ borderRadius: `${r}px` }); }}
+                  className={`flex-1 py-1.5 text-[9px] font-bold uppercase tracking-wider border-2 transition-all ${radiusPx === r ? 'border-[#2d3d2d] bg-[#2d3d2d] text-white' : 'border-[#c4beb5] text-[#5c564d] hover:border-[#2d3d2d]'}`}
+                  style={{ borderRadius: `${r}px` }}
+                >
+                  {r === 0 ? 'Sharp' : r === 6 ? 'Soft' : r === 12 ? 'Rounded' : 'Pill'}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="border-t border-[#e7e5e4]" />
+
+          {/* Card shadow */}
+          <div>
+            <label className="block text-[11px] font-bold uppercase tracking-wider text-[#2d3d2d] mb-2">
+              Card shadow
+            </label>
+            <div className="flex gap-2">
+              {[
+                { label: 'None',   value: 'none' },
+                { label: 'Subtle', value: '0 1px 4px rgba(0,0,0,0.10)' },
+                { label: 'Medium', value: '0 4px 16px rgba(0,0,0,0.14)' },
+                { label: 'Deep',   value: '0 8px 32px rgba(0,0,0,0.20)' },
+              ].map(({ label, value }) => (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={() => { setStudioEnabled(true); setTokens({ cardShadow: value }); }}
+                  className={`flex-1 py-2 text-[9px] font-bold uppercase tracking-wider border-2 transition-colors ${effectiveTokens.cardShadow === value ? 'border-[#2d3d2d] bg-[#2d3d2d] text-white' : 'border-[#c4beb5] text-[#5c564d] hover:border-[#2d3d2d]'}`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="border-t border-[#e7e5e4]" />
+
+          {/* Glass header */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-[#2d3d2d]">
+                  Frosted glass header
+                </label>
+                <span className="text-[10px] text-[#8a8580]">Adds a blur behind the nav bar</span>
+              </div>
+              <span className="text-[11px] font-mono font-bold text-[#2d3d2d] bg-[#f5f5f4] px-2 py-0.5 border border-[#c4beb5]">
+                {blurPx === 0 ? 'off' : `${blurPx}px`}
+              </span>
+            </div>
+            <input
+              type="range"
+              min={0}
+              max={24}
+              step={4}
+              value={blurPx}
+              onChange={e => {
+                setStudioEnabled(true);
+                setTokens({ navBlur: `${e.target.value}px` });
+              }}
+              className="w-full accent-[#2d3d2d] h-1.5 cursor-pointer"
+            />
+            <div className="flex justify-between text-[9px] text-[#8a8580] mt-1">
+              <span>Off</span>
+              <span>Subtle</span>
+              <span>Heavy</span>
+            </div>
+          </div>
+
         </div>
       </div>
 

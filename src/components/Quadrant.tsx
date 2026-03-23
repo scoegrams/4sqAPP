@@ -39,7 +39,10 @@ const Quadrant: React.FC<QuadrantProps> = ({
   const adminDashBorder = 'border-[color:var(--fs-input-border)]';
 
   return (
-    <div className={`border-2 overflow-hidden ${quadrantTheme.bg} ${quadrantTheme.border}`}>
+    <div
+      className={`border-2 overflow-hidden ${quadrantTheme.bg} ${quadrantTheme.border}`}
+      style={{ borderRadius: 'var(--fs-radius)', boxShadow: 'var(--fs-card-shadow)' }}
+    >
       {/* Header */}
       <div className={`px-5 py-3 border-b-2 ${quadrantTheme.border} ${quadrantTheme.headerBg} flex items-center justify-between`}>
         <div className="flex items-center gap-2">

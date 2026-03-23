@@ -66,6 +66,7 @@ const Header: React.FC<HeaderProps> = ({ theme, activePage, trainSignEvents = []
           <button
             onClick={onOpenNav}
             className="min-h-[44px] min-w-[44px] flex items-center justify-center p-2 border-2 transition-all active:scale-95 bg-[var(--fs-header-menu-btn-bg)] border-[color:var(--fs-header-menu-btn-border)] text-[color:var(--fs-header-menu-btn-icon)]"
+            style={{ borderRadius: 'var(--fs-radius)' }}
             aria-label="Open navigation"
           >
             <Menu size={18} />
@@ -73,7 +74,10 @@ const Header: React.FC<HeaderProps> = ({ theme, activePage, trainSignEvents = []
         </div>
       </div>
 
-      <div className={`px-2 sm:px-6 border-t overflow-x-auto no-scrollbar flex items-center justify-center gap-0.5 sm:gap-1 ${theme.navUnderline}`}>
+      <div
+        className={`px-2 sm:px-6 border-t overflow-x-auto no-scrollbar flex items-center justify-center gap-0.5 sm:gap-1 ${theme.navUnderline}`}
+        style={{ backdropFilter: 'blur(var(--fs-nav-blur))', WebkitBackdropFilter: 'blur(var(--fs-nav-blur))' }}
+      >
         {NAV_ITEMS.map(({ id, label, icon: Icon }) => {
           const isActive = activePage === id;
           return (

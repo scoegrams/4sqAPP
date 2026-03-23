@@ -47,10 +47,10 @@ function getLowestEmptyRow(board: Cell[][], col: number): number {
 // ── Themed style helpers using design tokens ──────────────────────────────────
 
 const accentText = 'text-[color:var(--fs-nav-active-text)]';
-const accentBgStyle = { backgroundColor: 'var(--fs-footer-schedule-bg)', color: 'white' } as React.CSSProperties;
-const accentBorderStyle = { borderColor: 'var(--fs-footer-schedule-bg)', color: 'var(--fs-nav-active-text)' } as React.CSSProperties;
-const cardStyle = { backgroundColor: 'var(--fs-card-bg)', borderColor: 'var(--fs-border)' } as React.CSSProperties;
-const inputStyle = { backgroundColor: 'var(--fs-input-bg)', borderColor: 'var(--fs-input-border)' } as React.CSSProperties;
+const accentBgStyle = { backgroundColor: 'var(--fs-footer-schedule-bg)', color: 'white', borderRadius: 'var(--fs-radius)' } as React.CSSProperties;
+const accentBorderStyle = { borderColor: 'var(--fs-footer-schedule-bg)', color: 'var(--fs-nav-active-text)', borderRadius: 'var(--fs-radius)' } as React.CSSProperties;
+const cardStyle = { backgroundColor: 'var(--fs-card-bg)', borderColor: 'var(--fs-border)', borderRadius: 'var(--fs-radius)', boxShadow: 'var(--fs-card-shadow)' } as React.CSSProperties;
+const inputStyle = { backgroundColor: 'var(--fs-input-bg)', borderColor: 'var(--fs-input-border)', borderRadius: 'var(--fs-radius)' } as React.CSSProperties;
 const dividerStyle = { borderColor: 'var(--fs-divider-muted)' } as React.CSSProperties;
 
 // ─────────────────────────────────────────────────────────────────────────────

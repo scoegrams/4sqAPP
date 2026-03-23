@@ -16,20 +16,24 @@ const BookingPage: React.FC<BookingPageProps> = ({ theme }) => {
     backgroundColor: 'var(--fs-footer-schedule-bg)',
     color: 'white',
     borderColor: 'var(--fs-footer-schedule-bg)',
+    borderRadius: 'var(--fs-radius)',
   };
   const btnInactiveStyle: React.CSSProperties = {
     backgroundColor: 'transparent',
     color: 'var(--fs-text-muted)',
     borderColor: 'var(--fs-border)',
+    borderRadius: 'var(--fs-radius)',
   };
   const btnSolidStyle: React.CSSProperties = {
     backgroundColor: 'var(--fs-footer-schedule-bg)',
     color: 'white',
+    borderRadius: 'var(--fs-radius)',
   };
   const inputStyle: React.CSSProperties = {
     backgroundColor: 'var(--fs-input-bg)',
     borderColor: 'var(--fs-input-border)',
     color: 'var(--fs-page-text)',
+    borderRadius: 'var(--fs-radius)',
   };
 
   const labelClass = `block text-xs font-semibold uppercase tracking-wider mb-1.5 ${theme.textMuted}`;
