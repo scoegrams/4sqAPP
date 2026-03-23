@@ -44,6 +44,17 @@ function getLowestEmptyRow(board: Cell[][], col: number): number {
   return -1;
 }
 
+// ── Themed style helpers using design tokens ──────────────────────────────────
+
+const accentText = 'text-[color:var(--fs-nav-active-text)]';
+const accentBgStyle = { backgroundColor: 'var(--fs-footer-schedule-bg)', color: 'white' } as React.CSSProperties;
+const accentBorderStyle = { borderColor: 'var(--fs-footer-schedule-bg)', color: 'var(--fs-nav-active-text)' } as React.CSSProperties;
+const cardStyle = { backgroundColor: 'var(--fs-card-bg)', borderColor: 'var(--fs-border)' } as React.CSSProperties;
+const inputStyle = { backgroundColor: 'var(--fs-input-bg)', borderColor: 'var(--fs-input-border)' } as React.CSSProperties;
+const dividerStyle = { borderColor: 'var(--fs-divider-muted)' } as React.CSSProperties;
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
   const auth = useAuth();
   const { user, profile, loading: authLoading, error: authError, signInWithEmail, signInWithPhone, verifyPhoneOtp, signOut, updateProfile, clearError } = auth;
@@ -78,18 +89,6 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
   const isLoggedIn = !!user && !!profile;
   const isRanked = isSocial && isLoggedIn;
   const needsHandle = isLoggedIn && !profile?.display_name;
-
-  const isApple = theme.mode === 'apple';
-  const accent = isApple ? 'text-[#0071e3]' : theme.isDark ? 'text-emerald-400' : 'text-emerald-700';
-  const accentBg = isApple ? 'bg-[#0071e3]' : 'bg-emerald-600';
-  const cardBg = theme.isDark
-    ? 'bg-slate-800/80 border-slate-700'
-    : isApple
-    ? 'bg-white border-[#d2d2d7]'
-    : 'bg-white/90 border-slate-200';
-  const inputClass = theme.isDark
-    ? 'bg-slate-900 border-slate-600 text-white placeholder-slate-500'
-    : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400';
 
   // Set left name from profile on login
   useEffect(() => {
@@ -210,15 +209,18 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <div>
-          <h2 className={`text-2xl font-barDisplay font-bold uppercase tracking-[0.1em] ${accent}`}>Connect 4</h2>
-          <p className={`text-[10px] uppercase tracking-widest mt-0.5 font-bold ${isRanked ? accent : theme.textMuted}`}>
+          <h2 className={`text-2xl font-barDisplay font-bold uppercase tracking-[0.1em] ${accentText}`}>Connect 4</h2>
+          <p className={`text-[10px] uppercase tracking-widest mt-0.5 font-bold ${isRanked ? accentText : theme.textMuted}`}>
             {isRanked ? '★ Ranked — wins count' : isSocial ? 'Sign in to play ranked' : 'Local play'}
           </p>
         </div>
         {isLoggedIn && (
           <div className="flex items-center gap-3">
             <div className={`flex items-center gap-1.5 text-xs font-bold ${theme.text}`}>
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-barDisplay font-bold text-white ${accentBg}`}>
+              <div
+                className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-barDisplay font-bold text-white shrink-0"
+                style={accentBgStyle}
+              >
                 {(profile?.display_name || profile?.email || 'P')[0].toUpperCase()}
               </div>
               {profile?.display_name || profile?.email}
@@ -233,7 +235,7 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-5 items-start">
 
         {/* ── Left: Game board ── */}
-        <div className={`border-2 rounded-xl p-4 sm:p-5 ${cardBg}`}>
+        <div className="border-2 p-4 sm:p-5" style={cardStyle}>
           {/* Player names */}
           <div className="flex items-center gap-3 mb-4">
             <input
@@ -241,7 +243,7 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
               value={leftName}
               onChange={e => setLeftName(e.target.value)}
               placeholder="Red player"
-              className={`flex-1 px-3 py-1.5 text-xs font-bold text-center border-2 rounded-lg bg-transparent transition-colors ${
+              className={`flex-1 px-3 py-1.5 text-xs font-bold text-center border-2 bg-transparent transition-colors ${
                 turn === 'red' && !winner
                   ? 'border-red-500 text-red-500'
                   : theme.isDark ? 'border-red-500/30 text-red-400/70' : 'border-red-400/30 text-red-500/70'
@@ -253,7 +255,7 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
               value={rightName}
               onChange={e => setRightName(e.target.value)}
               placeholder="Yellow player"
-              className={`flex-1 px-3 py-1.5 text-xs font-bold text-center border-2 rounded-lg bg-transparent transition-colors ${
+              className={`flex-1 px-3 py-1.5 text-xs font-bold text-center border-2 bg-transparent transition-colors ${
                 turn === 'yellow' && !winner
                   ? 'border-yellow-500 text-yellow-500'
                   : theme.isDark ? 'border-yellow-500/30 text-yellow-400/70' : 'border-yellow-400/30 text-yellow-500/70'
@@ -261,13 +263,15 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
             />
           </div>
 
-          {/* Board */}
+          {/* Board — game-specific blue frame is intentional */}
           <div className="flex justify-center">
             <div
-              className={`inline-grid gap-1.5 p-3 rounded-2xl border-2 ${
-                theme.isDark ? 'bg-slate-900 border-slate-600' : isApple ? 'bg-[#1d1d1f] border-[#3a3a3c]' : 'bg-blue-700 border-blue-900'
-              }`}
-              style={{ gridTemplateColumns: `repeat(${COLS}, 1fr)` }}
+              className="inline-grid gap-1.5 p-3 border-2"
+              style={{
+                gridTemplateColumns: `repeat(${COLS}, 1fr)`,
+                backgroundColor: 'var(--fs-quad-blue-accent)',
+                borderColor: 'var(--fs-quad-blue-border)',
+              }}
             >
               {board.flat().map((cell, i) => {
                 const col = i % COLS;
@@ -282,8 +286,8 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
                         : cell === 'yellow'
                         ? 'bg-yellow-400 border-yellow-200 shadow-[inset_0_-3px_6px_rgba(0,0,0,0.2)]'
                         : theme.isDark
-                        ? 'bg-slate-800 border-slate-600 hover:bg-slate-700'
-                        : 'bg-blue-200/60 border-blue-400/30 hover:bg-blue-100'
+                        ? 'bg-slate-800/70 border-white/10 hover:bg-slate-700/80'
+                        : 'bg-white/30 border-white/40 hover:bg-white/50'
                     }`}
                   />
                 );
@@ -299,7 +303,7 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
                   {winner === 'red' ? leftName : rightName} wins!
                 </p>
                 {isRanked && winner === 'red' && (
-                  <p className={`text-[10px] mt-0.5 ${accent}`}>★ Ranked win recorded</p>
+                  <p className={`text-[10px] mt-0.5 ${accentText}`}>★ Ranked win recorded</p>
                 )}
               </div>
             ) : (
@@ -312,9 +316,8 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
             )}
             <button
               onClick={reset}
-              className={`px-6 py-2 text-[10px] font-barDisplay font-bold uppercase tracking-widest rounded-lg transition-colors ${
-                isApple ? 'bg-[#0071e3] text-white hover:bg-[#0077ed]' : theme.isDark ? 'bg-emerald-600 text-white hover:bg-emerald-500' : 'bg-slate-800 text-white hover:bg-slate-700'
-              }`}
+              className="px-6 py-2 text-[10px] font-barDisplay font-bold uppercase tracking-widest transition-opacity hover:opacity-80"
+              style={accentBgStyle}
             >
               New game
             </button>
@@ -326,7 +329,7 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
 
           {/* Sign-in CTA */}
           {isSocial && !isLoggedIn && !authLoading && (
-            <div className={`border-2 rounded-xl p-4 ${cardBg}`}>
+            <div className="border-2 p-4" style={cardStyle}>
               <p className={`text-sm font-barDisplay font-bold uppercase tracking-tight mb-0.5 ${theme.text}`}>
                 Play here or play ranked
               </p>
@@ -340,11 +343,8 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
                     key={tab}
                     type="button"
                     onClick={() => setAuthTab(tab)}
-                    className={`flex-1 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-lg border transition-all ${
-                      authTab === tab
-                        ? `${accentBg} text-white border-transparent`
-                        : theme.isDark ? 'border-slate-600 text-slate-400 hover:border-slate-500' : 'border-slate-300 text-slate-500 hover:border-slate-400'
-                    }`}
+                    className="flex-1 py-1.5 text-[10px] font-bold uppercase tracking-wider border-2 transition-all"
+                    style={authTab === tab ? accentBgStyle : { borderColor: 'var(--fs-input-border)', color: 'var(--fs-text-muted)' }}
                   >
                     {tab === 'email' ? <><Mail size={10} className="inline mr-1" />Email</> : <><Phone size={10} className="inline mr-1" />Phone</>}
                   </button>
@@ -359,9 +359,14 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
                     onChange={e => setEmailInput(e.target.value)}
                     placeholder="you@email.com"
                     required
-                    className={`w-full px-3 py-2 border rounded-lg text-xs ${inputClass}`}
+                    className={`w-full px-3 py-2 border text-xs ${theme.text}`}
+                    style={inputStyle}
                   />
-                  <button type="submit" className={`w-full py-2.5 text-[10px] font-barDisplay font-bold uppercase tracking-widest rounded-lg ${accentBg} text-white`}>
+                  <button
+                    type="submit"
+                    className="w-full py-2.5 text-[10px] font-barDisplay font-bold uppercase tracking-widest"
+                    style={accentBgStyle}
+                  >
                     Send magic link
                   </button>
                 </form>
@@ -372,7 +377,8 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
                     value={phoneInput}
                     onChange={e => setPhoneInput(e.target.value)}
                     placeholder="+1 (555) 000-0000"
-                    className={`w-full px-3 py-2 border rounded-lg text-xs ${inputClass}`}
+                    className={`w-full px-3 py-2 border text-xs ${theme.text}`}
+                    style={inputStyle}
                   />
                   {phoneSent && (
                     <input
@@ -381,25 +387,30 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
                       onChange={e => setPhoneOtp(e.target.value)}
                       placeholder="6-digit code"
                       maxLength={6}
-                      className={`w-full px-3 py-2 border rounded-lg text-xs ${inputClass}`}
+                      className={`w-full px-3 py-2 border text-xs ${theme.text}`}
+                      style={inputStyle}
                     />
                   )}
-                  <button type="submit" className={`w-full py-2.5 text-[10px] font-barDisplay font-bold uppercase tracking-widest rounded-lg ${accentBg} text-white`}>
+                  <button
+                    type="submit"
+                    className="w-full py-2.5 text-[10px] font-barDisplay font-bold uppercase tracking-widest"
+                    style={accentBgStyle}
+                  >
                     {phoneSent ? 'Verify code' : 'Send code'}
                   </button>
                 </form>
               )}
 
-              {authSuccess && <p className={`mt-2.5 text-xs ${accent}`}>{authSuccess}</p>}
+              {authSuccess && <p className={`mt-2.5 text-xs ${accentText}`}>{authSuccess}</p>}
               {authError && <p className="mt-2.5 text-xs text-red-400">{authError}</p>}
             </div>
           )}
 
           {/* @handle setup */}
           {isSocial && needsHandle && (
-            <div className={`border-2 rounded-xl p-4 ${cardBg}`}>
+            <div className="border-2 p-4" style={cardStyle}>
               <div className="flex items-center gap-2 mb-1">
-                <User size={13} className={accent} />
+                <User size={13} className={accentText} />
                 <p className={`text-xs font-barDisplay font-bold uppercase tracking-wider ${theme.text}`}>Choose your @handle</p>
               </div>
               <p className={`text-[10px] mb-3 ${theme.textMuted}`}>
@@ -413,7 +424,8 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
                     value={handleInput}
                     onChange={e => setHandleInput(e.target.value.replace(/[^a-zA-Z0-9_]/g, ''))}
                     placeholder="yourcoolname"
-                    className={`w-full pl-6 pr-3 py-2 border rounded-lg text-xs ${inputClass}`}
+                    className={`w-full pl-6 pr-3 py-2 border text-xs ${theme.text}`}
+                    style={inputStyle}
                     onKeyDown={e => e.key === 'Enter' && saveHandle()}
                   />
                 </div>
@@ -421,7 +433,8 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
                   type="button"
                   onClick={saveHandle}
                   disabled={settingHandle || !handleInput.trim()}
-                  className={`px-3 py-2 text-[10px] font-barDisplay font-bold uppercase rounded-lg ${accentBg} text-white disabled:opacity-40 transition-opacity`}
+                  className="px-3 py-2 text-[10px] font-barDisplay font-bold uppercase disabled:opacity-40 transition-opacity"
+                  style={accentBgStyle}
                 >
                   Set
                 </button>
@@ -431,37 +444,39 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
 
           {/* Logged-in user card */}
           {isSocial && isLoggedIn && !needsHandle && (
-            <div className={`border-2 rounded-xl p-3 ${cardBg}`}>
+            <div className="border-2 p-3" style={cardStyle}>
               <div className="flex items-center gap-2.5 mb-2.5">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-barDisplay font-bold text-white shrink-0 ${accentBg}`}>
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-barDisplay font-bold text-white shrink-0"
+                  style={accentBgStyle}
+                >
                   {(profile?.display_name || profile?.email || 'P')[0].toUpperCase()}
                 </div>
                 <div className="min-w-0">
                   <p className={`text-xs font-bold truncate ${theme.text}`}>{profile?.display_name || profile?.email}</p>
-                  <p className={`text-[9px] ${accent}`}>★ Playing ranked</p>
+                  <p className={`text-[9px] ${accentText}`}>★ Playing ranked</p>
                 </div>
               </div>
               {!profile?.rewards_opted_in && !rewardsJoined ? (
                 <button
                   type="button"
                   onClick={() => { updateProfile({ rewards_opted_in: true }); setRewardsJoined(true); }}
-                  className={`w-full py-2 text-[9px] font-barDisplay font-bold uppercase tracking-wider rounded-lg border flex items-center justify-center gap-1.5 transition-colors ${
-                    theme.isDark ? 'border-emerald-700/50 text-emerald-400 hover:bg-emerald-900/20' : 'border-emerald-600/50 text-emerald-700 hover:bg-emerald-50'
-                  }`}
+                  className="w-full py-2 text-[9px] font-barDisplay font-bold uppercase tracking-wider border-2 flex items-center justify-center gap-1.5 transition-opacity hover:opacity-80"
+                  style={accentBorderStyle}
                 >
                   <Gift size={10} /> Join Four Square Rewards
                 </button>
               ) : (
-                <p className={`text-[9px] text-center ${accent}`}>✓ Rewards member</p>
+                <p className={`text-[9px] text-center ${accentText}`}>✓ Rewards member</p>
               )}
             </div>
           )}
 
           {/* Leaderboard */}
           {isSocial && (
-            <div className={`border-2 rounded-xl overflow-hidden ${cardBg}`}>
-              <div className={`px-3 py-2.5 border-b flex items-center gap-2 ${theme.isDark ? 'border-slate-700' : 'border-slate-200'}`}>
-                <Trophy size={13} className={accent} />
+            <div className="border-2 overflow-hidden" style={cardStyle}>
+              <div className="px-3 py-2.5 border-b flex items-center gap-2" style={dividerStyle}>
+                <Trophy size={13} className={accentText} />
                 <span className={`text-[10px] font-barDisplay font-bold uppercase tracking-wider ${theme.text}`}>Leaderboard</span>
                 {!isLoggedIn && (
                   <span className={`ml-auto text-[9px] italic ${theme.textMuted}`}>Sign in to compete</span>
@@ -474,9 +489,11 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
                     return (
                       <li
                         key={s.id}
-                        className={`flex items-center justify-between px-3 py-2 text-xs border-b last:border-0 ${
-                          theme.isDark ? 'border-slate-700/50' : 'border-slate-100'
-                        } ${isMe ? (theme.isDark ? 'bg-emerald-900/20' : 'bg-emerald-50') : ''}`}
+                        className="flex items-center justify-between px-3 py-2 text-xs border-b last:border-0"
+                        style={{
+                          borderColor: 'var(--fs-divider-muted)',
+                          ...(isMe ? { backgroundColor: 'var(--fs-quad-green-bg)' } : {}),
+                        }}
                       >
                         <div className="flex items-center gap-2">
                           <span className={`w-4 shrink-0 text-[9px] font-barDisplay font-bold ${
@@ -484,9 +501,14 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
                           }`}>
                             {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`}
                           </span>
-                          <span className={`${isMe ? `font-bold ${accent}` : theme.text}`}>{s.display_name}</span>
+                          <span className={isMe ? `font-bold ${accentText}` : theme.text}>{s.display_name}</span>
                         </div>
-                        <span className={`font-barDisplay font-bold tabular-nums ${isMe ? accent : theme.textMuted}`}>{s.wins}W</span>
+                        <span
+                          className="font-barDisplay font-bold tabular-nums"
+                          style={isMe ? { color: 'var(--fs-nav-active-text)' } : { color: 'var(--fs-text-muted)' }}
+                        >
+                          {s.wins}W
+                        </span>
                       </li>
                     );
                   })}
@@ -504,9 +526,9 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
 
       {/* ── Chat — full width at bottom ── */}
       {isSocial && (
-        <div className={`mt-5 border-2 rounded-xl overflow-hidden ${cardBg}`}>
-          <div className={`px-3 py-2.5 border-b flex items-center gap-2 ${theme.isDark ? 'border-slate-700' : 'border-slate-200'}`}>
-            <MessageCircle size={13} className={accent} />
+        <div className="mt-5 border-2 overflow-hidden" style={cardStyle}>
+          <div className="px-3 py-2.5 border-b flex items-center gap-2" style={dividerStyle}>
+            <MessageCircle size={13} className={accentText} />
             <span className={`text-[10px] font-barDisplay font-bold uppercase tracking-wider ${theme.text}`}>Chat</span>
             {!isLoggedIn && (
               <span className={`ml-auto text-[9px] italic ${theme.textMuted}`}>Sign in to send messages</span>
@@ -518,32 +540,34 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
             )}
             {chatMessages.map((m) => (
               <div key={m.id} className="text-[11px] leading-snug">
-                <span className={`font-bold ${accent}`}>{m.display_name}</span>
+                <span className={`font-bold ${accentText}`}>{m.display_name}</span>
                 <span className={`ml-1.5 ${theme.textMuted}`}>{m.message}</span>
               </div>
             ))}
             <div ref={chatEndRef} />
           </div>
           {isLoggedIn ? (
-            <div className={`flex gap-2 p-2.5 border-t ${theme.isDark ? 'border-slate-700' : 'border-slate-200'}`}>
+            <div className="flex gap-2 p-2.5 border-t" style={dividerStyle}>
               <input
                 value={chatInput}
                 onChange={e => setChatInput(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && sendChat()}
                 placeholder={`Message as ${profile?.display_name || 'you'}…`}
-                className={`flex-1 min-w-0 px-3 py-2 text-xs border rounded-lg ${inputClass}`}
+                className={`flex-1 min-w-0 px-3 py-2 text-xs border ${theme.text}`}
+                style={inputStyle}
               />
               <button
                 type="button"
                 onClick={sendChat}
-                className={`p-2 rounded-lg ${accentBg} text-white`}
+                className="p-2"
+                style={accentBgStyle}
                 aria-label="Send"
               >
                 <Send size={13} />
               </button>
             </div>
           ) : (
-            <div className={`px-3 py-2.5 border-t text-center ${theme.isDark ? 'border-slate-700' : 'border-slate-200'}`}>
+            <div className="px-3 py-2.5 border-t text-center" style={dividerStyle}>
               <p className={`text-[10px] ${theme.textMuted}`}>Sign in above to chat with other players</p>
             </div>
           )}

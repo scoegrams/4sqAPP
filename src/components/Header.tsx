@@ -1,6 +1,6 @@
 import React from 'react';
 import { LucideIcon } from 'lucide-react';
-import { Menu, Info, Grid2x2, CalendarDays, GlassWater, Sparkles, ShieldCheck, LogOut, X } from 'lucide-react';
+import { Menu, Info, Grid2x2, CalendarDays, GlassWater, Sparkles, ShieldCheck, LogOut, X, Save, Loader2, Settings2 } from 'lucide-react';
 import TrainSign from './TrainSign';
 import FourSquares from './FourSquares';
 import { Page } from './NavDrawer';
@@ -12,10 +12,14 @@ interface HeaderProps {
   activePage: Page;
   trainSignEvents?: TrainSignEvent[];
   isAdmin?: boolean;
+  isDirty?: boolean;
+  isSaving?: boolean;
   onOpenNav: () => void;
   onNavigate: (page: Page) => void;
   onExitAdmin?: () => void;
   onSignOut?: () => void;
+  onSave?: () => void;
+  onGoAdmin?: () => void;
 }
 
 const NAV_ITEMS: { id: Page; label: string; icon: LucideIcon | React.FC<{ size?: number }> }[] = [
@@ -27,7 +31,7 @@ const NAV_ITEMS: { id: Page; label: string; icon: LucideIcon | React.FC<{ size?:
   { id: 'connect4', label: 'Connect 4', icon: Grid2x2 },
 ];
 
-const Header: React.FC<HeaderProps> = ({ theme, activePage, trainSignEvents = [], isAdmin, onOpenNav, onNavigate, onExitAdmin, onSignOut }) => {
+const Header: React.FC<HeaderProps> = ({ theme, activePage, trainSignEvents = [], isAdmin, isDirty, isSaving, onOpenNav, onNavigate, onExitAdmin, onSignOut, onSave, onGoAdmin }) => {
   return (
     <div className={`z-20 transition-colors duration-300 safe-top ${theme.headerBg} ${theme.headerBorder}`}>
       {/* items-start + self-start logo = pinned top-left; safe-left keeps clear of notches */}
@@ -92,19 +96,56 @@ const Header: React.FC<HeaderProps> = ({ theme, activePage, trainSignEvents = []
 
       {/* Admin mode indicator strip */}
       {isAdmin && (
-        <div className="flex items-center justify-between gap-2 px-4 py-1.5 bg-amber-50 border-t border-amber-200 safe-left">
-          <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-amber-800">
-            <ShieldCheck size={12} className="shrink-0" />
-            Admin mode active
+        <div className="flex items-center justify-between gap-2 px-3 py-1.5 bg-amber-50 border-t border-amber-200 safe-left">
+          {/* Left: label + admin panel link */}
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-amber-800 shrink-0">
+              <ShieldCheck size={11} className="shrink-0" />
+              Admin
+            </div>
+            {onGoAdmin && (
+              <button
+                type="button"
+                onClick={onGoAdmin}
+                className={`flex items-center gap-1 px-2 py-1 text-[10px] font-bold uppercase tracking-wider border transition-colors ${
+                  activePage === 'jackpot'
+                    ? 'text-amber-900 border-amber-400 bg-amber-100'
+                    : 'text-amber-800 border-amber-300 hover:bg-amber-100'
+                }`}
+              >
+                <Settings2 size={10} /> Admin Panel
+              </button>
+            )}
+            {isDirty && (
+              <span className="text-[9px] font-semibold text-amber-700 bg-amber-100 border border-amber-300 px-1.5 py-0.5 shrink-0">
+                Unsaved
+              </span>
+            )}
           </div>
-          <div className="flex items-center gap-1">
+          {/* Right: save + exit + sign out */}
+          <div className="flex items-center gap-1 shrink-0">
+            {onSave && (
+              <button
+                type="button"
+                onClick={onSave}
+                disabled={!isDirty || isSaving}
+                className={`flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider border transition-colors ${
+                  isDirty && !isSaving
+                    ? 'text-emerald-800 border-emerald-400 bg-emerald-50 hover:bg-emerald-100'
+                    : 'text-amber-300 border-amber-200 cursor-not-allowed opacity-50'
+                }`}
+              >
+                {isSaving ? <Loader2 size={10} className="animate-spin" /> : <Save size={10} />}
+                {isSaving ? 'Saving…' : 'Save Changes'}
+              </button>
+            )}
             {onExitAdmin && (
               <button
                 type="button"
                 onClick={onExitAdmin}
                 className="flex items-center gap-1 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-amber-800 border border-amber-300 hover:bg-amber-100 transition-colors"
               >
-                <X size={10} /> Exit admin
+                <X size={10} /> Exit
               </button>
             )}
             {onSignOut && (

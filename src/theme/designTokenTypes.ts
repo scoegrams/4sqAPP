@@ -69,7 +69,9 @@ export type DesignTokenKey =
   | 'logoSq2'
   | 'logoSq3'
   | 'logoSqMuted'
-  | 'logoSqPop';
+  | 'logoSqPop'
+  | 'menuItemFontSize'
+  | 'menuItemPaddingY';
 
 export type DesignTokens = Record<DesignTokenKey, string>;
 
@@ -140,6 +142,8 @@ export const CSS_VAR_MAP: Record<DesignTokenKey, string> = {
   logoSq3: '--fs-logo-sq-3',
   logoSqMuted: '--fs-logo-sq-muted',
   logoSqPop: '--fs-logo-sq-pop',
+  menuItemFontSize: '--fs-menu-item-font-size',
+  menuItemPaddingY: '--fs-menu-item-padding-y',
 };
 
 export const TOKEN_GROUPS: { title: string; keys: DesignTokenKey[] }[] = [
@@ -223,6 +227,8 @@ export const TOKEN_LABELS: Record<DesignTokenKey, string> = {
   logoSq3: 'Logo square 4',
   logoSqMuted: 'Logo squares (dim)',
   logoSqPop: 'Logo pop highlight',
+  menuItemFontSize: 'Menu item font size',
+  menuItemPaddingY: 'Menu item row padding',
 };
 
 export const THEME_STUDIO_ENABLED_KEY = '4sq-design-studio-enabled';

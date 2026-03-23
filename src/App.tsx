@@ -185,10 +185,14 @@ const AppInner: React.FC<AppInnerProps> = ({ themeMode, setThemeMode }) => {
         activePage={activePage}
         trainSignEvents={store.events}
         isAdmin={isAdmin}
+        isDirty={store.isDirty}
+        isSaving={store.isSaving}
         onOpenNav={() => setIsNavOpen(true)}
         onNavigate={setActivePage}
         onExitAdmin={() => setIsAdmin(false)}
         onSignOut={signOut}
+        onSave={store.save}
+        onGoAdmin={() => setActivePage('jackpot')}
       />
 
       <NavDrawer

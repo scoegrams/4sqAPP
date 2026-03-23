@@ -186,6 +186,10 @@ const ThemeStudioPanel: React.FC<{ onRequestTheme?: (mode: ThemeMode) => void }>
   const headerBg = effectiveTokens.headerBg;
   const cardBg = effectiveTokens.cardBg;
 
+  // Parse slider values from token strings
+  const fontSizePx = Math.round(parseFloat(effectiveTokens.menuItemFontSize) * 16);
+  const paddingYPx = Math.round(parseFloat(effectiveTokens.menuItemPaddingY) * 16);
+
   return (
     <div className="space-y-5">
 
@@ -216,7 +220,7 @@ const ThemeStudioPanel: React.FC<{ onRequestTheme?: (mode: ThemeMode) => void }>
       {/* Color controls */}
       <div className="space-y-4">
         <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#5c564d]">
-          Edit colors — changes apply live for all visitors
+          Colors — apply live for all visitors
         </p>
 
         <div className="space-y-3 p-4 bg-white border-2 border-[#c4beb5]">
@@ -254,11 +258,80 @@ const ThemeStudioPanel: React.FC<{ onRequestTheme?: (mode: ThemeMode) => void }>
             }}
           />
         </div>
-
-        <p className="text-[10px] text-[#8a8580]">
-          Current base: <strong className="text-[#2d3d2d]">{themeMode}</strong> — pick a preset from "App theme &amp; colors" above to start fresh, then tweak here.
-        </p>
       </div>
+
+      {/* Menu layout sliders */}
+      <div className="space-y-4">
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#5c564d]">
+          Menu layout
+        </p>
+
+        <div className="space-y-4 p-4 bg-white border-2 border-[#c4beb5]">
+          {/* Font size */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-[#2d3d2d]">
+                Item font size
+              </label>
+              <span className="text-[11px] font-mono font-bold text-[#2d3d2d] bg-[#f5f5f4] px-2 py-0.5 border border-[#c4beb5]">
+                {fontSizePx}px
+              </span>
+            </div>
+            <input
+              type="range"
+              min={10}
+              max={22}
+              step={1}
+              value={fontSizePx}
+              onChange={e => {
+                setStudioEnabled(true);
+                setTokens({ menuItemFontSize: `${parseInt(e.target.value) / 16}rem` });
+              }}
+              className="w-full accent-[#2d3d2d] h-1.5 cursor-pointer"
+            />
+            <div className="flex justify-between text-[9px] text-[#8a8580] mt-1">
+              <span>Small (10)</span>
+              <span>Default (14)</span>
+              <span>Large (22)</span>
+            </div>
+          </div>
+
+          <div className="border-t border-[#e7e5e4]" />
+
+          {/* Row padding */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-[#2d3d2d]">
+                Row padding
+              </label>
+              <span className="text-[11px] font-mono font-bold text-[#2d3d2d] bg-[#f5f5f4] px-2 py-0.5 border border-[#c4beb5]">
+                {paddingYPx}px
+              </span>
+            </div>
+            <input
+              type="range"
+              min={2}
+              max={16}
+              step={1}
+              value={paddingYPx}
+              onChange={e => {
+                setStudioEnabled(true);
+                setTokens({ menuItemPaddingY: `${parseInt(e.target.value) / 16}rem` });
+              }}
+              className="w-full accent-[#2d3d2d] h-1.5 cursor-pointer"
+            />
+            <div className="flex justify-between text-[9px] text-[#8a8580] mt-1">
+              <span>Tight (2)</span>
+              <span>Default (6)</span>
+              <span>Airy (16)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p className="text-[10px] text-[#8a8580]">
+        Current base: <strong className="text-[#2d3d2d]">{themeMode}</strong> — pick a preset from "App theme &amp; colors" above to start fresh, then tweak here.
+      </p>
     </div>
   );
 };

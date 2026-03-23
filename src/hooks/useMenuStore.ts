@@ -40,6 +40,7 @@ export function useMenuStore() {
   const [chalkboard, setChalkboard] = useState<ChalkboardData>(() => deepClone(DEFAULT_CHALKBOARD));
   const [isDirty, setIsDirty] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
   const savedRef = useRef({ menu, specials, drinks, events: [] as TrainSignEvent[], openHours: DEFAULT_OPEN_HOURS, chalkboard: deepClone(DEFAULT_CHALKBOARD) as ChalkboardData });
@@ -74,13 +75,18 @@ export function useMenuStore() {
 
   // ── Save ────────────────────────────────────────────────────────────────────
   const save = useCallback(async (note = '') => {
-    const now = new Date();
-    const snapshot = { menu: deepClone(menu), specials: deepClone(specials), drinks: deepClone(drinks), events: deepClone(events), openHours, chalkboard: deepClone(chalkboard) };
-    await db.current_menu.put({ id: 'current', ...snapshot, lastSaved: now });
-    await db.menu_versions.add({ timestamp: now, note: note || `Saved ${now.toLocaleString()}`, ...snapshot });
-    savedRef.current = { ...snapshot };
-    setLastSaved(now);
-    setIsDirty(false);
+    setIsSaving(true);
+    try {
+      const now = new Date();
+      const snapshot = { menu: deepClone(menu), specials: deepClone(specials), drinks: deepClone(drinks), events: deepClone(events), openHours, chalkboard: deepClone(chalkboard) };
+      await db.current_menu.put({ id: 'current', ...snapshot, lastSaved: now });
+      await db.menu_versions.add({ timestamp: now, note: note || `Saved ${now.toLocaleString()}`, ...snapshot });
+      savedRef.current = { ...snapshot };
+      setLastSaved(now);
+      setIsDirty(false);
+    } finally {
+      setIsSaving(false);
+    }
   }, [menu, specials, drinks, events, openHours, chalkboard]);
 
   // ── Discard ─────────────────────────────────────────────────────────────────
@@ -284,7 +290,7 @@ export function useMenuStore() {
     menu, specials, drinks, events, openHours, setOpenHours,
     chalkboard, setChalkboard,
     updateChalkboardMeta, updateChalkboardItem, addChalkboardItem, removeChalkboardItem, moveChalkboardItem,
-    isDirty, isLoading, lastSaved,
+    isDirty, isLoading, isSaving, lastSaved,
     save, discard, restoreVersion,
     updateItem, addItem, removeItem, moveItem,
     updateSection, addSection, removeSection, moveSection,

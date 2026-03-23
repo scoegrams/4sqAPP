@@ -68,6 +68,8 @@ const light: DesignTokens = {
   logoSq3: '#10b981',
   logoSqMuted: '#64748b',
   logoSqPop: '#10b981',
+  menuItemFontSize: '0.875rem',
+  menuItemPaddingY: '0.375rem',
 };
 
 const dark: DesignTokens = {
@@ -137,6 +139,8 @@ const dark: DesignTokens = {
   logoSq3: '#10b981',
   logoSqMuted: '#64748b',
   logoSqPop: '#10b981',
+  menuItemFontSize: '0.875rem',
+  menuItemPaddingY: '0.375rem',
 };
 
 const modern: DesignTokens = {
@@ -206,6 +210,8 @@ const modern: DesignTokens = {
   logoSq3: '#4E5968',
   logoSqMuted: '#B2ADAE',
   logoSqPop: '#AABED8',
+  menuItemFontSize: '0.875rem',
+  menuItemPaddingY: '0.375rem',
 };
 
 const apple: DesignTokens = {
@@ -275,6 +281,8 @@ const apple: DesignTokens = {
   logoSq3: '#10b981',
   logoSqMuted: '#64748b',
   logoSqPop: '#0071e3',
+  menuItemFontSize: '0.875rem',
+  menuItemPaddingY: '0.375rem',
 };
 
 export const PRESET_TOKENS: Record<ThemeMode, DesignTokens> = {

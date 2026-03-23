@@ -96,9 +96,10 @@ const Quadrant: React.FC<QuadrantProps> = ({
             {section.items.map((item, ii) => (
               <div
                 key={item.id}
-                className={`flex justify-between items-start py-1.5 gap-2 ${
+                className={`flex justify-between items-start gap-2 ${
                   ii < section.items.length - 1 ? `border-b ${borderMuted}` : ''
                 }`}
+                style={{ paddingTop: 'var(--fs-menu-item-padding-y)', paddingBottom: 'var(--fs-menu-item-padding-y)' }}
               >
                 {isAdmin && (
                   <div className="flex flex-col gap-0.5 shrink-0 pt-0.5">
@@ -136,8 +137,11 @@ const Quadrant: React.FC<QuadrantProps> = ({
                     </div>
                   ) : (
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      {item.isAddon && <span className={`text-xs ${theme.textMuted}`}>+</span>}
-                      <span className={`text-sm uppercase ${item.isAddon ? `${theme.textMuted} font-normal` : `${theme.text} font-bold`}`}>
+                      {item.isAddon && <span className={`text-sm ${theme.textMuted}`}>+</span>}
+                      <span
+                        className={`uppercase ${item.isAddon ? `${theme.textMuted} font-normal` : `${theme.text} font-bold`}`}
+                        style={{ fontSize: 'var(--fs-menu-item-font-size)' }}
+                      >
                         {item.name}
                       </span>
                       {item.isNew && (
@@ -168,7 +172,7 @@ const Quadrant: React.FC<QuadrantProps> = ({
                       </button>
                     </>
                   ) : (
-                    <span className={`text-sm font-bold whitespace-nowrap ${quadrantTheme.accent}`}>
+                    <span className={`font-bold whitespace-nowrap ${quadrantTheme.accent}`} style={{ fontSize: 'var(--fs-menu-item-font-size)' }}>
                       ${item.price % 1 === 0 ? item.price : item.price.toFixed(2)}
                     </span>
                   )}
