@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { FONT_HAMON } from '../fontTokens';
 import { MenuData, Special } from '../types';
+import { useDesignTokens } from '../contexts/DesignTokensContext';
+
 interface PrintMenuPageProps {
   menu: MenuData;
   specials: Special[];
@@ -22,61 +24,45 @@ const DRINK_LABELS: Record<string, string> = {
 const isSpecialItem = (name: string) =>
   SPECIALS_ITEMS.some(s => name.toLowerCase().includes(s.toLowerCase()));
 
-type Mode = 'dark' | 'light';
-
-const DARK = {
-  page:         '#0f172a',
-  pageText:     '#f1f5f9',
-  cardBg:       '#1e293b',
-  cardBorder:   '#334155',
-  divider:      '#1e293b',
-  sectionLine:  '#334155',
-  muted:        '#94a3b8',
-  subtle:       '#64748b',
-  green:        '#34d399',
-  greenBorder:  '#059669',
-  blue:         '#60a5fa',
-  blueBorder:   '#2563eb',
-  amber:        '#fbbf24',
-  amberBorder:  '#b45309',
-  red:          '#f87171',
-  redBorder:    '#991b1b',
-  specialChip:  { bg: '#b45309', text: '#fff7ed' },
-  tagBg:        '#0f172a',
-  previewBg:    '#334155',
-};
-
-const LIGHT = {
-  page:         '#ffffff',
-  pageText:     '#0f172a',
-  cardBg:       '#f8fafc',
-  cardBorder:   '#e2e8f0',
-  divider:      '#e2e8f0',
-  sectionLine:  '#cbd5e1',
-  muted:        '#64748b',
-  subtle:       '#94a3b8',
-  green:        '#059669',
-  greenBorder:  '#059669',
-  blue:         '#2563eb',
-  blueBorder:   '#2563eb',
-  amber:        '#d97706',
-  amberBorder:  '#b45309',
-  red:          '#dc2626',
-  redBorder:    '#991b1b',
-  specialChip:  { bg: '#b45309', text: '#fff7ed' },
-  tagBg:        '#ffffff',
-  previewBg:    '#1e293b',
-};
+type PrintMode = 'theme' | 'clean';
 
 const PrintMenuPage: React.FC<PrintMenuPageProps> = ({ menu, specials, drinks, onClose }) => {
-  const [mode, setMode] = useState<Mode>('light');
-  const C = mode === 'dark' ? DARK : LIGHT;
+  const [printMode, setPrintMode] = useState<PrintMode>('theme');
+  const { effectiveTokens } = useDesignTokens();
 
   const handlePrint = () => window.print();
 
   const displayFont = FONT_HAMON;
-  const bodyFont = FONT_HAMON;
-  const gothicFont = FONT_HAMON;
+  const bodyFont    = FONT_HAMON;
+  const gothicFont  = FONT_HAMON;
+
+  // ── Build color palette from live design tokens ──────────────────────────
+  // 'clean' = white page for ink-saving print, but keeps brand accent colors
+  const isClean = printMode === 'clean';
+
+  const C = {
+    page:         isClean ? '#ffffff' : effectiveTokens.pageBg,
+    pageText:     isClean ? '#0f172a' : effectiveTokens.pageText,
+    cardBg:       isClean ? '#f8fafc' : effectiveTokens.cardBg,
+    cardBorder:   isClean ? effectiveTokens.borderDefault : effectiveTokens.borderDefault,
+    divider:      isClean ? '#e2e8f0' : effectiveTokens.dividerMuted,
+    sectionLine:  isClean ? '#cbd5e1' : effectiveTokens.borderDefault,
+    muted:        isClean ? '#64748b' : effectiveTokens.textMuted,
+    subtle:       isClean ? '#94a3b8' : effectiveTokens.textMuted,
+    green:        effectiveTokens.quadrantGreenAccent,
+    greenBorder:  effectiveTokens.quadrantGreenBorder,
+    blue:         effectiveTokens.quadrantBlueAccent,
+    blueBorder:   effectiveTokens.quadrantBlueBorder,
+    accent:       effectiveTokens.navActiveText,
+    accentBorder: effectiveTokens.navActiveBorder,
+    amber:        '#d97706',
+    amberBorder:  '#b45309',
+    red:          '#dc2626',
+    redBorder:    '#991b1b',
+    specialChip:  { bg: '#b45309', text: '#fff7ed' },
+    previewBg:    isClean ? '#334155' : effectiveTokens.pageBg,
+    headerFg:     effectiveTokens.navActiveText,
+  };
 
   const SECTION_COLORS: Record<string, { accent: string; border: string }> = {
     apps:    { accent: C.green, border: C.greenBorder },
@@ -93,42 +79,42 @@ const PrintMenuPage: React.FC<PrintMenuPageProps> = ({ menu, specials, drinks, o
   };
 
   return (
-    <div className="fixed inset-0 z-[999] overflow-auto" style={{ background: C.previewBg }}>
+    <div className="fixed inset-0 z-[999] overflow-auto" style={{ background: isClean ? '#1e293b' : effectiveTokens.pageBg }}>
 
-      <div className="no-print flex items-center justify-between px-6 py-3 sticky top-0 z-10" style={{ background: '#0f172a', borderBottom: '1px solid #334155' }}>
+      <div className="no-print flex items-center justify-between px-6 py-3 sticky top-0 z-10" style={{ background: effectiveTokens.headerBg, borderBottom: `1px solid ${effectiveTokens.borderDefault}` }}>
         <div className="flex items-center gap-3">
-          <span style={{ fontFamily: gothicFont, fontSize: '18px', color: '#34d399', letterSpacing: '2px' }}>FOUR SQUARE</span>
-          <span style={{ fontSize: '11px', letterSpacing: '4px', textTransform: 'uppercase', color: '#94a3b8', fontFamily: FONT_HAMON }}>
+          <span style={{ fontFamily: gothicFont, fontSize: '18px', color: C.accent, letterSpacing: '2px' }}>FOUR SQUARE</span>
+          <span style={{ fontSize: '11px', letterSpacing: '4px', textTransform: 'uppercase', color: effectiveTokens.textMuted, fontFamily: FONT_HAMON }}>
             Print Preview — Legal 8.5 × 14"
           </span>
         </div>
         <div className="flex items-center gap-3">
           <button
-            onClick={() => setMode(m => m === 'dark' ? 'light' : 'dark')}
+            onClick={() => setPrintMode(m => m === 'theme' ? 'clean' : 'theme')}
             style={{
               padding: '8px 16px',
-              background: mode === 'dark' ? '#1e3a5f' : '#e2e8f0',
-              color: mode === 'dark' ? '#60a5fa' : '#0f172a',
+              background: printMode === 'clean' ? effectiveTokens.quadrantGreenBg : effectiveTokens.cardBg,
+              color: printMode === 'clean' ? effectiveTokens.quadrantGreenAccent : effectiveTokens.textMuted,
               fontSize: '11px',
               fontFamily: FONT_HAMON,
               fontWeight: 700,
               letterSpacing: '2px',
               textTransform: 'uppercase',
-              border: `1px solid ${mode === 'dark' ? '#2563eb' : '#cbd5e1'}`,
+              border: `1px solid ${printMode === 'clean' ? effectiveTokens.quadrantGreenBorder : effectiveTokens.borderDefault}`,
               cursor: 'pointer',
             }}
           >
-            {mode === 'dark' ? 'Light Mode' : 'Dark Mode'}
+            {printMode === 'clean' ? '← Theme colors' : 'Clean white (print-friendly)'}
           </button>
           <button
             onClick={handlePrint}
-            style={{ padding: '8px 20px', background: '#059669', color: '#fff', fontSize: '11px', fontFamily: FONT_HAMON, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', border: 'none', cursor: 'pointer' }}
+            style={{ padding: '8px 20px', background: effectiveTokens.footerScheduleBg, color: '#fff', fontSize: '11px', fontFamily: FONT_HAMON, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', border: 'none', cursor: 'pointer' }}
           >
             Print / Save PDF
           </button>
           <button
             onClick={onClose}
-            style={{ padding: '8px 16px', background: '#334155', color: '#94a3b8', fontSize: '11px', fontFamily: FONT_HAMON, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', border: 'none', cursor: 'pointer' }}
+            style={{ padding: '8px 16px', background: effectiveTokens.cardBg, color: effectiveTokens.textMuted, fontSize: '11px', fontFamily: FONT_HAMON, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', border: `1px solid ${effectiveTokens.borderDefault}`, cursor: 'pointer' }}
           >
             Close
           </button>
@@ -149,7 +135,7 @@ const PrintMenuPage: React.FC<PrintMenuPageProps> = ({ menu, specials, drinks, o
         >
 
           {/* MASTHEAD */}
-          <header style={{ borderBottom: `3px solid ${C.greenBorder}`, paddingBottom: '10px', marginBottom: '14px', textAlign: 'center' }}>
+          <header style={{ borderBottom: `3px solid ${C.accentBorder}`, paddingBottom: '10px', marginBottom: '14px', textAlign: 'center' }}>
             <h1 style={{ margin: '0 0 6px', fontSize: '38px', lineHeight: 1, fontFamily: gothicFont, letterSpacing: '3px', textTransform: 'uppercase', color: C.pageText }}>
               FOUR SQUARE
             </h1>
@@ -171,7 +157,7 @@ const PrintMenuPage: React.FC<PrintMenuPageProps> = ({ menu, specials, drinks, o
               const { accent, border } = SECTION_COLORS[key as string] ?? { accent: C.green, border: C.greenBorder };
               return (
                 <div key={key as string} style={{ background: C.cardBg, border: `2px solid ${border}`, overflow: 'hidden' }}>
-                  <div style={{ padding: '8px 14px 7px', borderBottom: `2px solid ${border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: mode === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)' }}>
+                  <div style={{ padding: '8px 14px 7px', borderBottom: `2px solid ${border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: C.cardBg }}>
                     <h2 style={{ margin: 0, fontSize: '13px', fontFamily: gothicFont, letterSpacing: '2px', textTransform: 'uppercase', color: accent }}>
                       {q.title}
                     </h2>
@@ -279,7 +265,7 @@ const PrintMenuPage: React.FC<PrintMenuPageProps> = ({ menu, specials, drinks, o
                 const { accent, border } = DRINK_COLORS[cat] ?? { accent: C.green, border: C.greenBorder };
                 return (
                   <div key={cat} style={{ background: C.cardBg, border: `2px solid ${border}`, overflow: 'hidden' }}>
-                    <div style={{ padding: '7px 10px 6px', borderBottom: `2px solid ${border}`, background: mode === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)' }}>
+                    <div style={{ padding: '7px 10px 6px', borderBottom: `2px solid ${border}`, background: C.cardBg }}>
                       <h3 style={{ margin: 0, fontSize: '10px', fontFamily: gothicFont, letterSpacing: '2px', textTransform: 'uppercase', color: accent }}>
                         {DRINK_LABELS[cat]}
                       </h3>
@@ -322,7 +308,7 @@ const PrintMenuPage: React.FC<PrintMenuPageProps> = ({ menu, specials, drinks, o
           {/* CANNED BEERS STRIP */}
           <div style={{ marginBottom: '14px' }}>
             <div style={{ background: C.cardBg, border: `2px solid ${C.blueBorder}`, overflow: 'hidden' }}>
-              <div style={{ padding: '7px 14px 6px', borderBottom: `2px solid ${C.blueBorder}`, background: mode === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)' }}>
+              <div style={{ padding: '7px 14px 6px', borderBottom: `2px solid ${C.blueBorder}`, background: C.cardBg }}>
                 <h3 style={{ margin: 0, fontSize: '10px', fontFamily: gothicFont, letterSpacing: '2px', textTransform: 'uppercase', color: C.blue }}>
                   Canned &amp; Bottled Beer
                 </h3>
