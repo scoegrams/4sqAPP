@@ -8,7 +8,7 @@ interface BookingPageProps {
 type PartyOption = 'catering' | 'venue' | 'table';
 
 const BookingPage: React.FC<BookingPageProps> = ({ theme }) => {
-  const [option, setOption] = useState<PartyOption>('table');
+  const [option, setOption] = useState<PartyOption>('catering');
   const [submitted, setSubmitted] = useState(false);
 
   // All accent/primary colors come from design tokens

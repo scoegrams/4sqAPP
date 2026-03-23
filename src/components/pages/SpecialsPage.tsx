@@ -8,7 +8,7 @@ interface SpecialsPageProps {
   theme: Theme;
   data: ChalkboardData;
   isAdmin: boolean;
-  onUpdateMeta: (field: 'title' | 'price' | 'subtitle', value: string) => void;
+  onUpdateMeta: (field: 'title' | 'price' | 'subtitle' | 'accentColor', value: string) => void;
   onUpdateItem: (idx: number, field: keyof ChalkboardSpecial, value: string) => void;
   onAddItem: () => void;
   onRemoveItem: (idx: number) => void;
@@ -17,9 +17,20 @@ interface SpecialsPageProps {
 }
 
 const CHALK_WHITE = '#f5f5f5';
-const CHALK_MINT = '#9ED3C7';
+const CHALK_MINT_DEFAULT = '#9ED3C7';
 const CHALK_GRAY = '#c0c0c0';
 const BOARD_BG = '#2b2b2b';
+
+const CHALK_PALETTE = [
+  { label: 'Teal',    value: '#9ED3C7' },
+  { label: 'Gold',    value: '#F4C56D' },
+  { label: 'Rose',    value: '#F4A0A0' },
+  { label: 'Lavender',value: '#C9B8F0' },
+  { label: 'Sky',     value: '#7EC8E3' },
+  { label: 'Sage',    value: '#A8C5A0' },
+  { label: 'Coral',   value: '#F4876A' },
+  { label: 'White',   value: '#f5f5f5' },
+];
 
 const CHALK_SMUDGES = [
   { top: '8%', left: '5%', w: 120, h: 40, rot: -8, opacity: 0.018 },
@@ -33,9 +44,10 @@ const ITEM_ROTATIONS = [-0.4, 0.3, -0.2, 0.5, -0.3, 0.4];
 const ItemPhotoSquares: React.FC<{
   image?: string;
   isAdmin: boolean;
+  accentColor: string;
   onUpload: (dataUrl: string) => void;
   onRemove: () => void;
-}> = ({ image, isAdmin, onUpload, onRemove }) => {
+}> = ({ image, isAdmin, accentColor, onUpload, onRemove }) => {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -76,10 +88,10 @@ const ItemPhotoSquares: React.FC<{
       <button
         onClick={() => fileRef.current?.click()}
         className="w-28 sm:w-36 aspect-square rounded-lg flex flex-col items-center justify-center gap-2 group transition-all hover:scale-[1.02]"
-        style={{ border: `2px dashed ${CHALK_MINT}30`, background: `${CHALK_MINT}06` }}
+        style={{ border: `2px dashed ${accentColor}30`, background: `${accentColor}06` }}
         title="Add photo"
       >
-        <ImagePlus size={22} style={{ color: `${CHALK_MINT}60` }} className="group-hover:scale-110 transition-transform" />
+        <ImagePlus size={22} style={{ color: `${accentColor}60` }} className="group-hover:scale-110 transition-transform" />
         <span className="font-bar text-xs font-normal" style={{ color: `${CHALK_GRAY}80` }}>
           Add photo
         </span>
@@ -93,6 +105,7 @@ const SpecialsPage: React.FC<SpecialsPageProps> = ({
   onUpdateMeta, onUpdateItem, onAddItem, onRemoveItem, onMoveItem,
   onPrintChalkboard,
 }) => {
+  const CHALK_MINT = data.accentColor || CHALK_MINT_DEFAULT;
   return (
     <div className="min-h-full relative overflow-hidden" style={{ background: BOARD_BG }}>
 
@@ -129,16 +142,65 @@ const SpecialsPage: React.FC<SpecialsPageProps> = ({
 
       <div className="relative px-4 sm:px-8 pt-8 pb-16 max-w-3xl mx-auto">
 
-        {/* Print button */}
+        {/* Print button + accent color picker */}
         {isAdmin && (
-          <div className="flex justify-end mb-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+            {/* Chalk color swatches */}
+            <div className="flex items-center gap-2">
+              <span className="font-bar text-[10px] uppercase tracking-widest" style={{ color: `${CHALK_GRAY}80` }}>
+                Chalk color
+              </span>
+              <div className="flex gap-1.5">
+                {CHALK_PALETTE.map(({ label, value }) => {
+                  const isActive = CHALK_MINT === value;
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      title={label}
+                      onClick={() => onUpdateMeta('accentColor', value)}
+                      className="transition-all active:scale-90"
+                      style={{
+                        width: 20,
+                        height: 20,
+                        borderRadius: '50%',
+                        backgroundColor: value,
+                        border: isActive ? `2px solid white` : `2px solid transparent`,
+                        boxShadow: isActive ? `0 0 0 1px ${value}, 0 0 8px ${value}60` : 'none',
+                        opacity: isActive ? 1 : 0.6,
+                      }}
+                    />
+                  );
+                })}
+                {/* Custom hex input */}
+                <label
+                  title="Custom color"
+                  className="relative cursor-pointer"
+                  style={{ width: 20, height: 20 }}
+                >
+                  <input
+                    type="color"
+                    value={CHALK_MINT}
+                    onChange={(e) => onUpdateMeta('accentColor', e.target.value)}
+                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                  />
+                  <div
+                    className="w-5 h-5 rounded-full border-2 flex items-center justify-center text-[7px] font-bold"
+                    style={{ borderColor: `${CHALK_GRAY}50`, background: CHALK_MINT, color: BOARD_BG }}
+                  >
+                    +
+                  </div>
+                </label>
+              </div>
+            </div>
+
             <button
               onClick={onPrintChalkboard}
               className="flex items-center gap-2 px-5 py-2.5 font-bar text-sm font-normal tracking-widest uppercase transition-all active:scale-95 hover:scale-[1.02] rounded-lg"
               style={{ color: CHALK_MINT, border: `2px solid ${CHALK_MINT}40`, background: 'rgba(158,211,199,0.06)' }}
             >
               <Printer size={15} />
-              Preview & Print
+              Preview &amp; Print
             </button>
           </div>
         )}
@@ -313,6 +375,7 @@ const SpecialsPage: React.FC<SpecialsPageProps> = ({
                     <ItemPhotoSquares
                       image={item.image}
                       isAdmin={isAdmin}
+                      accentColor={CHALK_MINT}
                       onUpload={(dataUrl) => onUpdateItem(idx, 'image', dataUrl)}
                       onRemove={() => onUpdateItem(idx, 'image', '')}
                     />

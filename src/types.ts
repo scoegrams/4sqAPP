@@ -71,6 +71,7 @@ export interface ChalkboardData {
   price: string;
   subtitle: string;
   items: ChalkboardSpecial[];
+  accentColor?: string;
 }
 
 export interface CurrentMenuRecord {

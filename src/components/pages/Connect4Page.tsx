@@ -209,7 +209,7 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <div>
-          <h2 className={`text-2xl font-barDisplay font-bold uppercase tracking-[0.1em] ${accentText}`}>Connect 4</h2>
+          <h2 className={`text-2xl font-barDisplay font-bold uppercase tracking-[0.1em] ${theme.text}`}>Connect 4</h2>
           <p className={`text-[10px] uppercase tracking-widest mt-0.5 font-bold ${isRanked ? accentText : theme.textMuted}`}>
             {isRanked ? '★ Ranked — wins count' : isSocial ? 'Sign in to play ranked' : 'Local play'}
           </p>
@@ -263,14 +263,15 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
             />
           </div>
 
-          {/* Board — game-specific blue frame is intentional */}
+          {/* Board — always uses a deep dark frame for contrast regardless of theme */}
           <div className="flex justify-center">
             <div
               className="inline-grid gap-1.5 p-3 border-2"
               style={{
                 gridTemplateColumns: `repeat(${COLS}, 1fr)`,
-                backgroundColor: 'var(--fs-quad-blue-accent)',
-                borderColor: 'var(--fs-quad-blue-border)',
+                backgroundColor: theme.isDark ? '#0f172a' : '#1e3a5f',
+                borderColor: theme.isDark ? '#334155' : '#1e3a5f',
+                borderRadius: 'var(--fs-radius)',
               }}
             >
               {board.flat().map((cell, i) => {
@@ -282,12 +283,10 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
                     disabled={!!winner}
                     className={`w-9 h-9 sm:w-11 sm:h-11 rounded-full border-2 transition-all duration-150 active:scale-90 disabled:cursor-default ${
                       cell === 'red'
-                        ? 'bg-red-500 border-red-300 shadow-[inset_0_-3px_6px_rgba(0,0,0,0.3)]'
+                        ? 'bg-red-500 border-red-300 shadow-[inset_0_-3px_6px_rgba(0,0,0,0.35)]'
                         : cell === 'yellow'
-                        ? 'bg-yellow-400 border-yellow-200 shadow-[inset_0_-3px_6px_rgba(0,0,0,0.2)]'
-                        : theme.isDark
-                        ? 'bg-slate-800/70 border-white/10 hover:bg-slate-700/80'
-                        : 'bg-white/30 border-white/40 hover:bg-white/50'
+                        ? 'bg-yellow-400 border-yellow-200 shadow-[inset_0_-3px_6px_rgba(0,0,0,0.25)]'
+                        : 'bg-white/15 border-white/20 hover:bg-white/25'
                     }`}
                   />
                 );
@@ -477,8 +476,7 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
             <div className="border-2 overflow-hidden" style={cardStyle}>
               <div className="px-3 py-2.5 border-b flex items-center gap-2" style={dividerStyle}>
                 <Trophy size={13} className={accentText} />
-                <span className={`text-[10px] font-barDisplay font-bold uppercase tracking-wider ${theme.text}`}>Leaderboard</span>
-                {!isLoggedIn && (
+                <span className={`text-[10px] font-barDisplay font-bold uppercase tracking-wider ${theme.text}`}>Leaderboard</span>                {!isLoggedIn && (
                   <span className={`ml-auto text-[9px] italic ${theme.textMuted}`}>Sign in to compete</span>
                 )}
               </div>

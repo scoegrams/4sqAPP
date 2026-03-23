@@ -6,7 +6,7 @@ import { ChalkboardData } from '../types';
 interface ChalkboardSpecialsProps {
   data: ChalkboardData;
   isAdmin: boolean;
-  onUpdateMeta: (field: 'title' | 'price' | 'subtitle', value: string) => void;
+  onUpdateMeta: (field: 'title' | 'price' | 'subtitle' | 'accentColor', value: string) => void;
   onUpdateItem: (idx: number, field: 'heading' | 'description', value: string) => void;
   onAddItem: () => void;
   onRemoveItem: (idx: number) => void;

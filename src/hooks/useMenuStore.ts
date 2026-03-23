@@ -251,7 +251,7 @@ export function useMenuStore() {
   }, []);
 
   // ── CHALKBOARD SPECIALS CRUD ─────────────────────────────────────────────────
-  const updateChalkboardMeta = useCallback((field: 'title' | 'price' | 'subtitle', value: string) => {
+  const updateChalkboardMeta = useCallback((field: 'title' | 'price' | 'subtitle' | 'accentColor', value: string) => {
     setChalkboard(prev => ({ ...prev, [field]: value }));
   }, []);
 
