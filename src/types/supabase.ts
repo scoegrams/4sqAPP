@@ -23,3 +23,20 @@ export interface ChatMessage {
   message: string;
   created_at: string;
 }
+
+export type Connect4Cell = null | 'red' | 'yellow';
+
+export interface Connect4Game {
+  id: string;
+  game_code: string;
+  status: 'waiting' | 'playing' | 'finished';
+  player1_id: string;
+  player1_name: string;
+  player2_id: string | null;
+  player2_name: string | null;
+  board: Connect4Cell[][];
+  current_turn: 'red' | 'yellow';
+  winner: 'red' | 'yellow' | 'draw' | null;
+  created_at: string;
+  updated_at: string;
+}
