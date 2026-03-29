@@ -1,0 +1,84 @@
+<!--
+  Four Square — branded magic link email (Supabase)
+
+  Paste into: Supabase Dashboard → Authentication → Email Templates → Magic Link
+  Subject: e.g. "Sign in to Four Square"
+
+  Logo is served from your deployed site:
+    /images/fourSquare-Restaurant-and-bar.jpg  (public/images/)
+
+  Supabase variables (do not remove):
+    {{ .ConfirmationURL }}  {{ .SiteURL }}  {{ .Email }}
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign in to Four Square</title>
+</head>
+<body style="margin:0;padding:0;background-color:#ffffff;font-family:Arial,Helvetica,sans-serif;-webkit-font-smoothing:antialiased;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#ffffff;padding:32px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:520px;background-color:#ffffff;border-radius:8px;overflow:hidden;border:1px solid #e8ecf2;">
+          <!-- Brand accent (matches logo squares: green — blue) -->
+          <tr>
+            <td style="height:4px;line-height:4px;font-size:0;background-color:#55BA8B;">&nbsp;</td>
+          </tr>
+          <tr>
+            <td style="height:4px;line-height:4px;font-size:0;background-color:#5275B8;">&nbsp;</td>
+          </tr>
+          <!-- Logo (white bg in asset) -->
+          <tr>
+            <td style="background-color:#ffffff;padding:28px 24px 20px;text-align:center;">
+              <img src="{{ .SiteURL }}/images/fourSquare-Restaurant-and-bar.jpg" width="240" height="auto" alt="Four Square Bar &amp; Restaurant" style="display:block;margin:0 auto;max-width:280px;width:100%;height:auto;border:0;">
+            </td>
+          </tr>
+          <!-- Body -->
+          <tr>
+            <td style="padding:8px 28px 8px;">
+              <p style="margin:0 0 16px;font-size:18px;line-height:1.4;color:#000000;font-weight:600;">
+                You're signing in to <span style="color:#5275B8;">Four Square</span>
+              </p>
+              <p style="margin:0 0 28px;font-size:15px;line-height:1.6;color:#374151;">
+                Tap the button below to open the app and finish signing in. This link expires soon and only works once.
+              </p>
+              <table role="presentation" cellspacing="0" cellpadding="0" style="margin:0 auto 28px;">
+                <tr>
+                  <td style="border-radius:6px;background-color:#5275B8;">
+                    <a href="{{ .ConfirmationURL }}" target="_blank" style="display:inline-block;padding:14px 32px;font-size:13px;font-weight:bold;letter-spacing:0.06em;text-transform:uppercase;text-decoration:none;color:#ffffff;">
+                      Sign in to Four Square
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin:0 0 24px;font-size:13px;line-height:1.55;color:#6b7280;">
+                If the button doesn't work, copy and paste this link into your browser:<br>
+                <a href="{{ .ConfirmationURL }}" style="color:#55BA8B;font-weight:600;word-break:break-all;">{{ .ConfirmationURL }}</a>
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 28px;">
+              <p style="margin:0;height:1px;background-color:#e8ecf2;line-height:1px;font-size:0;">&nbsp;</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:20px 28px 28px;">
+              <p style="margin:0;font-size:12px;line-height:1.6;color:#6b7280;text-align:center;">
+                16 Commercial Street · Weymouth Landing · Braintree, MA<br><br>
+                This email was sent to <strong style="color:#111827;">{{ .Email }}</strong> because someone requested a sign-in link for Four Square.<br>
+                If you didn't ask for this, you can ignore this message.
+              </p>
+            </td>
+          </tr>
+        </table>
+        <p style="margin:20px 0 0;font-size:11px;color:#9ca3af;text-align:center;max-width:520px;">
+          <a href="{{ .SiteURL }}" style="color:#5275B8;text-decoration:none;font-weight:600;">foursquarebar.com</a>
+        </p>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
