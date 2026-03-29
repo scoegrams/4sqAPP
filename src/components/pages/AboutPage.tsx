@@ -13,7 +13,6 @@ const ABOUT_HERO_IMAGE = 'https://t4.ftcdn.net/jpg/01/36/55/99/360_F_136559916_g
 const GOOGLE_MAPS_PLACE_URL = 'https://share.google/BNmWveS6rJw5QsVKo';
 
 const MAP_SCREENSHOT = '/images/4square-map.png';
-const REVIEWS_SCREENSHOT = '/images/reviews-fours-square.png';
 
 const AboutPage: React.FC<AboutPageProps> = ({ theme, onNavigate }) => {
   const isDark = theme.isDark || theme.mode === 'apple';
@@ -84,59 +83,30 @@ const AboutPage: React.FC<AboutPageProps> = ({ theme, onNavigate }) => {
               </div>
             </div>
 
-            <div className="w-full lg:sticky lg:top-6 space-y-8">
-              {/* Map — full screenshot, links to Google Maps */}
-              <div>
-                <a
-                  href={GOOGLE_MAPS_PLACE_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`group block overflow-hidden rounded-lg shadow-md transition-all duration-200 ring-offset-2 ring-offset-[#F4F1EA] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2d3d2d] ${
-                    isDark ? 'ring-offset-[#1a1918] focus-visible:ring-[#c9b896]' : ''
-                  } ${isDark ? 'border border-white/10' : 'border border-[#2d3d2d]/15'}`}
-                >
-                  <img
-                    src={MAP_SCREENSHOT}
-                    alt="Map showing Four Square Restaurant &amp; Bar at Weymouth Landing"
-                    className="w-full h-auto object-cover transition-transform duration-200 group-hover:scale-[1.01]"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                </a>
-                <p className={`mt-2 text-sm ${textMuted}`}>
-                  <span className={isDark ? 'text-[#c9b896]/80' : 'text-[#2d3d2d]/80'}>
-                    Tap map to open directions in{' '}
-                  </span>
-                  <span className={`font-semibold ${isDark ? 'text-[#c9b896]' : 'text-[#2d3d2d]'}`}>Google Maps</span>
-                  <span className="block mt-0.5 text-xs">16 Commercial Street, Weymouth Landing</span>
-                </p>
-              </div>
-
-              {/* Reviews — screenshot links to same listing (Reviews tab there) */}
-              <div>
-                <a
-                  href={GOOGLE_MAPS_PLACE_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`group block overflow-hidden rounded-lg shadow-md transition-all duration-200 ring-offset-2 ring-offset-[#F4F1EA] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2d3d2d] ${
-                    isDark ? 'ring-offset-[#1a1918] focus-visible:ring-[#c9b896]' : ''
-                  } ${isDark ? 'border border-white/10' : 'border border-[#2d3d2d]/15'}`}
-                >
-                  <img
-                    src={REVIEWS_SCREENSHOT}
-                    alt="Four Square on Google — rating and reviews"
-                    className="w-full h-auto object-cover transition-transform duration-200 group-hover:scale-[1.01]"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                </a>
-                <p className={`mt-2 text-sm ${textMuted}`}>
-                  <span className={isDark ? 'text-[#c9b896]/80' : 'text-[#2d3d2d]/80'}>
-                    Tap to read or leave a review on{' '}
-                  </span>
-                  <span className={`font-semibold ${isDark ? 'text-[#c9b896]' : 'text-[#2d3d2d]'}`}>Google</span>
-                </p>
-              </div>
+            <div className="w-full lg:sticky lg:top-6">
+              <a
+                href={GOOGLE_MAPS_PLACE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`group block overflow-hidden rounded-lg shadow-md transition-all duration-200 ring-offset-2 ring-offset-[#F4F1EA] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2d3d2d] ${
+                  isDark ? 'ring-offset-[#1a1918] focus-visible:ring-[#c9b896]' : ''
+                } ${isDark ? 'border border-white/10' : 'border border-[#2d3d2d]/15'}`}
+              >
+                <img
+                  src={MAP_SCREENSHOT}
+                  alt="Map showing Four Square Restaurant &amp; Bar at Weymouth Landing"
+                  className="w-full h-auto object-cover transition-transform duration-200 group-hover:scale-[1.01]"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </a>
+              <p className={`mt-2 text-sm ${textMuted}`}>
+                <span className={isDark ? 'text-[#c9b896]/80' : 'text-[#2d3d2d]/80'}>
+                  Tap map for directions &amp; Google listing (reviews, hours){' '}
+                </span>
+                <span className={`font-semibold ${isDark ? 'text-[#c9b896]' : 'text-[#2d3d2d]'}`}>Google Maps</span>
+                <span className="block mt-0.5 text-xs">16 Commercial Street, Weymouth Landing</span>
+              </p>
             </div>
           </div>
         </div>

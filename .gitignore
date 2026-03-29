@@ -4,6 +4,8 @@ dist/
 .env.local
 *.local
 .DS_Store
+# Ignore loose PNGs; keep web assets under public/ (otherwise Vercel has no favicon / About images)
 *.png
+!public/**/*.png
 *.log
 other/
