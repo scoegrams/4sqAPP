@@ -9,6 +9,12 @@ export interface AboutPageProps {
 
 const ABOUT_HERO_IMAGE = 'https://t4.ftcdn.net/jpg/01/36/55/99/360_F_136559916_gXcqY2ROcjVLh19AQrZ9WTmRZb1rNK7t.jpg';
 
+/** Opens the place in Google Maps (map + directions + reviews on the listing). */
+const GOOGLE_MAPS_PLACE_URL = 'https://share.google/BNmWveS6rJw5QsVKo';
+
+const MAP_SCREENSHOT = '/images/4square-map.png';
+const REVIEWS_SCREENSHOT = '/images/reviews-fours-square.png';
+
 const AboutPage: React.FC<AboutPageProps> = ({ theme, onNavigate }) => {
   const isDark = theme.isDark || theme.mode === 'apple';
   const bgWarm = isDark ? 'bg-[#1a1918]' : 'bg-[#F4F1EA]';
@@ -54,25 +60,84 @@ const AboutPage: React.FC<AboutPageProps> = ({ theme, onNavigate }) => {
         </div>
       </section>
 
-      {/* About copy — warm background, strong typography, no cards */}
+      {/* About copy + map — two columns on large screens */}
       <section className={`${bgWarm} py-12 sm:py-16`}>
-        <div className="max-w-2xl mx-auto px-5 sm:px-8">
-          <h2 className={`font-barDisplay text-2xl sm:text-3xl font-bold mb-6 ${headingColor}`}>
-            Four Square
-          </h2>
-          <div className={`space-y-4 text-base sm:text-lg leading-relaxed ${textPrimary}`}>
-            <p>
-              We're a woman-owned bar in Weymouth Landing serving strong pours, real food, and the kind of nights people actually remember.
-            </p>
-            <p>
-              We clean our beer lines like it matters.<br />
-              We change our fry oil weekly.<br />
-              We make our food fresh.
-            </p>
-            <p>
-              Karaoke. Game nights. Steak tips. Bar pizza.<br />
-              Come in once — and you'll get it.
-            </p>
+        <div className="max-w-6xl mx-auto px-5 sm:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 items-start">
+            <div>
+              <h2 className={`font-barDisplay text-2xl sm:text-3xl font-bold mb-6 ${headingColor}`}>
+                Four Square
+              </h2>
+              <div className={`space-y-4 text-base sm:text-lg leading-relaxed ${textPrimary}`}>
+                <p>
+                  We're a woman-owned bar in Weymouth Landing serving strong pours, real food, and the kind of nights people actually remember.
+                </p>
+                <p>
+                  We clean our beer lines like it matters.<br />
+                  We change our fry oil weekly.<br />
+                  We make our food fresh.
+                </p>
+                <p>
+                  Karaoke. Game nights. Steak tips. Bar pizza.<br />
+                  Come in once — and you'll get it.
+                </p>
+              </div>
+            </div>
+
+            <div className="w-full lg:sticky lg:top-6 space-y-8">
+              {/* Map — full screenshot, links to Google Maps */}
+              <div>
+                <a
+                  href={GOOGLE_MAPS_PLACE_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`group block overflow-hidden rounded-lg shadow-md transition-all duration-200 ring-offset-2 ring-offset-[#F4F1EA] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2d3d2d] ${
+                    isDark ? 'ring-offset-[#1a1918] focus-visible:ring-[#c9b896]' : ''
+                  } ${isDark ? 'border border-white/10' : 'border border-[#2d3d2d]/15'}`}
+                >
+                  <img
+                    src={MAP_SCREENSHOT}
+                    alt="Map showing Four Square Restaurant &amp; Bar at Weymouth Landing"
+                    className="w-full h-auto object-cover transition-transform duration-200 group-hover:scale-[1.01]"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </a>
+                <p className={`mt-2 text-sm ${textMuted}`}>
+                  <span className={isDark ? 'text-[#c9b896]/80' : 'text-[#2d3d2d]/80'}>
+                    Tap map to open directions in{' '}
+                  </span>
+                  <span className={`font-semibold ${isDark ? 'text-[#c9b896]' : 'text-[#2d3d2d]'}`}>Google Maps</span>
+                  <span className="block mt-0.5 text-xs">16 Commercial Street, Weymouth Landing</span>
+                </p>
+              </div>
+
+              {/* Reviews — screenshot links to same listing (Reviews tab there) */}
+              <div>
+                <a
+                  href={GOOGLE_MAPS_PLACE_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`group block overflow-hidden rounded-lg shadow-md transition-all duration-200 ring-offset-2 ring-offset-[#F4F1EA] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2d3d2d] ${
+                    isDark ? 'ring-offset-[#1a1918] focus-visible:ring-[#c9b896]' : ''
+                  } ${isDark ? 'border border-white/10' : 'border border-[#2d3d2d]/15'}`}
+                >
+                  <img
+                    src={REVIEWS_SCREENSHOT}
+                    alt="Four Square on Google — rating and reviews"
+                    className="w-full h-auto object-cover transition-transform duration-200 group-hover:scale-[1.01]"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </a>
+                <p className={`mt-2 text-sm ${textMuted}`}>
+                  <span className={isDark ? 'text-[#c9b896]/80' : 'text-[#2d3d2d]/80'}>
+                    Tap to read or leave a review on{' '}
+                  </span>
+                  <span className={`font-semibold ${isDark ? 'text-[#c9b896]' : 'text-[#2d3d2d]'}`}>Google</span>
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
