@@ -1,7 +1,8 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   MessageCircle, Trophy, Gift, Mail, Send, User, LogOut,
-  Plus, Wifi, Copy, Check, ArrowLeft, RefreshCw, Eye, Clock, AlertCircle, Trash2,
+  Plus, Wifi, Copy, Check, ArrowLeft, RefreshCw, Eye, Clock,
+  AlertCircle, Trash2, Bell, ChevronDown, ChevronUp,
 } from 'lucide-react';
 import { Theme } from '../../theme';
 import { hasSupabase } from '../../lib/supabase';
@@ -17,6 +18,12 @@ type Cell = Connect4Cell;
 const ROWS = 6;
 const COLS = 7;
 type GameMode = 'local' | 'lobby' | 'online';
+
+interface Toast {
+  id: string;
+  msg: string;
+  type: 'info' | 'win' | 'turn';
+}
 
 function createBoard(): Cell[][] {
   return Array.from({ length: ROWS }, () => Array(COLS).fill(null));
@@ -60,6 +67,10 @@ function timeAgo(iso: string): string {
   return `${Math.round(mins / 60)}h ago`;
 }
 
+function formatChatTime(iso: string): string {
+  return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
 // ── Themed style helpers ─────────────────────────────────────────────────────
 const cardStyle = { backgroundColor: 'var(--fs-card-bg)', borderColor: 'var(--fs-border)', borderRadius: 'var(--fs-radius)', boxShadow: 'var(--fs-card-shadow)' } as React.CSSProperties;
 const inputStyle = { backgroundColor: 'var(--fs-input-bg)', borderColor: 'var(--fs-input-border)', borderRadius: 'var(--fs-radius)' } as React.CSSProperties;
@@ -68,13 +79,9 @@ const accentText = 'text-[color:var(--fs-nav-active-text)]';
 const accentBgStyle = { backgroundColor: 'var(--fs-footer-schedule-bg)', color: 'white', borderRadius: 'var(--fs-radius)' } as React.CSSProperties;
 const accentBorderStyle = { borderColor: 'var(--fs-footer-schedule-bg)', color: 'var(--fs-nav-active-text)', borderRadius: 'var(--fs-radius)' } as React.CSSProperties;
 
-// ── Player indicator ──────────────────────────────────────────────────────────
+// ── PlayerBar ─────────────────────────────────────────────────────────────────
 const PlayerBar: React.FC<{
-  color: 'red' | 'yellow';
-  name: string;
-  isActive: boolean;
-  hasWon: boolean;
-  theme: Theme;
+  color: 'red' | 'yellow'; name: string; isActive: boolean; hasWon: boolean; theme: Theme;
 }> = ({ color, name, isActive, hasWon, theme }) => (
   <div
     className={`flex-1 flex items-center gap-2.5 px-3 py-2.5 border-2 transition-all duration-200 select-none ${
@@ -87,71 +94,36 @@ const PlayerBar: React.FC<{
     style={{ borderRadius: 'var(--fs-radius)' }}
   >
     <div className={`w-5 h-5 rounded-full shrink-0 shadow-md border-2 ${
-      color === 'red'
-        ? 'bg-red-500 border-red-300'
-        : 'bg-yellow-400 border-yellow-200'
+      color === 'red' ? 'bg-red-500 border-red-300' : 'bg-yellow-400 border-yellow-200'
     } ${isActive && !hasWon ? 'animate-pulse' : ''}`} />
     <span className={`text-xs font-bold truncate ${
-      isActive || hasWon
-        ? color === 'red' ? 'text-red-500' : 'text-yellow-500'
-        : theme.textMuted
+      isActive || hasWon ? color === 'red' ? 'text-red-500' : 'text-yellow-500' : theme.textMuted
     }`}>{name}</span>
     {isActive && !hasWon && (
-      <span className={`ml-auto text-[9px] font-bold uppercase tracking-wider shrink-0 ${color === 'red' ? 'text-red-500' : 'text-yellow-500'}`}>
-        ▶ Turn
-      </span>
+      <span className={`ml-auto text-[9px] font-bold uppercase tracking-wider shrink-0 ${color === 'red' ? 'text-red-500' : 'text-yellow-500'}`}>▶ Turn</span>
     )}
-    {hasWon && (
-      <span className="ml-auto text-[10px] font-bold uppercase tracking-wide shrink-0">🏆</span>
-    )}
+    {hasWon && <span className="ml-auto text-[10px] shrink-0">🏆</span>}
   </div>
 );
 
-// ── Shared game board ────────────────────────────────────────────────────────
+// ── GameBoard ─────────────────────────────────────────────────────────────────
 const GameBoard: React.FC<{
-  board: Cell[][];
-  onDrop: (col: number) => void;
-  disabled: boolean;
-  currentTurn: 'red' | 'yellow';
-  winner: string | null;
-  redName: string;
-  yellowName: string;
-  isMyTurn?: boolean;
-  theme: Theme;
-  footer?: React.ReactNode;
+  board: Cell[][]; onDrop: (col: number) => void; disabled: boolean;
+  currentTurn: 'red' | 'yellow'; winner: string | null;
+  redName: string; yellowName: string; isMyTurn?: boolean;
+  theme: Theme; footer?: React.ReactNode;
 }> = ({ board, onDrop, disabled, currentTurn, winner, redName, yellowName, isMyTurn, theme, footer }) => {
   const [hoveredCol, setHoveredCol] = useState<number | null>(null);
-
   return (
     <div>
-      {/* Player header bars */}
       <div className="flex gap-2 mb-3">
-        <PlayerBar
-          color="red"
-          name={redName}
-          isActive={!winner && currentTurn === 'red'}
-          hasWon={winner === 'red'}
-          theme={theme}
-        />
-        <PlayerBar
-          color="yellow"
-          name={yellowName}
-          isActive={!winner && currentTurn === 'yellow'}
-          hasWon={winner === 'yellow'}
-          theme={theme}
-        />
+        <PlayerBar color="red" name={redName} isActive={!winner && currentTurn === 'red'} hasWon={winner === 'red'} theme={theme} />
+        <PlayerBar color="yellow" name={yellowName} isActive={!winner && currentTurn === 'yellow'} hasWon={winner === 'yellow'} theme={theme} />
       </div>
-
-      {/* Board */}
       <div className="flex justify-center">
         <div
           className="inline-grid gap-1.5 p-3 border-2"
-          style={{
-            gridTemplateColumns: `repeat(${COLS}, 1fr)`,
-            backgroundColor: theme.isDark ? '#0f172a' : '#1a3050',
-            borderColor: theme.isDark ? '#334155' : '#1a3050',
-            borderRadius: 'var(--fs-radius)',
-          }}
+          style={{ gridTemplateColumns: `repeat(${COLS}, 1fr)`, backgroundColor: theme.isDark ? '#0f172a' : '#1a3050', borderColor: theme.isDark ? '#334155' : '#1a3050', borderRadius: 'var(--fs-radius)' }}
           onMouseLeave={() => setHoveredCol(null)}
         >
           {board.flat().map((cell, i) => {
@@ -160,29 +132,19 @@ const GameBoard: React.FC<{
             const wouldDrop = canHover && getLowestEmptyRow(board, col) >= 0;
             return (
               <button
-                key={i}
-                onClick={() => !disabled && onDrop(col)}
-                onMouseEnter={() => !disabled && setHoveredCol(col)}
-                disabled={disabled}
-                aria-label={`Column ${col + 1}`}
+                key={i} onClick={() => !disabled && onDrop(col)} onMouseEnter={() => !disabled && setHoveredCol(col)}
+                disabled={disabled} aria-label={`Column ${col + 1}`}
                 className={`w-9 h-9 sm:w-11 sm:h-11 rounded-full border-2 transition-all duration-150 active:scale-90 disabled:cursor-default ${
-                  cell === 'red'
-                    ? 'bg-red-500 border-red-300 shadow-[inset_0_-3px_6px_rgba(0,0,0,0.4)]'
-                    : cell === 'yellow'
-                    ? 'bg-yellow-400 border-yellow-200 shadow-[inset_0_-3px_6px_rgba(0,0,0,0.25)]'
-                    : wouldDrop
-                    ? currentTurn === 'red'
-                      ? 'bg-red-500/35 border-red-400/70'
-                      : 'bg-yellow-400/35 border-yellow-300/70'
-                    : 'bg-white/12 border-white/18 hover:bg-white/22'
+                  cell === 'red' ? 'bg-red-500 border-red-300 shadow-[inset_0_-3px_6px_rgba(0,0,0,0.4)]'
+                  : cell === 'yellow' ? 'bg-yellow-400 border-yellow-200 shadow-[inset_0_-3px_6px_rgba(0,0,0,0.25)]'
+                  : wouldDrop ? currentTurn === 'red' ? 'bg-red-500/35 border-red-400/70' : 'bg-yellow-400/35 border-yellow-300/70'
+                  : 'bg-white/12 border-white/18 hover:bg-white/22'
                 }`}
               />
             );
           })}
         </div>
       </div>
-
-      {/* Status */}
       <div className="mt-3 text-center space-y-2">
         {winner === 'draw' ? (
           <p className={`text-base font-barDisplay font-bold uppercase ${theme.text}`}>It's a draw!</p>
@@ -192,19 +154,10 @@ const GameBoard: React.FC<{
           </p>
         ) : (
           <p className={`text-sm ${theme.textMuted}`}>
-            {isMyTurn === true && (
-              <span className="font-bold text-emerald-500 uppercase tracking-wide text-xs">Your turn!</span>
-            )}
-            {isMyTurn === false && (
-              <span>Waiting for opponent…</span>
-            )}
+            {isMyTurn === true && <span className="font-bold text-emerald-500 uppercase tracking-wide text-xs animate-pulse">Your turn!</span>}
+            {isMyTurn === false && <span>Waiting for opponent…</span>}
             {isMyTurn === undefined && (
-              <>
-                <span className={`font-barDisplay font-bold ${currentTurn === 'red' ? 'text-red-400' : 'text-yellow-400'}`}>
-                  {currentTurn === 'red' ? redName : yellowName}
-                </span>
-                {' '}to move
-              </>
+              <><span className={`font-barDisplay font-bold ${currentTurn === 'red' ? 'text-red-400' : 'text-yellow-400'}`}>{currentTurn === 'red' ? redName : yellowName}</span>{' '}to move</>
             )}
           </p>
         )}
@@ -214,10 +167,30 @@ const GameBoard: React.FC<{
   );
 };
 
+// ── Toast component ───────────────────────────────────────────────────────────
+const ToastStack: React.FC<{ toasts: Toast[] }> = ({ toasts }) => (
+  <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 items-center pointer-events-none">
+    {toasts.map(t => (
+      <div
+        key={t.id}
+        className={`flex items-center gap-2.5 px-4 py-2.5 shadow-xl border text-sm font-bold animate-[fadeInUp_0.2s_ease] ${
+          t.type === 'win' ? 'bg-emerald-600 border-emerald-400 text-white'
+          : t.type === 'turn' ? 'bg-yellow-400 border-yellow-300 text-yellow-900'
+          : 'bg-[var(--fs-card-bg)] border-[var(--fs-border)] text-[var(--fs-page-text)]'
+        }`}
+        style={{ borderRadius: 'var(--fs-radius)', maxWidth: '90vw' }}
+      >
+        <Bell size={13} className="shrink-0" />
+        {t.msg}
+      </div>
+    ))}
+  </div>
+);
+
 // ── Main component ────────────────────────────────────────────────────────────
 const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
   const auth = useAuth();
-  const { user, profile, loading: authLoading, error: authError, signInWithEmail, signOut, updateProfile, clearError } = auth;
+  const { user, profile, loading: authLoading, error: authError, signInWithEmail, updateProfile, clearError } = auth;
 
   // Local game
   const [board, setBoard] = useState<Cell[][]>(createBoard);
@@ -249,16 +222,24 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
   // Social
   const [highScores, setHighScores] = useState<Connect4Score[]>([]);
   const [chatMessages, setChatMessages] = useState<ChatMessageType[]>([]);
+  const [pendingMsgs, setPendingMsgs] = useState<ChatMessageType[]>([]);
   const [chatInput, setChatInput] = useState('');
   const [rewardsJoined, setRewardsJoined] = useState(false);
-  const chatEndRef = useRef<HTMLDivElement>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [chatOpen, setChatOpen] = useState(true);
+  const chatScrollRef = useRef<HTMLDivElement>(null);
+  const atBottomRef = useRef(true);
+
+  // Toasts
+  const [toasts, setToasts] = useState<Toast[]>([]);
+  const prevGameStatusRef = useRef<string | null>(null);
+  const prevTurnRef = useRef<boolean | undefined>(undefined);
 
   const isSocial = hasSupabase();
   const isLoggedIn = !!user && !!profile;
   const isRanked = isSocial && isLoggedIn;
   const needsHandle = isLoggedIn && !profile?.display_name;
 
-  // Derived online state
   const myColor: 'red' | 'yellow' | null = currentGame
     ? currentGame.player1_id === user?.id ? 'red'
     : currentGame.player2_id === user?.id ? 'yellow'
@@ -269,37 +250,107 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
     : undefined;
   const isSpectating = currentGame !== null && myColor === null;
 
-  // ── Effects ────────────────────────────────────────────────────────────────
+  // ── Toast helper ──────────────────────────────────────────────────────────
+  const addToast = useCallback((msg: string, type: Toast['type'] = 'info') => {
+    const id = `${Date.now()}-${Math.random()}`;
+    setToasts(prev => [...prev.slice(-2), { id, msg, type }]);
+    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 4000);
+  }, []);
 
+  // ── Game state transition notifications ──────────────────────────────────
+  useEffect(() => {
+    if (!currentGame) { prevGameStatusRef.current = null; return; }
+    const prev = prevGameStatusRef.current;
+    const curr = currentGame.status;
+    if (prev === 'waiting' && curr === 'playing') {
+      addToast(`${currentGame.player2_name ?? 'Opponent'} joined — game on!`, 'info');
+    }
+    if (curr === 'finished' && prev !== 'finished') {
+      if (currentGame.winner === myColor) addToast('You won! 🏆', 'win');
+      else if (currentGame.winner === 'draw') addToast("It's a draw!", 'info');
+      else if (currentGame.winner) addToast(`${currentGame.winner === 'red' ? currentGame.player1_name : (currentGame.player2_name ?? 'Opponent')} wins!`, 'info');
+    }
+    prevGameStatusRef.current = curr;
+  }, [currentGame?.status, currentGame?.winner]);
+
+  // ── Your turn notification ────────────────────────────────────────────────
+  useEffect(() => {
+    if (isMyTurn === true && prevTurnRef.current === false) {
+      addToast('Your turn!', 'turn');
+    }
+    prevTurnRef.current = isMyTurn;
+  }, [isMyTurn]);
+
+  // ── Document title unread badge ───────────────────────────────────────────
+  useEffect(() => {
+    const base = 'Four Square';
+    document.title = unreadCount > 0 ? `(${unreadCount}) ${base}` : base;
+    return () => { document.title = base; };
+  }, [unreadCount]);
+
+  // ── Profile / name sync ───────────────────────────────────────────────────
   useEffect(() => {
     if (isLoggedIn && profile?.display_name) setLeftName(profile.display_name);
   }, [isLoggedIn, profile?.display_name]);
 
-  // High scores
+  // ── High scores ───────────────────────────────────────────────────────────
   useEffect(() => {
     if (!supabase || !isSocial) return;
-    supabase
-      .from('connect4_scores').select('*').order('wins', { ascending: false }).limit(8)
+    supabase.from('connect4_scores').select('*').order('wins', { ascending: false }).limit(8)
       .then(({ data }) => setHighScores((data as Connect4Score[]) || []));
   }, [isSocial, winner, currentGame?.winner]);
 
-  // Chat load + realtime
+  // ── Chat load + realtime ──────────────────────────────────────────────────
   useEffect(() => {
     if (!supabase || !isSocial) return;
-    supabase.from('connect4_chat').select('*').order('created_at', { ascending: true }).limit(50)
+    supabase.from('connect4_chat').select('*').order('created_at', { ascending: true }).limit(60)
       .then(({ data }) => setChatMessages((data as ChatMessageType[]) || []));
     const ch = supabase.channel('connect4_chat')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'connect4_chat' },
-        (payload) => setChatMessages(prev => [...prev, payload.new as ChatMessageType]))
+        (payload) => {
+          const msg = payload.new as ChatMessageType;
+          // Dedupe against any pending optimistic message we sent
+          setPendingMsgs(prev => prev.filter(p => p.message !== msg.message || p.user_id !== msg.user_id));
+          setChatMessages(prev => {
+            // Avoid duplicate if the same id somehow comes twice
+            if (prev.some(m => m.id === msg.id)) return prev;
+            return [...prev, msg];
+          });
+          if (!atBottomRef.current) {
+            setUnreadCount(c => c + 1);
+          }
+        })
       .subscribe();
     return () => { supabase?.removeChannel(ch); };
   }, [isSocial]);
 
+  // ── Auto-scroll chat ──────────────────────────────────────────────────────
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [chatMessages]);
+    if (atBottomRef.current) {
+      chatScrollRef.current?.scrollTo({ top: chatScrollRef.current.scrollHeight, behavior: 'smooth' });
+    }
+  }, [chatMessages, pendingMsgs]);
 
-  // Lobby: load games + subscribe
+  // When chat is opened, scroll to bottom and reset unread
+  useEffect(() => {
+    if (chatOpen) {
+      setTimeout(() => {
+        chatScrollRef.current?.scrollTo({ top: chatScrollRef.current.scrollHeight });
+      }, 50);
+      setUnreadCount(0);
+      atBottomRef.current = true;
+    }
+  }, [chatOpen]);
+
+  const handleChatScroll = () => {
+    const el = chatScrollRef.current;
+    if (!el) return;
+    const isBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 40;
+    atBottomRef.current = isBottom;
+    if (isBottom) setUnreadCount(0);
+  };
+
+  // ── Lobby realtime ────────────────────────────────────────────────────────
   const loadGames = useCallback(() => {
     if (!supabase || !isSocial) return;
     setGamesLoading(true);
@@ -317,7 +368,7 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
     return () => { supabase?.removeChannel(ch); };
   }, [gameMode, isSocial, loadGames]);
 
-  // Online game: subscribe to current game changes
+  // ── Online game realtime ──────────────────────────────────────────────────
   useEffect(() => {
     if (gameMode !== 'online' || !currentGame || !supabase) return;
     const ch = supabase.channel(`game_${currentGame.id}`)
@@ -329,7 +380,6 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
   }, [gameMode, currentGame?.id]);
 
   // ── Local game ────────────────────────────────────────────────────────────
-
   const drop = useCallback((col: number) => {
     if (winner) return;
     const row = getLowestEmptyRow(board, col);
@@ -355,7 +405,6 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
   const reset = useCallback(() => { setBoard(createBoard()); setTurn('red'); setWinner(null); }, []);
 
   // ── Online game actions ───────────────────────────────────────────────────
-
   const createOnlineGame = async () => {
     if (!user || !profile || !supabase) return;
     setGameLoading(true); setGameError(null);
@@ -364,9 +413,7 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
         game_code: genGameCode(),
         player1_id: user.id,
         player1_name: profile.display_name || profile.email || 'Player 1',
-        board: createBoard(),
-        status: 'waiting',
-        current_turn: 'red',
+        board: createBoard(), status: 'waiting', current_turn: 'red',
       }).select().single();
       if (error) throw error;
       setCurrentGame(data as Connect4Game);
@@ -387,12 +434,11 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
       if (findErr) throw findErr;
       if (!rows || rows.length === 0) throw new Error('Game not found or already started');
       const game = rows[0] as Connect4Game;
-      if (game.player1_id === user.id) throw new Error("Can't join your own game — share the code!");
+      if (game.player1_id === user.id) throw new Error("That's your own game — share the code with someone else!");
       const { data, error } = await supabase.from('connect4_games').update({
         player2_id: user.id,
         player2_name: profile.display_name || profile.email || 'Player 2',
-        status: 'playing',
-        updated_at: new Date().toISOString(),
+        status: 'playing', updated_at: new Date().toISOString(),
       }).eq('id', game.id).select().single();
       if (error) throw error;
       setCurrentGame(data as Connect4Game);
@@ -416,24 +462,13 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
     if (currentGame.current_turn !== me) return;
     const row = getLowestEmptyRow(currentGame.board as Cell[][], col);
     if (row < 0) return;
-
     const next = (currentGame.board as Cell[][]).map((r, ri) =>
       ri === row ? r.map((c, ci) => ci === col ? me : c) : [...r]
     ) as Cell[][];
-
     const didWin = checkWin(next, me);
     const isDraw = !didWin && next.every(r => r.every(c => c !== null));
-
-    const updates: Partial<Connect4Game> = {
-      board: next,
-      current_turn: me === 'red' ? 'yellow' : 'red',
-      updated_at: new Date().toISOString(),
-    };
-    if (didWin || isDraw) {
-      updates.status = 'finished';
-      updates.winner = didWin ? me as 'red' | 'yellow' : 'draw';
-    }
-
+    const updates: Partial<Connect4Game> = { board: next, current_turn: me === 'red' ? 'yellow' : 'red', updated_at: new Date().toISOString() };
+    if (didWin || isDraw) { updates.status = 'finished'; updates.winner = didWin ? me as 'red' | 'yellow' : 'draw'; }
     if (didWin && isRanked && profile) {
       const name = profile.display_name || profile.email || 'Player';
       supabase.from('connect4_scores').select('wins').eq('user_id', user.id).single().then(({ data }) => {
@@ -443,17 +478,14 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
         );
       });
     }
-
-    const { data, error } = await supabase.from('connect4_games')
-      .update(updates).eq('id', currentGame.id).select().single();
+    const { data, error } = await supabase.from('connect4_games').update(updates).eq('id', currentGame.id).select().single();
     if (!error && data) setCurrentGame(data as Connect4Game);
   };
 
   const cancelOnlineGame = async () => {
     if (!currentGame || !user || !supabase) return;
     await supabase.from('connect4_games').delete().eq('id', currentGame.id).eq('player1_id', user.id);
-    setCurrentGame(null);
-    setGameMode('lobby');
+    setCurrentGame(null); setGameMode('lobby');
   };
 
   const leaveGame = () => { setCurrentGame(null); setGameMode('lobby'); };
@@ -464,38 +496,50 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
     setTimeout(() => setCodeCopied(false), 2000);
   };
 
-  // ── Auth helpers ──────────────────────────────────────────────────────────
-
+  // ── Chat send ─────────────────────────────────────────────────────────────
   const sendChat = useCallback(() => {
     const msg = chatInput.trim();
     if (!msg || !supabase || !user || !profile) return;
+    const optimistic: ChatMessageType = {
+      id: `pending-${Date.now()}`,
+      user_id: user.id,
+      display_name: profile.display_name || profile.email || 'You',
+      message: msg,
+      created_at: new Date().toISOString(),
+    };
+    setPendingMsgs(prev => [...prev, optimistic]);
+    setChatInput('');
+    // Scroll to bottom immediately on send
+    atBottomRef.current = true;
     supabase.from('connect4_chat').insert({
       user_id: user.id,
       display_name: profile.display_name || profile.email || 'Guest',
       message: msg,
     });
-    setChatInput('');
   }, [chatInput, user, profile]);
 
   const saveHandle = async () => {
     if (!handleInput.trim()) return;
-    const handle = handleInput.startsWith('@') ? handleInput : `@${handleInput.trim()}`;
+    const handle = handleInput.startsWith('@') ? handleInput.trim() : `@${handleInput.trim()}`;
     setSettingHandle(true);
     await updateProfile({ display_name: handle });
-    setLeftName(handle);
     setSettingHandle(false);
   };
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); clearError(); setAuthSuccess('');
-    const { error } = await signInWithEmail(emailInput);
-    if (!error) setAuthSuccess('Check your email for the login link.');
+    const { error } = await signInWithEmail(emailInput.trim());
+    if (!error) setAuthSuccess('Check your email for the login link!');
   };
 
-  // ── Render ────────────────────────────────────────────────────────────────
+  const openWaitingGames = onlineGames.filter(g => g.status === 'waiting').length;
 
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 pb-12">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 pb-24">
+
+      {/* Toast notifications */}
+      <ToastStack toasts={toasts} />
 
       {/* Page header */}
       <div className="flex items-center justify-between mb-4">
@@ -505,24 +549,11 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
             {isRanked ? '★ Ranked — wins count' : isSocial ? 'Sign in to play ranked' : 'Local play'}
           </p>
         </div>
-        {isLoggedIn && (
-          <div className="flex items-center gap-3">
-            <div className={`flex items-center gap-1.5 text-xs font-bold ${theme.text}`}>
-              <div className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-barDisplay font-bold text-white shrink-0" style={accentBgStyle}>
-                {(profile?.display_name || profile?.email || 'P')[0].toUpperCase()}
-              </div>
-              {profile?.display_name || profile?.email}
-            </div>
-            <button onClick={() => signOut?.()} className={`text-[9px] uppercase tracking-wider ${theme.textMuted} hover:underline flex items-center gap-1`}>
-              <LogOut size={9} /> Sign out
-            </button>
-          </div>
-        )}
       </div>
 
       {/* Mode tabs */}
       {isSocial && (
-        <div className="flex gap-1.5 mb-4">
+        <div className="flex gap-1.5 mb-5">
           <button
             onClick={() => setGameMode('local')}
             className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider border-2 transition-all"
@@ -532,12 +563,13 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
           </button>
           <button
             onClick={() => setGameMode(gameMode === 'online' && currentGame ? 'online' : 'lobby')}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider border-2 transition-all"
+            className="relative flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider border-2 transition-all"
             style={gameMode !== 'local' ? accentBgStyle : { borderColor: 'var(--fs-input-border)', color: 'var(--fs-text-muted)', borderRadius: 'var(--fs-radius)' }}
           >
-            <Wifi size={10} /> Online {onlineGames.filter(g => g.status === 'waiting').length > 0 && gameMode === 'local' && (
-              <span className="ml-1 px-1.5 py-0.5 text-[8px] font-bold bg-emerald-500 text-white rounded-full">
-                {onlineGames.filter(g => g.status === 'waiting').length} open
+            <Wifi size={10} /> Online
+            {openWaitingGames > 0 && gameMode === 'local' && (
+              <span className="absolute -top-1.5 -right-1.5 w-4 h-4 text-[8px] font-bold bg-emerald-500 text-white rounded-full flex items-center justify-center">
+                {openWaitingGames}
               </span>
             )}
           </button>
@@ -549,18 +581,12 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
         {/* ── Left: Game area ── */}
         <div>
 
-          {/* LOCAL GAME */}
+          {/* LOCAL */}
           {gameMode === 'local' && (
             <div className="border-2 p-4 sm:p-5" style={cardStyle}>
               <GameBoard
-                board={board}
-                onDrop={drop}
-                disabled={!!winner}
-                currentTurn={turn}
-                winner={winner}
-                redName={leftName}
-                yellowName={rightName}
-                theme={theme}
+                board={board} onDrop={drop} disabled={!!winner} currentTurn={turn}
+                winner={winner} redName={leftName} yellowName={rightName} theme={theme}
                 footer={
                   <div className="flex gap-2 justify-center mt-1">
                     <button onClick={reset} className="px-5 py-1.5 text-[10px] font-barDisplay font-bold uppercase tracking-widest hover:opacity-80 transition-opacity" style={accentBgStyle}>
@@ -573,6 +599,13 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
                 <input value={leftName} onChange={e => setLeftName(e.target.value)} placeholder="Red player" className={`flex-1 px-3 py-1.5 text-xs border text-center bg-transparent ${theme.text}`} style={{ ...inputStyle, fontSize: 12 }} />
                 <input value={rightName} onChange={e => setRightName(e.target.value)} placeholder="Yellow player" className={`flex-1 px-3 py-1.5 text-xs border text-center bg-transparent ${theme.text}`} style={{ ...inputStyle, fontSize: 12 }} />
               </div>
+              {isSocial && isLoggedIn && (
+                <div className="mt-3 pt-3 border-t text-center" style={dividerStyle}>
+                  <button onClick={() => setGameMode('lobby')} className="text-[10px] font-bold uppercase tracking-wider hover:opacity-80 transition-opacity" style={{ color: 'var(--fs-nav-active-text)' }}>
+                    <Wifi size={10} className="inline mr-1" /> Challenge a friend online →
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
@@ -591,39 +624,38 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
 
               {/* Create + Join */}
               <div className="p-4 border-b" style={dividerStyle}>
-                <div className="flex gap-2 flex-wrap">
-                  {isLoggedIn ? (
+                {isLoggedIn ? (
+                  <div className="flex flex-wrap gap-2">
                     <button
-                      onClick={createOnlineGame}
-                      disabled={gameLoading}
-                      className="flex items-center gap-1.5 px-4 py-2 text-[10px] font-barDisplay font-bold uppercase tracking-widest disabled:opacity-50 hover:opacity-80 transition-opacity"
+                      onClick={createOnlineGame} disabled={gameLoading}
+                      className="flex items-center gap-2 px-5 py-2.5 text-[11px] font-barDisplay font-bold uppercase tracking-widest disabled:opacity-50 hover:opacity-85 transition-opacity"
                       style={accentBgStyle}
                     >
-                      <Plus size={11} /> {gameLoading ? 'Creating…' : 'Create Game'}
+                      <Plus size={13} /> {gameLoading ? 'Creating…' : 'New Game'}
                     </button>
-                  ) : (
-                    <p className={`text-xs py-2 ${theme.textMuted}`}>Sign in to create a game</p>
-                  )}
-                  <div className="flex gap-1.5 flex-1 min-w-[140px]">
-                    <input
-                      value={joinCodeInput}
-                      onChange={e => setJoinCodeInput(e.target.value.toUpperCase().slice(0, 4))}
-                      onKeyDown={e => e.key === 'Enter' && joinCodeInput.length >= 3 && joinOnlineGame(joinCodeInput)}
-                      placeholder="CODE"
-                      maxLength={4}
-                      className={`flex-1 min-w-0 px-3 py-2 text-xs font-bold text-center uppercase tracking-[0.3em] border ${theme.text}`}
-                      style={inputStyle}
-                    />
-                    <button
-                      onClick={() => joinOnlineGame(joinCodeInput)}
-                      disabled={!isLoggedIn || joinCodeInput.length < 3 || gameLoading}
-                      className="px-3 py-2 text-[10px] font-barDisplay font-bold uppercase tracking-wider disabled:opacity-40 hover:opacity-80 transition-opacity"
-                      style={accentBgStyle}
-                    >
-                      Join
-                    </button>
+                    <div className="flex gap-1.5 flex-1 min-w-[120px]">
+                      <input
+                        value={joinCodeInput}
+                        onChange={e => setJoinCodeInput(e.target.value.toUpperCase().slice(0, 4))}
+                        onKeyDown={e => e.key === 'Enter' && joinCodeInput.length >= 3 && joinOnlineGame(joinCodeInput)}
+                        placeholder="CODE"
+                        maxLength={4}
+                        className={`flex-1 min-w-0 px-3 py-2 text-xs font-bold text-center uppercase tracking-[0.3em] border ${theme.text}`}
+                        style={inputStyle}
+                      />
+                      <button
+                        onClick={() => joinOnlineGame(joinCodeInput)}
+                        disabled={joinCodeInput.length < 3 || gameLoading}
+                        className="px-3 py-2 text-[10px] font-barDisplay font-bold uppercase tracking-wider disabled:opacity-40 hover:opacity-80 transition-opacity"
+                        style={accentBgStyle}
+                      >
+                        Join
+                      </button>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <p className={`text-xs py-1 ${theme.textMuted}`}>Sign in using the <strong>Join</strong> button at the top to create or join games.</p>
+                )}
                 {gameError && (
                   <div className="mt-2 flex items-center gap-1.5 text-xs text-red-500">
                     <AlertCircle size={11} /> {gameError}
@@ -632,21 +664,19 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
               </div>
 
               {/* Games list */}
-              <div className="divide-y" style={{ borderColor: 'var(--fs-divider-muted)' }}>
-                {gamesLoading && (
-                  <p className={`px-4 py-8 text-xs text-center ${theme.textMuted}`}>Loading…</p>
-                )}
+              <div>
+                {gamesLoading && <p className={`px-4 py-8 text-xs text-center ${theme.textMuted}`}>Loading…</p>}
                 {!gamesLoading && onlineGames.length === 0 && (
                   <div className="px-4 py-10 text-center space-y-2">
                     <p className={`text-sm font-bold ${theme.text}`}>No active games</p>
-                    <p className={`text-xs ${theme.textMuted}`}>{isLoggedIn ? 'Create one and share the code!' : 'Sign in to start playing online.'}</p>
+                    <p className={`text-xs ${theme.textMuted}`}>{isLoggedIn ? 'Hit "New Game" and share the code!' : 'Sign in to start playing.'}</p>
                   </div>
                 )}
                 {onlineGames.map(game => {
                   const isOpen = game.status === 'waiting';
                   const isMyGame = game.player1_id === user?.id || game.player2_id === user?.id;
                   return (
-                    <div key={game.id} className={`flex items-center gap-3 px-4 py-3 ${isMyGame ? 'bg-[var(--fs-quad-green-bg)]' : ''}`}>
+                    <div key={game.id} className={`flex items-center gap-3 px-4 py-3 border-b last:border-0`} style={{ borderColor: 'var(--fs-divider-muted)', ...(isMyGame ? { backgroundColor: 'var(--fs-quad-green-bg)' } : {}) }}>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5 flex-wrap mb-1">
                           <div className="flex items-center gap-1">
@@ -654,15 +684,13 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
                             <span className={`text-xs font-bold truncate max-w-[80px] ${theme.text}`}>{game.player1_name}</span>
                           </div>
                           {game.player2_name ? (
-                            <>
-                              <span className={`text-[9px] ${theme.textMuted}`}>vs</span>
-                              <div className="flex items-center gap-1">
-                                <div className="w-2.5 h-2.5 rounded-full bg-yellow-400 border border-yellow-200 shrink-0" />
-                                <span className={`text-xs font-bold truncate max-w-[80px] ${theme.text}`}>{game.player2_name}</span>
-                              </div>
-                            </>
+                            <><span className={`text-[9px] ${theme.textMuted}`}>vs</span>
+                            <div className="flex items-center gap-1">
+                              <div className="w-2.5 h-2.5 rounded-full bg-yellow-400 border border-yellow-200 shrink-0" />
+                              <span className={`text-xs font-bold truncate max-w-[80px] ${theme.text}`}>{game.player2_name}</span>
+                            </div></>
                           ) : (
-                            <span className={`text-[10px] italic ${theme.textMuted}`}>waiting for opponent…</span>
+                            <span className={`text-[10px] italic ${theme.textMuted}`}>waiting…</span>
                           )}
                         </div>
                         <div className="flex items-center gap-2">
@@ -670,38 +698,24 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
                             <span className={`w-1.5 h-1.5 rounded-full ${isOpen ? 'bg-amber-400 animate-pulse' : 'bg-emerald-400'}`} />
                             {isOpen ? 'Open' : 'In Progress'}
                           </span>
-                          <span className={`text-[9px] flex items-center gap-0.5 ${theme.textMuted}`}>
-                            <Clock size={8} /> {timeAgo(game.created_at)}
-                          </span>
+                          <span className={`text-[9px] flex items-center gap-0.5 ${theme.textMuted}`}><Clock size={8} /> {timeAgo(game.created_at)}</span>
                           <span className={`text-[9px] font-mono font-bold tracking-widest ${theme.textMuted}`}>#{game.game_code}</span>
                         </div>
                       </div>
                       <div className="flex items-center gap-1.5 shrink-0">
                         {isOpen && isLoggedIn && game.player1_id !== user?.id && (
-                          <button
-                            onClick={() => joinOnlineGame(game.game_code)}
-                            className="px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider hover:opacity-80 transition-opacity"
-                            style={accentBgStyle}
-                          >
-                            Join
-                          </button>
+                          <button onClick={() => joinOnlineGame(game.game_code)} className="px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider hover:opacity-80 transition-opacity" style={accentBgStyle}>Join</button>
                         )}
                         {isMyGame && isOpen && (
-                          <button
-                            onClick={() => copyCode(game.game_code)}
+                          <button onClick={() => copyCode(game.game_code)}
                             className={`flex items-center gap-1 px-2 py-1 text-[9px] font-mono font-bold border-2 border-dashed ${accentText}`}
-                            style={{ borderColor: 'var(--fs-nav-active-text)', borderRadius: 'var(--fs-radius)' }}
-                            title="Copy game code"
-                          >
-                            {game.game_code}
-                            {codeCopied ? <Check size={9} className="text-emerald-500" /> : <Copy size={9} />}
+                            style={{ borderColor: 'var(--fs-nav-active-text)', borderRadius: 'var(--fs-radius)' }} title="Copy code">
+                            {game.game_code} {codeCopied ? <Check size={9} className="text-emerald-500" /> : <Copy size={9} />}
                           </button>
                         )}
-                        <button
-                          onClick={() => watchGame(game.id)}
+                        <button onClick={() => watchGame(game.id)}
                           className={`flex items-center gap-0.5 px-2 py-1 text-[9px] font-bold uppercase tracking-wider border hover:opacity-80 transition-opacity`}
-                          style={{ borderColor: 'var(--fs-input-border)', color: 'var(--fs-text-muted)', borderRadius: 'var(--fs-radius)' }}
-                        >
+                          style={{ borderColor: 'var(--fs-input-border)', color: 'var(--fs-text-muted)', borderRadius: 'var(--fs-radius)' }}>
                           <Eye size={9} /> {isMyGame ? 'Resume' : 'Watch'}
                         </button>
                       </div>
@@ -715,73 +729,55 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
           {/* ONLINE GAME */}
           {gameMode === 'online' && currentGame && (
             <div className="border-2 p-4 sm:p-5" style={cardStyle}>
-              {/* Back bar */}
               <div className="flex items-center justify-between mb-4">
                 <button onClick={leaveGame} className={`flex items-center gap-1 text-[10px] uppercase tracking-wider ${theme.textMuted} hover:opacity-80`}>
                   <ArrowLeft size={11} /> Lobby
                 </button>
                 <div className="flex items-center gap-2">
-                  {isSpectating && (
-                    <span className={`text-[9px] font-bold uppercase tracking-wider text-amber-500 border border-amber-300 px-2 py-0.5`} style={{ borderRadius: 'var(--fs-radius)' }}>
-                      👁 Watching
-                    </span>
-                  )}
+                  {isSpectating && <span className="text-[9px] font-bold uppercase tracking-wider text-amber-500 border border-amber-300 px-2 py-0.5" style={{ borderRadius: 'var(--fs-radius)' }}>👁 Watching</span>}
                   {myColor && (
                     <span className={`text-[9px] font-bold uppercase tracking-wider border-2 px-2 py-0.5 flex items-center gap-1 ${myColor === 'red' ? 'border-red-400 text-red-500' : 'border-yellow-400 text-yellow-500'}`} style={{ borderRadius: 'var(--fs-radius)' }}>
-                      <div className={`w-2.5 h-2.5 rounded-full ${myColor === 'red' ? 'bg-red-500' : 'bg-yellow-400'}`} />
-                      You are {myColor}
+                      <div className={`w-2.5 h-2.5 rounded-full ${myColor === 'red' ? 'bg-red-500' : 'bg-yellow-400'}`} /> You are {myColor}
                     </span>
                   )}
                   <span className={`text-[9px] font-mono font-bold tracking-widest ${theme.textMuted}`}>#{currentGame.game_code}</span>
                 </div>
               </div>
 
-              {/* Waiting for opponent */}
               {currentGame.status === 'waiting' && (
                 <div className="text-center py-10 space-y-5">
                   <div className="flex items-center justify-center gap-3">
                     <div className="w-5 h-5 rounded-full bg-red-500 border-2 border-red-300 animate-pulse" />
                     <span className={`text-base font-bold ${theme.text}`}>{currentGame.player1_name}</span>
                   </div>
-                  <p className={`text-xs ${theme.textMuted}`}>Waiting for an opponent…</p>
-                  <div className="flex items-center justify-center gap-3">
+                  <p className={`text-xs ${theme.textMuted}`}>Waiting for an opponent to join…</p>
+                  <div className="space-y-3">
+                    <p className={`text-[10px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Share this code</p>
                     <button
                       onClick={() => copyCode(currentGame.game_code)}
-                      className={`text-3xl font-mono font-bold tracking-[0.4em] border-2 border-dashed px-5 py-3 ${accentText} hover:opacity-80 transition-opacity`}
+                      className={`text-4xl font-mono font-black tracking-[0.5em] border-2 border-dashed px-6 py-4 ${accentText} hover:opacity-80 transition-opacity block mx-auto`}
                       style={{ borderColor: 'var(--fs-nav-active-text)', borderRadius: 'var(--fs-radius)' }}
                       title="Click to copy"
                     >
                       {currentGame.game_code}
                     </button>
-                    <div className="text-left space-y-1">
-                      <p className={`text-[10px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Share this code</p>
-                      <button onClick={() => copyCode(currentGame.game_code)} className={`flex items-center gap-1.5 text-xs border px-2.5 py-1.5 hover:opacity-80 transition-opacity`} style={{ borderColor: 'var(--fs-input-border)', borderRadius: 'var(--fs-radius)', color: 'var(--fs-text-muted)' }}>
-                        {codeCopied ? <><Check size={11} className="text-emerald-500" /> Copied!</> : <><Copy size={11} /> Copy code</>}
-                      </button>
-                    </div>
+                    <button onClick={() => copyCode(currentGame.game_code)} className={`flex items-center gap-1.5 text-xs border px-3 py-2 hover:opacity-80 transition-opacity mx-auto`} style={{ borderColor: 'var(--fs-input-border)', borderRadius: 'var(--fs-radius)', color: 'var(--fs-text-muted)' }}>
+                      {codeCopied ? <><Check size={11} className="text-emerald-500" /> Copied!</> : <><Copy size={11} /> Copy code</>}
+                    </button>
                   </div>
-                  <button
-                    onClick={cancelOnlineGame}
-                    className={`flex items-center gap-1 mx-auto text-[10px] uppercase tracking-wider text-red-400 border border-red-200 px-3 py-1.5 hover:bg-red-50 transition-colors`}
-                    style={{ borderRadius: 'var(--fs-radius)' }}
-                  >
+                  <button onClick={cancelOnlineGame} className="flex items-center gap-1 mx-auto text-[10px] uppercase tracking-wider text-red-400 border border-red-200 px-3 py-1.5 hover:bg-red-50 transition-colors" style={{ borderRadius: 'var(--fs-radius)' }}>
                     <Trash2 size={10} /> Cancel game
                   </button>
                 </div>
               )}
 
-              {/* Active / finished game */}
               {currentGame.status !== 'waiting' && (
                 <GameBoard
-                  board={currentGame.board as Cell[][]}
-                  onDrop={dropOnline}
+                  board={currentGame.board as Cell[][]} onDrop={dropOnline}
                   disabled={!isMyTurn || currentGame.status === 'finished'}
-                  currentTurn={currentGame.current_turn}
-                  winner={currentGame.winner || null}
-                  redName={currentGame.player1_name}
-                  yellowName={currentGame.player2_name || 'Player 2'}
-                  isMyTurn={isMyTurn}
-                  theme={theme}
+                  currentTurn={currentGame.current_turn} winner={currentGame.winner || null}
+                  redName={currentGame.player1_name} yellowName={currentGame.player2_name || 'Player 2'}
+                  isMyTurn={isMyTurn} theme={theme}
                   footer={
                     currentGame.status === 'finished' ? (
                       <button onClick={leaveGame} className="px-5 py-1.5 text-[10px] font-barDisplay font-bold uppercase tracking-widest hover:opacity-80 transition-opacity mt-1" style={accentBgStyle}>
@@ -794,13 +790,10 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
             </div>
           )}
 
-          {/* Fallback: online mode but no game */}
           {gameMode === 'online' && !currentGame && (
             <div className="border-2 p-8 text-center" style={cardStyle}>
               <p className={`text-sm ${theme.textMuted} mb-3`}>No active game selected</p>
-              <button onClick={() => setGameMode('lobby')} className="px-4 py-2 text-[10px] font-barDisplay font-bold uppercase tracking-widest hover:opacity-80 transition-opacity" style={accentBgStyle}>
-                Go to lobby
-              </button>
+              <button onClick={() => setGameMode('lobby')} className="px-4 py-2 text-[10px] font-barDisplay font-bold uppercase tracking-widest hover:opacity-80 transition-opacity" style={accentBgStyle}>Go to lobby</button>
             </div>
           )}
         </div>
@@ -812,24 +805,10 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
           {isSocial && !isLoggedIn && !authLoading && (
             <div className="border-2 p-4" style={cardStyle}>
               <p className={`text-sm font-barDisplay font-bold uppercase tracking-tight mb-1 ${theme.text}`}>Play ranked online</p>
-              <p className={`text-[11px] mb-4 leading-relaxed ${theme.textMuted}`}>
-                Join Four Square to track wins, top the leaderboard, and chat with other players.
-              </p>
+              <p className={`text-[11px] mb-4 leading-relaxed ${theme.textMuted}`}>Join Four Square to track wins, top the leaderboard, and chat with players.</p>
               <form onSubmit={handleEmailSubmit} className="space-y-2">
-                <input
-                  type="email"
-                  value={emailInput}
-                  onChange={e => setEmailInput(e.target.value)}
-                  placeholder="your@email.com"
-                  required
-                  className={`w-full px-3 py-2 border text-xs ${theme.text}`}
-                  style={inputStyle}
-                />
-                <button
-                  type="submit"
-                  className="w-full py-2.5 text-[10px] font-barDisplay font-bold uppercase tracking-widest hover:opacity-80 transition-opacity"
-                  style={accentBgStyle}
-                >
+                <input type="email" value={emailInput} onChange={e => setEmailInput(e.target.value)} placeholder="your@email.com" required className={`w-full px-3 py-2 border text-xs ${theme.text}`} style={inputStyle} />
+                <button type="submit" className="w-full py-2.5 text-[10px] font-barDisplay font-bold uppercase tracking-widest hover:opacity-80 transition-opacity" style={accentBgStyle}>
                   <Mail size={10} className="inline mr-1.5" />Send magic link
                 </button>
               </form>
@@ -841,8 +820,7 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
           {/* @handle setup */}
           {isSocial && needsHandle && (
             <div className="border-2 p-4" style={cardStyle}>
-              <div className="flex items-center gap-2 mb-1">
-                <User size={13} className={accentText} />
+              <div className="flex items-center gap-2 mb-1"><User size={13} className={accentText} />
                 <p className={`text-xs font-barDisplay font-bold uppercase tracking-wider ${theme.text}`}>Choose your @handle</p>
               </div>
               <p className={`text-[10px] mb-3 ${theme.textMuted}`}>How you'll appear on the leaderboard and in chat.</p>
@@ -913,35 +891,89 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
         </div>
       </div>
 
-      {/* ── Chat — full width at bottom ── */}
+      {/* ── Chat ── */}
       {isSocial && (
         <div className="mt-5 border-2 overflow-hidden" style={cardStyle}>
-          <div className="px-3 py-2.5 border-b flex items-center gap-2" style={dividerStyle}>
-            <MessageCircle size={13} className={accentText} />
-            <span className={`text-[10px] font-barDisplay font-bold uppercase tracking-wider ${theme.text}`}>Chat</span>
-            {!isLoggedIn && <span className={`ml-auto text-[9px] italic ${theme.textMuted}`}>Sign in to send messages</span>}
-          </div>
-          <div className="h-32 overflow-y-auto no-scrollbar px-3 py-2 space-y-1.5">
-            {chatMessages.length === 0 && <p className={`text-[10px] text-center py-6 ${theme.textMuted}`}>No messages yet — say hi!</p>}
-            {chatMessages.map((m) => (
-              <div key={m.id} className="text-[11px] leading-snug">
-                <span className={`font-bold ${accentText}`}>{m.display_name}</span>
-                <span className={`ml-1.5 ${theme.textMuted}`}>{m.message}</span>
+          {/* Chat header — clickable to collapse */}
+          <button
+            type="button"
+            onClick={() => { setChatOpen(v => !v); if (!chatOpen) setUnreadCount(0); }}
+            className="w-full px-4 py-3 border-b flex items-center gap-2 hover:bg-black/5 transition-colors text-left"
+            style={dividerStyle}
+          >
+            <MessageCircle size={14} className={accentText} />
+            <span className={`text-[11px] font-barDisplay font-bold uppercase tracking-wider flex-1 ${theme.text}`}>Chat</span>
+            {unreadCount > 0 && (
+              <span className="flex items-center gap-1 text-[9px] font-bold bg-red-500 text-white px-1.5 py-0.5 rounded-full animate-pulse">
+                <Bell size={8} /> {unreadCount} new
+              </span>
+            )}
+            {!isLoggedIn && <span className={`text-[9px] italic ${theme.textMuted}`}>Sign in to chat</span>}
+            {chatOpen ? <ChevronUp size={13} className={theme.textMuted} /> : <ChevronDown size={13} className={theme.textMuted} />}
+          </button>
+
+          {chatOpen && (
+            <>
+              <div
+                ref={chatScrollRef}
+                onScroll={handleChatScroll}
+                className="h-64 overflow-y-auto px-4 py-3 space-y-2.5"
+              >
+                {chatMessages.length === 0 && pendingMsgs.length === 0 && (
+                  <p className={`text-[10px] text-center py-8 ${theme.textMuted}`}>No messages yet — say hi!</p>
+                )}
+                {[...chatMessages, ...pendingMsgs].map((m) => {
+                  const isMe = m.user_id === user?.id;
+                  const isPending = m.id.startsWith('pending-');
+                  return (
+                    <div key={m.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+                      <div className={`flex items-baseline gap-1.5 mb-0.5 ${isMe ? 'flex-row-reverse' : ''}`}>
+                        <span className={`text-[10px] font-bold ${isMe ? accentText : theme.text}`}>{m.display_name}</span>
+                        <span className={`text-[9px] ${theme.textMuted}`}>{formatChatTime(m.created_at)}</span>
+                      </div>
+                      <div
+                        className={`max-w-[75%] px-3 py-1.5 text-xs leading-snug ${isPending ? 'opacity-60' : ''} ${
+                          isMe
+                            ? 'text-white rounded-xl rounded-tr-sm'
+                            : 'rounded-xl rounded-tl-sm'
+                        }`}
+                        style={isMe
+                          ? { backgroundColor: 'var(--fs-footer-schedule-bg)' }
+                          : { backgroundColor: 'var(--fs-input-bg)', color: 'var(--fs-page-text)', border: '1px solid var(--fs-divider-muted)' }
+                        }
+                      >
+                        {m.message}
+                        {isPending && <span className={`ml-1.5 text-[9px] ${theme.textMuted}`}>…</span>}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            ))}
-            <div ref={chatEndRef} />
-          </div>
-          {isLoggedIn ? (
-            <div className="flex gap-2 p-2.5 border-t" style={dividerStyle}>
-              <input value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && sendChat()} placeholder={`Message as ${profile?.display_name || 'you'}…`} className={`flex-1 min-w-0 px-3 py-2 text-xs border ${theme.text}`} style={inputStyle} />
-              <button type="button" onClick={sendChat} className="p-2" style={accentBgStyle} aria-label="Send">
-                <Send size={13} />
-              </button>
-            </div>
-          ) : (
-            <div className="px-3 py-2.5 border-t text-center" style={dividerStyle}>
-              <p className={`text-[10px] ${theme.textMuted}`}>Sign in above to chat with other players</p>
-            </div>
+
+              {isLoggedIn ? (
+                <div className="flex gap-2 p-3 border-t" style={dividerStyle}>
+                  <input
+                    value={chatInput}
+                    onChange={e => setChatInput(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); } }}
+                    placeholder={`Message as ${profile?.display_name || 'you'}…`}
+                    className={`flex-1 min-w-0 px-3 py-2 text-xs border ${theme.text}`}
+                    style={inputStyle}
+                  />
+                  <button
+                    type="button" onClick={sendChat} disabled={!chatInput.trim()}
+                    className="p-2.5 disabled:opacity-40 hover:opacity-80 transition-opacity"
+                    style={accentBgStyle} aria-label="Send"
+                  >
+                    <Send size={14} />
+                  </button>
+                </div>
+              ) : (
+                <div className="px-4 py-3 border-t text-center" style={dividerStyle}>
+                  <p className={`text-[10px] ${theme.textMuted}`}>Sign in with the <strong>Join</strong> button at the top of the page to chat</p>
+                </div>
+              )}
+            </>
           )}
         </div>
       )}
