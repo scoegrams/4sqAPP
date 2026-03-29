@@ -11,6 +11,7 @@ import SpecialsPage from './components/pages/SpecialsPage';
 import JackpotPage from './components/pages/JackpotPage';
 import PrintMenuPage from './components/PrintMenuPage';
 import ChalkboardSpecials from './components/ChalkboardSpecials';
+import AuthModal from './components/AuthModal';
 import { MenuData, MenuItem, MenuSection } from './types';
 import { ThemeMode, getTheme } from './theme';
 import { useMenuStore } from './hooks/useMenuStore';
@@ -34,7 +35,7 @@ interface AppInnerProps {
 const AppInner: React.FC<AppInnerProps> = ({ themeMode, setThemeMode }) => {
   const store = useMenuStore();
   const { effectiveTokens } = useDesignTokens();
-  const { signOut } = useAuth();
+  const { signOut, user, profile } = useAuth();
 
   const [isAdmin, setIsAdmin] = useState(false);
   const [activePage, setActivePage] = useState<Page>('menu');
@@ -42,6 +43,9 @@ const AppInner: React.FC<AppInnerProps> = ({ themeMode, setThemeMode }) => {
   const [customBgColor, setCustomBgColor] = useState<string | null>(null);
   const [showPrint, setShowPrint] = useState(false);
   const [showChalkboard, setShowChalkboard] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  const isLoggedIn = !!user && !!profile;
 
   const theme = getTheme(themeMode);
   const isMenuPage = activePage === 'menu';
@@ -60,6 +64,13 @@ const AppInner: React.FC<AppInnerProps> = ({ themeMode, setThemeMode }) => {
     window.addEventListener('hashchange', go);
     return () => window.removeEventListener('hashchange', go);
   }, []);
+
+  // Auto-open auth modal for handle setup after a new member signs in
+  useEffect(() => {
+    if (isLoggedIn && !profile?.display_name) {
+      setShowAuthModal(true);
+    }
+  }, [isLoggedIn, profile?.display_name]);
 
   useEffect(() => {
     if (activePage === 'jackpot') {
@@ -187,12 +198,15 @@ const AppInner: React.FC<AppInnerProps> = ({ themeMode, setThemeMode }) => {
         isAdmin={isAdmin}
         isDirty={store.isDirty}
         isSaving={store.isSaving}
+        isLoggedIn={isLoggedIn}
+        profile={profile}
         onOpenNav={() => setIsNavOpen(true)}
         onNavigate={setActivePage}
         onExitAdmin={() => setIsAdmin(false)}
         onSignOut={signOut}
         onSave={store.save}
         onGoAdmin={() => setActivePage('jackpot')}
+        onSignIn={() => setShowAuthModal(true)}
       />
 
       <NavDrawer
@@ -280,6 +294,10 @@ const AppInner: React.FC<AppInnerProps> = ({ themeMode, setThemeMode }) => {
           onMoveItem={store.moveChalkboardItem}
           onClose={() => setShowChalkboard(false)}
         />
+      )}
+
+      {showAuthModal && (
+        <AuthModal onClose={() => setShowAuthModal(false)} />
       )}
     </div>
   );

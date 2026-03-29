@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { LucideIcon } from 'lucide-react';
-import { Menu, Info, Grid2x2, CalendarDays, GlassWater, Sparkles, ShieldCheck, LogOut, X, Save, Loader2, Settings2 } from 'lucide-react';
+import { Menu, Info, Grid2x2, CalendarDays, GlassWater, Sparkles, ShieldCheck, LogOut, X, Save, Loader2, Settings2, UserCircle2 } from 'lucide-react';
 import TrainSign from './TrainSign';
 import FourSquares from './FourSquares';
 import { Page } from './NavDrawer';
 import { Theme } from '../theme';
 import { TrainSignEvent } from '../types';
+import type { Profile } from '../types/supabase';
 
 interface HeaderProps {
   theme: Theme;
@@ -14,12 +15,15 @@ interface HeaderProps {
   isAdmin?: boolean;
   isDirty?: boolean;
   isSaving?: boolean;
+  isLoggedIn?: boolean;
+  profile?: Profile | null;
   onOpenNav: () => void;
   onNavigate: (page: Page) => void;
   onExitAdmin?: () => void;
   onSignOut?: () => void;
   onSave?: () => void;
   onGoAdmin?: () => void;
+  onSignIn?: () => void;
 }
 
 const NAV_ITEMS: { id: Page; label: string; icon: LucideIcon | React.FC<{ size?: number }> }[] = [
@@ -31,7 +35,28 @@ const NAV_ITEMS: { id: Page; label: string; icon: LucideIcon | React.FC<{ size?:
   { id: 'connect4', label: 'Connect 4', icon: Grid2x2 },
 ];
 
-const Header: React.FC<HeaderProps> = ({ theme, activePage, trainSignEvents = [], isAdmin, isDirty, isSaving, onOpenNav, onNavigate, onExitAdmin, onSignOut, onSave, onGoAdmin }) => {
+const Header: React.FC<HeaderProps> = ({
+  theme, activePage, trainSignEvents = [], isAdmin, isDirty, isSaving,
+  isLoggedIn, profile,
+  onOpenNav, onNavigate, onExitAdmin, onSignOut, onSave, onGoAdmin, onSignIn,
+}) => {
+  const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
+  const avatarRef = useRef<HTMLDivElement>(null);
+
+  // Close avatar dropdown on outside click
+  useEffect(() => {
+    if (!avatarMenuOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (avatarRef.current && !avatarRef.current.contains(e.target as Node)) {
+        setAvatarMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [avatarMenuOpen]);
+
+  const initial = (profile?.display_name || profile?.email || 'M')[0].toUpperCase();
+
   return (
     <div className={`z-20 transition-colors duration-300 safe-top ${theme.headerBg} ${theme.headerBorder}`}>
       {/* items-start + self-start logo = pinned top-left; safe-left keeps clear of notches */}
@@ -63,6 +88,61 @@ const Header: React.FC<HeaderProps> = ({ theme, activePage, trainSignEvents = []
 
         <div className="flex items-start gap-2 shrink-0 pt-0.5">
           <TrainSign theme={theme} events={trainSignEvents} isAdmin={false} />
+
+          {/* Member auth: only relevant on the Connect 4 page */}
+          {isLoggedIn && activePage === 'connect4' ? (
+            <div ref={avatarRef} className="relative">
+              <button
+                type="button"
+                onClick={() => setAvatarMenuOpen(v => !v)}
+                className="min-h-[44px] min-w-[44px] flex items-center justify-center font-barDisplay font-bold text-sm text-white transition-all active:scale-95"
+                style={{
+                  backgroundColor: 'var(--fs-footer-schedule-bg)',
+                  borderRadius: 'var(--fs-radius)',
+                }}
+                aria-label="Account menu"
+              >
+                {initial}
+              </button>
+              {avatarMenuOpen && (
+                <div
+                  className="absolute right-0 top-full mt-1 w-44 border-2 shadow-lg z-50 py-1 bg-[var(--fs-card-bg)]"
+                  style={{ borderColor: 'var(--fs-border)', borderRadius: 'var(--fs-radius)' }}
+                >
+                  <div className="px-3 py-2 border-b border-[var(--fs-divider-muted)]">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--fs-nav-active-text)] truncate">
+                      {profile?.display_name || 'Member'}
+                    </p>
+                    <p className="text-[9px] text-[var(--fs-text-muted)] truncate mt-0.5">
+                      {profile?.email || ''}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => { setAvatarMenuOpen(false); onSignOut?.(); }}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-red-600 hover:bg-red-50 transition-colors text-left"
+                  >
+                    <LogOut size={11} /> Sign out
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : !isLoggedIn && activePage === 'connect4' && onSignIn ? (
+            <button
+              type="button"
+              onClick={onSignIn}
+              className="min-h-[44px] flex items-center gap-1.5 px-3 font-bold text-[10px] uppercase tracking-wider text-white border-2 transition-all active:scale-95 hover:opacity-85"
+              style={{
+                backgroundColor: 'var(--fs-footer-schedule-bg)',
+                borderColor: 'var(--fs-footer-schedule-bg)',
+                borderRadius: 'var(--fs-radius)',
+              }}
+            >
+              <UserCircle2 size={14} />
+              <span className="hidden sm:inline">Join</span>
+            </button>
+          ) : null}
+
           <button
             onClick={onOpenNav}
             className="min-h-[44px] min-w-[44px] flex items-center justify-center p-2 border-2 transition-all active:scale-95 bg-[var(--fs-header-menu-btn-bg)] border-[color:var(--fs-header-menu-btn-border)] text-[color:var(--fs-header-menu-btn-icon)]"

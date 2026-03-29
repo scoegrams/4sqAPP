@@ -16,6 +16,12 @@ create table if not exists public.connect4_games (
 
 alter table public.connect4_games enable row level security;
 
+-- Idempotent: safe to re-run if a previous attempt created policies but failed later
+drop policy if exists "Anyone can read games" on public.connect4_games;
+drop policy if exists "Authenticated users can create games" on public.connect4_games;
+drop policy if exists "Players can update games" on public.connect4_games;
+drop policy if exists "Creators can delete games" on public.connect4_games;
+
 -- Lobby: anyone (incl. anon) can read all games
 create policy "Anyone can read games"
   on public.connect4_games for select
@@ -47,5 +53,16 @@ create policy "Creators can delete games"
   to authenticated
   using (auth.uid() = player1_id);
 
--- Enable realtime so lobby and in-game both receive live updates
-alter publication supabase_realtime add table public.connect4_games;
+-- Enable realtime so lobby and in-game both receive live updates (skip if already added)
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_publication_tables
+    where pubname = 'supabase_realtime'
+      and schemaname = 'public'
+      and tablename = 'connect4_games'
+  ) then
+    alter publication supabase_realtime add table public.connect4_games;
+  end if;
+end $$;

@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
-  MessageCircle, Trophy, Gift, Mail, Phone, Send, User, LogOut,
+  MessageCircle, Trophy, Gift, Mail, Send, User, LogOut,
   Plus, Wifi, Copy, Check, ArrowLeft, RefreshCw, Eye, Clock, AlertCircle, Trash2,
 } from 'lucide-react';
 import { Theme } from '../../theme';
@@ -217,7 +217,7 @@ const GameBoard: React.FC<{
 // ── Main component ────────────────────────────────────────────────────────────
 const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
   const auth = useAuth();
-  const { user, profile, loading: authLoading, error: authError, signInWithEmail, signInWithPhone, verifyPhoneOtp, signOut, updateProfile, clearError } = auth;
+  const { user, profile, loading: authLoading, error: authError, signInWithEmail, signOut, updateProfile, clearError } = auth;
 
   // Local game
   const [board, setBoard] = useState<Cell[][]>(createBoard);
@@ -239,11 +239,7 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
   const [gamesLoading, setGamesLoading] = useState(false);
 
   // Auth form
-  const [authTab, setAuthTab] = useState<'email' | 'phone'>('email');
   const [emailInput, setEmailInput] = useState('');
-  const [phoneInput, setPhoneInput] = useState('');
-  const [phoneOtp, setPhoneOtp] = useState('');
-  const [phoneSent, setPhoneSent] = useState(false);
   const [authSuccess, setAuthSuccess] = useState('');
 
   // Handle setup
@@ -494,17 +490,6 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
     e.preventDefault(); clearError(); setAuthSuccess('');
     const { error } = await signInWithEmail(emailInput);
     if (!error) setAuthSuccess('Check your email for the login link.');
-  };
-
-  const handlePhoneSubmit = async (e: React.FormEvent) => {
-    e.preventDefault(); clearError(); setAuthSuccess('');
-    if (!phoneSent) {
-      const { error } = await signInWithPhone(phoneInput);
-      if (!error) { setPhoneSent(true); setAuthSuccess('Enter the code we texted you.'); }
-    } else {
-      const { error } = await verifyPhoneOtp(phoneInput, phoneOtp);
-      if (!error) setAuthSuccess("You're in!");
-    }
   };
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -826,36 +811,28 @@ const Connect4Page: React.FC<Connect4PageProps> = ({ theme }) => {
           {/* Sign-in CTA */}
           {isSocial && !isLoggedIn && !authLoading && (
             <div className="border-2 p-4" style={cardStyle}>
-              <p className={`text-sm font-barDisplay font-bold uppercase tracking-tight mb-0.5 ${theme.text}`}>Play ranked online</p>
+              <p className={`text-sm font-barDisplay font-bold uppercase tracking-tight mb-1 ${theme.text}`}>Play ranked online</p>
               <p className={`text-[11px] mb-4 leading-relaxed ${theme.textMuted}`}>
-                Join Four Square — chat, track wins, and top the leaderboard.
+                Join Four Square to track wins, top the leaderboard, and chat with other players.
               </p>
-              <div className="flex gap-1.5 mb-3">
-                {(['email', 'phone'] as const).map(tab => (
-                  <button key={tab} type="button" onClick={() => setAuthTab(tab)}
-                    className="flex-1 py-1.5 text-[10px] font-bold uppercase tracking-wider border-2 transition-all"
-                    style={authTab === tab ? accentBgStyle : { borderColor: 'var(--fs-input-border)', color: 'var(--fs-text-muted)', borderRadius: 'var(--fs-radius)' }}
-                  >
-                    {tab === 'email' ? <><Mail size={10} className="inline mr-1" />Email</> : <><Phone size={10} className="inline mr-1" />Phone</>}
-                  </button>
-                ))}
-              </div>
-              {authTab === 'email' ? (
-                <form onSubmit={handleEmailSubmit} className="space-y-2">
-                  <input type="email" value={emailInput} onChange={e => setEmailInput(e.target.value)} placeholder="you@email.com" required className={`w-full px-3 py-2 border text-xs ${theme.text}`} style={inputStyle} />
-                  <button type="submit" className="w-full py-2.5 text-[10px] font-barDisplay font-bold uppercase tracking-widest hover:opacity-80 transition-opacity" style={accentBgStyle}>Send magic link</button>
-                </form>
-              ) : (
-                <form onSubmit={handlePhoneSubmit} className="space-y-2">
-                  <input type="tel" value={phoneInput} onChange={e => setPhoneInput(e.target.value)} placeholder="+1 (555) 000-0000" className={`w-full px-3 py-2 border text-xs ${theme.text}`} style={inputStyle} />
-                  {phoneSent && (
-                    <input type="text" value={phoneOtp} onChange={e => setPhoneOtp(e.target.value)} placeholder="6-digit code" maxLength={6} className={`w-full px-3 py-2 border text-xs ${theme.text}`} style={inputStyle} />
-                  )}
-                  <button type="submit" className="w-full py-2.5 text-[10px] font-barDisplay font-bold uppercase tracking-widest hover:opacity-80 transition-opacity" style={accentBgStyle}>
-                    {phoneSent ? 'Verify code' : 'Send code'}
-                  </button>
-                </form>
-              )}
+              <form onSubmit={handleEmailSubmit} className="space-y-2">
+                <input
+                  type="email"
+                  value={emailInput}
+                  onChange={e => setEmailInput(e.target.value)}
+                  placeholder="your@email.com"
+                  required
+                  className={`w-full px-3 py-2 border text-xs ${theme.text}`}
+                  style={inputStyle}
+                />
+                <button
+                  type="submit"
+                  className="w-full py-2.5 text-[10px] font-barDisplay font-bold uppercase tracking-widest hover:opacity-80 transition-opacity"
+                  style={accentBgStyle}
+                >
+                  <Mail size={10} className="inline mr-1.5" />Send magic link
+                </button>
+              </form>
               {authSuccess && <p className={`mt-2.5 text-xs ${accentText}`}>{authSuccess}</p>}
               {authError && <p className="mt-2.5 text-xs text-red-400">{authError}</p>}
             </div>
