@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { LucideIcon } from 'lucide-react';
-import { Menu, GlassWater, Sparkles, ShieldCheck, LogOut, X, Save, Loader2, Settings2, UserCircle2 } from 'lucide-react';
+import { Menu, Info, Grid2x2, CalendarDays, GlassWater, Sparkles, ShieldCheck, LogOut, X, Save, Loader2, Settings2, UserCircle2 } from 'lucide-react';
 import TrainSign from './TrainSign';
 import FourSquares from './FourSquares';
 import { Page } from './NavDrawer';
@@ -26,11 +26,39 @@ interface HeaderProps {
   onSignIn?: () => void;
 }
 
-/** Top bar shortcuts (mobile-friendly). Party, About, Connect 4 stay in the hamburger drawer. */
-const QUICK_NAV_ITEMS: { id: Page; label: string; icon: LucideIcon | React.FC<{ size?: number }> }[] = [
+const MenuLinesIcon: React.FC<{ size?: number; className?: string }> = ({ size = 12, className }) => (
+  <svg
+    width={size}
+    height={size}
+    className={className}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <line x1="3" y1="6" x2="21" y2="6" />
+    <line x1="3" y1="12" x2="21" y2="12" />
+    <line x1="3" y1="18" x2="21" y2="18" />
+  </svg>
+);
+
+type NavRowItem = {
+  id: Page;
+  label: string;
+  icon: LucideIcon | React.FC<{ size?: number; className?: string }>;
+  wideOnly?: boolean;
+};
+
+/** Mobile: first three only. md+ (tablet / desktop): About, Party, Connect 4 also in the bar (still in drawer on all sizes). */
+const HEADER_NAV_ROW: NavRowItem[] = [
   { id: 'drinks', label: 'Drinks', icon: GlassWater },
-  { id: 'menu', label: 'Menu', icon: ({ size = 12 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg> },
+  { id: 'menu', label: 'Menu', icon: MenuLinesIcon },
   { id: 'specials', label: 'Specials', icon: Sparkles },
+  { id: 'about', label: 'About', icon: Info, wideOnly: true },
+  { id: 'booking', label: 'Host Your Party', icon: CalendarDays, wideOnly: true },
+  { id: 'connect4', label: 'Connect 4', icon: Grid2x2, wideOnly: true },
 ];
 
 const Header: React.FC<HeaderProps> = ({
@@ -161,20 +189,22 @@ const Header: React.FC<HeaderProps> = ({
           paddingRight: 'max(0.5rem, env(safe-area-inset-right, 0px))',
         }}
       >
-        {QUICK_NAV_ITEMS.map(({ id, label, icon: Icon }) => {
+        {HEADER_NAV_ROW.map(({ id, label, icon: Icon, wideOnly }) => {
           const isActive = activePage === id;
           return (
             <button
               key={id}
               onClick={() => onNavigate(id)}
               style={{ fontFamily: "'Hamon', system-ui, sans-serif", fontWeight: 700 }}
-              className={`flex items-center gap-1 px-2 sm:px-3 py-2 sm:py-1.5 text-[9px] sm:text-[12px] uppercase tracking-wider sm:tracking-widest transition-all duration-200 border-b-2 -mb-px shrink-0 min-h-[40px] sm:min-h-0 active:scale-[0.98] ${
+              className={`items-center gap-1 px-2 md:px-3 py-2 md:py-1.5 text-[9px] md:text-[12px] uppercase tracking-wider md:tracking-widest transition-all duration-200 border-b-2 -mb-px shrink-0 min-h-[40px] md:min-h-0 active:scale-[0.98] ${
+                wideOnly ? 'hidden md:inline-flex' : 'inline-flex'
+              } ${
                 isActive
                   ? 'text-[color:var(--fs-nav-active-text)] border-[color:var(--fs-nav-active-border)]'
                   : 'text-[color:var(--fs-nav-active-text)] opacity-50 border-transparent hover:opacity-80 hover:border-[color:var(--fs-nav-active-border)]'
               }`}
             >
-              <Icon size={10} />
+              <Icon size={10} className="md:w-3 md:h-3 shrink-0" />
               {label}
             </button>
           );
