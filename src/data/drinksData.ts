@@ -53,7 +53,7 @@ export const DRINK_TAB_LABELS: Record<(typeof DRINK_CATEGORY_ORDER)[number], str
   draft: 'Draft',
   cocktails: 'Cocktails',
   wine: 'Wine',
-  seltzers: 'Seltzers',
+  seltzers: 'Cans',
 };
 
 export const CANNED_BEERS: { name: string; price: number }[] = [

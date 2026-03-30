@@ -70,11 +70,11 @@ const DrinksPage: React.FC<DrinksPageProps> = ({
 
       {/* Quick category switcher: one list on small screens; lg+ keeps 4-up grid and tabs scroll */}
       <div
-        className={`sticky top-0 z-10 -mx-4 sm:-mx-6 px-4 sm:px-6 py-2.5 mb-4 border-b-2 backdrop-blur-md ${tabBarBg} ${accentBorder}`}
+        className={`sticky top-0 z-10 -mx-4 sm:-mx-6 px-3 sm:px-6 py-1.5 sm:py-2.5 mb-4 border-b-2 backdrop-blur-md ${tabBarBg} ${accentBorder}`}
         role="tablist"
         aria-label="Drink categories"
       >
-        <div className="flex gap-1 sm:gap-2 overflow-x-auto no-scrollbar pb-0.5">
+        <div className="flex flex-nowrap w-full justify-stretch gap-0.5 sm:justify-center sm:gap-2 pb-0">
           {categories.map(cat => {
             const isActive = activeCat === cat;
             return (
@@ -85,7 +85,7 @@ const DrinksPage: React.FC<DrinksPageProps> = ({
                 aria-selected={isActive}
                 id={`drinks-tab-${cat}`}
                 onClick={() => onDrinkTab(cat)}
-                className={`shrink-0 min-h-[40px] sm:min-h-[44px] px-3 sm:px-4 rounded-md font-barDisplay font-bold uppercase tracking-[0.12em] sm:tracking-[0.18em] text-[10px] sm:text-[11px] border-2 transition-all active:scale-[0.98] ${
+                className={`flex-1 min-w-0 min-h-[34px] sm:min-h-[44px] sm:flex-none sm:shrink-0 px-1 sm:px-4 py-1 sm:py-2 rounded-md font-barDisplay font-bold uppercase tracking-[0.04em] sm:tracking-[0.18em] text-[8px] sm:text-[11px] border sm:border-2 transition-all active:scale-[0.98] whitespace-nowrap text-center leading-tight ${
                   isActive
                     ? theme.isDark
                       ? 'border-emerald-500 bg-emerald-950/60 text-emerald-300'
