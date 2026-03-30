@@ -1,8 +1,13 @@
-import React from 'react';
+import React, { useRef, useState, useMemo, useEffect } from 'react';
 import { Trash2, Plus } from 'lucide-react';
 import { Theme } from '../../theme';
 import { DrinksData, DrinkItem } from '../../types';
-import { DRINK_CATEGORY_LABELS, CANNED_BEERS } from '../../data/drinksData';
+import {
+  DRINK_CATEGORY_LABELS,
+  DRINK_CATEGORY_ORDER,
+  DRINK_TAB_LABELS,
+  CANNED_BEERS,
+} from '../../data/drinksData';
 
 interface DrinksPageProps {
   theme: Theme;
@@ -17,12 +22,40 @@ const DrinksPage: React.FC<DrinksPageProps> = ({
   theme, drinks, isAdmin,
   onUpdateDrinkItem, onAddDrinkItem, onRemoveDrinkItem,
 }) => {
+  type DrinkCat = (typeof DRINK_CATEGORY_ORDER)[number];
+
+  const categories = useMemo(
+    () => DRINK_CATEGORY_ORDER.filter((k): k is DrinkCat => Array.isArray(drinks[k])),
+    [drinks],
+  );
+
+  const [activeCat, setActiveCat] = useState<DrinkCat>(() => categories[0] ?? 'draft');
+  const sectionRefs = useRef<Partial<Record<string, HTMLDivElement | null>>>({});
+
+  useEffect(() => {
+    if (categories.length && !categories.includes(activeCat)) {
+      setActiveCat(categories[0]!);
+    }
+  }, [categories, activeCat]);
+
+  const onDrinkTab = (cat: DrinkCat) => {
+    setActiveCat(cat);
+    if (typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches) {
+      requestAnimationFrame(() => {
+        sectionRefs.current[cat]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+  };
+
   const isApple = theme.mode === 'apple';
   const accent = isApple ? 'text-[#0071e3]' : theme.isDark ? 'text-emerald-400' : 'text-emerald-700';
   const accentBorder = isApple ? 'border-[#0071e3]' : theme.isDark ? 'border-emerald-700' : 'border-emerald-600';
   const cardBg = theme.isDark ? 'bg-slate-800/60 border-slate-700' : isApple ? 'bg-white border-[#d2d2d7]' : 'bg-white border-slate-200';
   const headerBg = theme.isDark ? 'border-slate-700 bg-slate-800/80' : isApple ? 'border-[#d2d2d7] bg-[#f5f5f7]' : 'border-slate-200 bg-slate-50';
   const inputBorder = theme.isDark ? 'border-white/25 text-white' : 'border-black/25';
+
+  const tabBarBg =
+    theme.isDark ? 'bg-slate-900/92 border-slate-600' : isApple ? 'bg-[#f5f5f7]/95 border-[#d2d2d7]' : 'bg-white/95 border-slate-200';
 
   const categoryColors = [
     { border: theme.isDark ? 'border-emerald-700' : 'border-emerald-600', header: theme.isDark ? 'bg-emerald-900/30 border-emerald-700' : 'bg-emerald-50 border-emerald-600', accent: theme.isDark ? 'text-emerald-400' : 'text-emerald-700' },
@@ -33,13 +66,62 @@ const DrinksPage: React.FC<DrinksPageProps> = ({
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
-      <h2 className={`text-2xl font-barDisplay font-bold uppercase tracking-[0.15em] mb-6 ${accent}`}>Drinks</h2>
-      {/* Four rectangles across on web, 2x2 on tablet, stack on mobile */}
+      <h2 className={`text-2xl font-barDisplay font-bold uppercase tracking-[0.15em] mb-4 ${accent}`}>Drinks</h2>
+
+      {/* Quick category switcher: one list on small screens; lg+ keeps 4-up grid and tabs scroll */}
+      <div
+        className={`sticky top-0 z-10 -mx-4 sm:-mx-6 px-4 sm:px-6 py-2.5 mb-4 border-b-2 backdrop-blur-md ${tabBarBg} ${accentBorder}`}
+        role="tablist"
+        aria-label="Drink categories"
+      >
+        <div className="flex gap-1 sm:gap-2 overflow-x-auto no-scrollbar pb-0.5">
+          {categories.map(cat => {
+            const isActive = activeCat === cat;
+            return (
+              <button
+                key={cat}
+                type="button"
+                role="tab"
+                aria-selected={isActive}
+                id={`drinks-tab-${cat}`}
+                onClick={() => onDrinkTab(cat)}
+                className={`shrink-0 min-h-[40px] sm:min-h-[44px] px-3 sm:px-4 rounded-md font-barDisplay font-bold uppercase tracking-[0.12em] sm:tracking-[0.18em] text-[10px] sm:text-[11px] border-2 transition-all active:scale-[0.98] ${
+                  isActive
+                    ? theme.isDark
+                      ? 'border-emerald-500 bg-emerald-950/60 text-emerald-300'
+                      : isApple
+                        ? 'border-[#0071e3] bg-white text-[#0071e3]'
+                        : 'border-emerald-600 bg-emerald-50 text-emerald-800'
+                    : theme.isDark
+                      ? 'border-transparent text-slate-400 hover:text-slate-200 hover:border-slate-600'
+                      : 'border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300'
+                }`}
+              >
+                {DRINK_TAB_LABELS[cat as keyof typeof DRINK_TAB_LABELS] ?? cat}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* lg+: 4 columns; smaller viewports: only active category (quick switch) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        {Object.entries(drinks).map(([cat, items], i) => {
+        {categories.map((cat, i) => {
+          const items = drinks[cat];
           const colors = categoryColors[i % categoryColors.length];
           return (
-          <div key={cat} className={`border-2 overflow-hidden min-h-0 flex flex-col ${cardBg} ${colors.border}`}>
+          <div
+            key={cat}
+            id={`drinks-section-${cat}`}
+            ref={el => {
+              sectionRefs.current[cat] = el;
+            }}
+            role="tabpanel"
+            aria-labelledby={`drinks-tab-${cat}`}
+            className={`scroll-mt-[4.5rem] lg:scroll-mt-6 border-2 overflow-hidden min-h-0 ${cardBg} ${colors.border} ${
+              activeCat === cat ? 'flex flex-col' : 'hidden lg:flex lg:flex-col'
+            }`}
+          >
             <div className={`px-3 sm:px-4 py-2.5 sm:py-3 border-b-2 shrink-0 ${colors.header} ${colors.border}`}>
               <h3 className={`text-[11px] sm:text-xs font-barDisplay font-bold uppercase tracking-[0.2em] ${colors.accent}`}>
                 {DRINK_CATEGORY_LABELS[cat] || cat}

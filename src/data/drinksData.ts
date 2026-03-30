@@ -46,6 +46,16 @@ export const DRINK_CATEGORY_LABELS: Record<string, string> = {
   seltzers: 'Seltzers & Cans',
 };
 
+/** Bar order for tabs + layout (quick switch between drink lists). */
+export const DRINK_CATEGORY_ORDER = ['draft', 'cocktails', 'wine', 'seltzers'] as const;
+
+export const DRINK_TAB_LABELS: Record<(typeof DRINK_CATEGORY_ORDER)[number], string> = {
+  draft: 'Draft',
+  cocktails: 'Cocktails',
+  wine: 'Wine',
+  seltzers: 'Seltzers',
+};
+
 export const CANNED_BEERS: { name: string; price: number }[] = [
   { name: 'Bud Light', price: 4 },
   { name: 'Budweiser', price: 4 },
