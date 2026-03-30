@@ -1,11 +1,9 @@
 <!--
   Four Square — branded magic link email (Supabase)
+  No remote images (avoids blocked / broken logos in email clients).
 
   Paste into: Supabase Dashboard → Authentication → Email Templates → Magic Link
   Subject: e.g. "Sign in to Four Square"
-
-  Logo is served from your deployed site:
-    /images/fourSquare-Restaurant-and-bar.jpg  (public/images/)
 
   Supabase variables (do not remove):
     {{ .ConfirmationURL }}  {{ .SiteURL }}  {{ .Email }}
@@ -29,10 +27,15 @@
           <tr>
             <td style="height:4px;line-height:4px;font-size:0;background-color:#5275B8;">&nbsp;</td>
           </tr>
-          <!-- Logo (white bg in asset) -->
+          <!-- Text masthead (no images — reliable in all clients) -->
           <tr>
-            <td style="background-color:#ffffff;padding:28px 24px 20px;text-align:center;">
-              <img src="{{ .SiteURL }}/images/fourSquare-Restaurant-and-bar.jpg" width="240" height="auto" alt="Four Square Bar &amp; Restaurant" style="display:block;margin:0 auto;max-width:280px;width:100%;height:auto;border:0;">
+            <td style="background-color:#ffffff;padding:28px 24px 12px;text-align:center;">
+              <p style="margin:0;font-size:26px;font-weight:800;letter-spacing:0.02em;line-height:1.1;color:#000000;">
+                FOUR<br>SQUARE
+              </p>
+              <p style="margin:10px 0 0;font-size:12px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#5275B8;">
+                Bar &amp; Restaurant
+              </p>
             </td>
           </tr>
           <!-- Body -->

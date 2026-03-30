@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { LucideIcon } from 'lucide-react';
-import { Menu, Info, Grid2x2, CalendarDays, GlassWater, Sparkles, ShieldCheck, LogOut, X, Save, Loader2, Settings2, UserCircle2 } from 'lucide-react';
+import { Menu, GlassWater, Sparkles, ShieldCheck, LogOut, X, Save, Loader2, Settings2, UserCircle2 } from 'lucide-react';
 import TrainSign from './TrainSign';
 import FourSquares from './FourSquares';
 import { Page } from './NavDrawer';
@@ -26,13 +26,11 @@ interface HeaderProps {
   onSignIn?: () => void;
 }
 
-const NAV_ITEMS: { id: Page; label: string; icon: LucideIcon | React.FC<{ size?: number }> }[] = [
-  { id: 'menu', label: 'Menu', icon: ({ size = 12 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg> },
+/** Top bar shortcuts (mobile-friendly). Party, About, Connect 4 stay in the hamburger drawer. */
+const QUICK_NAV_ITEMS: { id: Page; label: string; icon: LucideIcon | React.FC<{ size?: number }> }[] = [
   { id: 'drinks', label: 'Drinks', icon: GlassWater },
+  { id: 'menu', label: 'Menu', icon: ({ size = 12 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg> },
   { id: 'specials', label: 'Specials', icon: Sparkles },
-  { id: 'booking', label: 'Host Your Party', icon: CalendarDays },
-  { id: 'about', label: 'About', icon: Info },
-  { id: 'connect4', label: 'Connect 4', icon: Grid2x2 },
 ];
 
 const Header: React.FC<HeaderProps> = ({
@@ -59,9 +57,9 @@ const Header: React.FC<HeaderProps> = ({
 
   return (
     <div className={`z-20 transition-colors duration-300 safe-top ${theme.headerBg} ${theme.headerBorder}`}>
-      {/* items-start + self-start logo = pinned top-left; safe-left keeps clear of notches */}
-      <div className="px-4 sm:px-6 py-2 sm:py-2.5 flex items-start justify-between gap-3 safe-left">
-        <div className="flex items-start gap-3 sm:gap-4 min-w-0 flex-1">
+      {/* pl uses max() so logo never hugs the screen edge when safe-area is 0 */}
+      <div className="py-2 sm:py-2.5 flex items-start justify-between gap-3 pl-[max(1.25rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] sm:pl-[max(1.5rem,env(safe-area-inset-left,0px))] sm:pr-[max(1.5rem,env(safe-area-inset-right,0px))]">
+        <div className="flex items-start gap-3 sm:gap-4 min-w-0 flex-1 pl-0">
           {/* Stacked Hamon wordmark + square tech — matches brand lockup */}
           <div
             className="shrink-0 self-start font-barDisplay font-bold text-center text-[color:var(--fs-header-wordmark)] w-fit max-w-[92vw]"
@@ -155,23 +153,28 @@ const Header: React.FC<HeaderProps> = ({
       </div>
 
       <div
-        className={`px-2 sm:px-6 border-t overflow-x-auto no-scrollbar flex items-center justify-center gap-0.5 sm:gap-1 ${theme.navUnderline}`}
-        style={{ backdropFilter: 'blur(var(--fs-nav-blur))', WebkitBackdropFilter: 'blur(var(--fs-nav-blur))' }}
+        className={`border-t overflow-x-auto no-scrollbar flex items-center justify-center gap-0 sm:gap-1 px-2 sm:px-6 ${theme.navUnderline}`}
+        style={{
+          backdropFilter: 'blur(var(--fs-nav-blur))',
+          WebkitBackdropFilter: 'blur(var(--fs-nav-blur))',
+          paddingLeft: 'max(0.5rem, env(safe-area-inset-left, 0px))',
+          paddingRight: 'max(0.5rem, env(safe-area-inset-right, 0px))',
+        }}
       >
-        {NAV_ITEMS.map(({ id, label, icon: Icon }) => {
+        {QUICK_NAV_ITEMS.map(({ id, label, icon: Icon }) => {
           const isActive = activePage === id;
           return (
             <button
               key={id}
               onClick={() => onNavigate(id)}
               style={{ fontFamily: "'Hamon', system-ui, sans-serif", fontWeight: 700 }}
-              className={`flex items-center gap-1.5 px-3 py-3 sm:py-1.5 text-[11px] sm:text-[12px] uppercase tracking-widest transition-all duration-200 border-b-2 -mb-px shrink-0 min-h-[44px] sm:min-h-0 active:scale-[0.98] ${
+              className={`flex items-center gap-1 px-2 sm:px-3 py-2 sm:py-1.5 text-[9px] sm:text-[12px] uppercase tracking-wider sm:tracking-widest transition-all duration-200 border-b-2 -mb-px shrink-0 min-h-[40px] sm:min-h-0 active:scale-[0.98] ${
                 isActive
                   ? 'text-[color:var(--fs-nav-active-text)] border-[color:var(--fs-nav-active-border)]'
                   : 'text-[color:var(--fs-nav-active-text)] opacity-50 border-transparent hover:opacity-80 hover:border-[color:var(--fs-nav-active-border)]'
               }`}
             >
-              <Icon size={12} />
+              <Icon size={10} />
               {label}
             </button>
           );

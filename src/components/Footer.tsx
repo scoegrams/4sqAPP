@@ -59,7 +59,7 @@ const Footer: React.FC<FooterProps> = ({
         <div className="flex items-center">
           <button
             onClick={isAdmin ? onOpenSpecialsEditor : undefined}
-            className={`shrink-0 px-4 py-3 sm:py-2 font-barDisplay font-bold text-[9px] uppercase tracking-[0.2em] border-r flex items-center gap-1.5 transition-all min-h-[44px] sm:min-h-0 text-white border-[color:var(--fs-footer-schedule-border)] bg-[var(--fs-footer-schedule-bg)] hover:bg-[var(--fs-footer-schedule-hover-bg)] ${
+            className={`shrink-0 px-2.5 sm:px-4 py-2 sm:py-2 font-barDisplay font-bold text-[8px] sm:text-[9px] uppercase tracking-[0.15em] sm:tracking-[0.2em] border-r flex items-center gap-1 transition-all min-h-0 text-white border-[color:var(--fs-footer-schedule-border)] bg-[var(--fs-footer-schedule-bg)] hover:bg-[var(--fs-footer-schedule-hover-bg)] ${
               !isAdmin ? 'cursor-default' : 'cursor-pointer'
             }`}
           >
@@ -71,7 +71,7 @@ const Footer: React.FC<FooterProps> = ({
               {doubled.map((s, i) => (
                 <div key={`${s.day}-${i}`} className="flex items-center shrink-0 pr-1">
                   <span
-                    className={`${DAY_COLORS[s.day] || 'bg-slate-600'} text-white text-[9px] font-barDisplay font-bold uppercase tracking-widest px-2 py-1 mx-2`}
+                    className={`${DAY_COLORS[s.day] || 'bg-slate-600'} text-white text-[8px] sm:text-[9px] font-barDisplay font-bold uppercase tracking-wider sm:tracking-widest px-1.5 sm:px-2 py-0.5 sm:py-1 mx-1.5 sm:mx-2`}
                   >
                     {s.day}
                   </span>
@@ -105,28 +105,35 @@ const Footer: React.FC<FooterProps> = ({
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 px-4 py-3 sm:py-1.5 safe-bottom">
-        <div className={`flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.15em] ${theme.textMuted}`}>
-          <MapPin size={10} />
-          16 Commercial Street, Braintree MA
+      <div className="px-3 sm:px-4 py-2 sm:py-2.5 safe-bottom">
+        <div className="flex flex-col gap-1 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-x-5 sm:gap-y-1 text-center sm:text-left max-w-lg sm:max-w-none mx-auto">
+          <p className={`flex items-center justify-center sm:justify-start gap-1.5 text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.12em] sm:tracking-[0.15em] leading-tight ${theme.textMuted}`}>
+            <MapPin size={9} className="shrink-0" aria-hidden />
+            <span>16 Commercial St, Braintree MA</span>
+          </p>
+          <p className={`flex flex-wrap items-center justify-center gap-x-2 gap-y-0.5 text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.12em] sm:tracking-[0.15em] ${theme.textMuted}`}>
+            <span className="inline-flex items-center gap-1">
+              <Phone size={9} className="shrink-0" aria-hidden />
+              781-848-4448
+            </span>
+            <span className="opacity-40 select-none" aria-hidden>
+              ·
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <Clock size={9} className="shrink-0" aria-hidden />
+              <span className="normal-case font-semibold tracking-normal">Open: {openHours}</span>
+            </span>
+          </p>
+          <button
+            type="button"
+            onClick={handleSecretTap}
+            className={`text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.12em] sm:tracking-[0.15em] select-none focus:outline-none ${theme.textMuted} sm:ml-0 opacity-80 hover:opacity-100`}
+            aria-hidden="true"
+            tabIndex={-1}
+          >
+            Four Square
+          </button>
         </div>
-        <div className={`flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.15em] ${theme.textMuted}`}>
-          <Phone size={10} />
-          781-848-4448
-        </div>
-        <div className={`flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.15em] ${theme.textMuted}`}>
-          <Clock size={10} />
-          Open: {openHours}
-        </div>
-        <button
-          type="button"
-          onClick={handleSecretTap}
-          className={`text-[9px] font-bold uppercase tracking-[0.15em] select-none focus:outline-none ${theme.textMuted}`}
-          aria-hidden="true"
-          tabIndex={-1}
-        >
-          Four Square
-        </button>
       </div>
     </div>
   );
