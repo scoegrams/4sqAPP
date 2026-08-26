@@ -1,4 +1,7 @@
-import { MenuData, Special } from '../types';
+import { MenuData } from '../types';
+import { INITIAL_SPECIALS } from '../lib/specials';
+
+export { INITIAL_SPECIALS };
 
 export const INITIAL_MENU_DATA: MenuData = {
   apps: {
@@ -104,12 +107,3 @@ export const INITIAL_MENU_DATA: MenuData = {
   },
 };
 
-export const INITIAL_SPECIALS: Special[] = [
-  { day: 'Mon', dish: 'Meatloaf', price: 15 },
-  { day: 'Tue', dish: 'Tacos', price: 12 },
-  { day: 'Wed', dish: 'Wings', price: 18 },
-  { day: 'Thu', dish: 'Prime Rib', price: 28 },
-  { day: 'Fri', dish: 'Fish Fry', price: 19 },
-  { day: 'Sat', dish: "Chef's Catch", price: 24 },
-  { day: 'Sun', dish: 'Family Roast', price: 22 },
-];

@@ -5,9 +5,10 @@ import {
   ChevronUp, CalendarDays, Train, Eye, Lock, Sparkles, KeyRound,
 } from 'lucide-react';
 import { Theme, ThemeMode } from '../../theme';
-import type { Special, TrainSignEvent, MenuVersion } from '../../types';
+import type { Special, TrainSignEvent, MenuVersion, ChalkboardData } from '../../types';
 import VersionHistory from '../VersionHistory';
 import SpecialsEditor from '../SpecialsEditor';
+import PartyInquiriesPanel from '../PartyInquiriesPanel';
 import TrainSignEditor from '../TrainSignEditor';
 import ThemeStudioPanel from '../ThemeStudioPanel';
 import { supabase, hasSupabase } from '../../lib/supabase';
@@ -82,6 +83,7 @@ interface JackpotPageProps {
   lastSaved: Date | null;
   customBgColor: string | null;
   specials: Special[];
+  chalkboardMeta: Pick<ChalkboardData, 'title' | 'price' | 'subtitle'>;
   openHours: string;
   events: TrainSignEvent[];
   onToggleAdmin: () => void;
@@ -93,6 +95,10 @@ interface JackpotPageProps {
   onChalkboard: () => void;
   onColorChange: (color: string | null) => void;
   onUpdateSpecial: (idx: number, field: keyof Special, value: string | number) => void;
+  onAddSpecial: () => void;
+  onRemoveSpecial: (idx: number) => void;
+  onMoveSpecial: (idx: number, dir: 'up' | 'down') => void;
+  onUpdateChalkboardMeta: (field: 'title' | 'price' | 'subtitle', value: string) => void;
   onUpdateOpenHours: (v: string) => void;
   onUpdateEvent: (idx: number, field: keyof TrainSignEvent, value: string) => void;
   onAddEvent: () => void;
@@ -138,10 +144,10 @@ const Section: React.FC<{
 // ── Main component ──────────────────────────────────────────────────────────
 const JackpotPage: React.FC<JackpotPageProps> = ({
   theme, themeMode, isAdmin, isDirty, lastSaved, customBgColor,
-  specials, openHours, events,
+  specials, chalkboardMeta, openHours, events,
   onToggleAdmin, onCycleTheme, onSetTheme,
   onSave, onDiscard, onPrint, onChalkboard, onColorChange,
-  onUpdateSpecial, onUpdateOpenHours,
+  onUpdateSpecial, onAddSpecial, onRemoveSpecial, onMoveSpecial, onUpdateChalkboardMeta, onUpdateOpenHours,
   onUpdateEvent, onAddEvent, onRemoveEvent, onMoveEvent,
   onRestoreVersion,
 }) => {
@@ -461,15 +467,16 @@ const JackpotPage: React.FC<JackpotPageProps> = ({
 
         {/* Specials & events */}
         <Section title="Specials &amp; events" icon={<CalendarDays size={16} />}>
-          <p className="text-xs text-[#5c564d] mb-3">Edit daily specials shown in the footer, and the scrolling marquee events in the header.</p>
-          <div className="flex flex-wrap gap-2">
+          <p className="text-xs text-[#5c564d] mb-3">Edit lunch specials (footer, Specials page, About) and header marquee events.</p>
+          <div className="flex flex-wrap gap-2 mb-4">
             <button type="button" onClick={() => setShowSpecials(true)} className={btnTan}>
-              <CalendarDays size={13} /> Daily specials
+              <CalendarDays size={13} /> Lunch specials
             </button>
             <button type="button" onClick={() => setShowTrainSign(true)} className={btnOutline}>
               <Train size={13} /> Marquee events
             </button>
           </div>
+          <PartyInquiriesPanel />
         </Section>
 
         {/* Theme */}
@@ -565,10 +572,16 @@ const JackpotPage: React.FC<JackpotPageProps> = ({
       <SpecialsEditor
         isOpen={showSpecials}
         specials={specials}
+        meta={chalkboardMeta}
         openHours={openHours}
+        isDirty={isDirty}
         onUpdateOpenHours={onUpdateOpenHours}
+        onUpdateMeta={onUpdateChalkboardMeta}
         theme={theme}
         onUpdate={onUpdateSpecial}
+        onAdd={onAddSpecial}
+        onRemove={onRemoveSpecial}
+        onMove={onMoveSpecial}
         onClose={() => setShowSpecials(false)}
       />
       <TrainSignEditor

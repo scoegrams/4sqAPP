@@ -3,6 +3,7 @@ import { LucideIcon } from 'lucide-react';
 import { UtensilsCrossed, Beef, Salad, Pizza, Trash2, ChevronUp, ChevronDown, Plus } from 'lucide-react';
 import { QuadrantData, MenuData, MenuItem, MenuSection } from '../types';
 import { Theme, QuadrantTheme } from '../theme';
+import Button from './ui/Button';
 
 interface QuadrantProps {
   id: keyof MenuData;
@@ -10,6 +11,10 @@ interface QuadrantProps {
   isAdmin: boolean;
   theme: Theme;
   quadrantTheme: QuadrantTheme;
+  emphasis?: 'default' | 'focus';
+  dimmed?: boolean;
+  className?: string;
+  onFocusRequest?: () => void;
   onUpdateItem: (q: keyof MenuData, si: number, ii: number, field: keyof MenuItem, value: string | number | boolean) => void;
   onAddItem: (q: keyof MenuData, si: number) => void;
   onRemoveItem: (q: keyof MenuData, si: number, ii: number) => void;
@@ -29,31 +34,66 @@ const QUADRANT_ICONS: Record<string, LucideIcon> = {
 
 const Quadrant: React.FC<QuadrantProps> = ({
   id, data, isAdmin, theme, quadrantTheme,
+  emphasis = 'default',
+  dimmed = false,
+  className = '',
+  onFocusRequest,
   onUpdateItem, onAddItem, onRemoveItem, onMoveItem,
   onUpdateSection, onAddSection, onRemoveSection, onMoveSection,
 }) => {
   const Icon = QUADRANT_ICONS[id];
   const borderMuted = 'border-[color:var(--fs-divider-muted)]';
-  const btnMuted = 'text-[color:var(--fs-btn-muted)] hover:text-[color:var(--fs-btn-muted-hover)]';
-  const btnDanger = 'text-red-500/50 hover:text-red-400';
   const adminDashBorder = 'border-[color:var(--fs-input-border)]';
+  const inFocus = emphasis === 'focus';
+  const sectionLabel = inFocus ? 'text-sm tracking-[0.12em]' : 'text-[11px] tracking-[0.15em]';
+  const sectionNote = inFocus ? 'text-[11px]' : 'text-[9px]';
+  const itemDescription = inFocus ? 'text-xs mt-1' : 'text-[10px] mt-0.5';
 
   return (
     <div
-      className={`border-2 overflow-hidden ${quadrantTheme.bg} ${quadrantTheme.border}`}
-      style={{ borderRadius: 'var(--fs-radius)', boxShadow: 'var(--fs-card-shadow)' }}
+      className={[
+        'border-2 overflow-hidden',
+        quadrantTheme.bg,
+        quadrantTheme.border,
+        dimmed ? 'opacity-45 saturate-75 scale-[0.985] pointer-events-none' : '',
+        className,
+      ].filter(Boolean).join(' ')}
+      style={{
+        borderRadius: 'var(--fs-radius)',
+        boxShadow: 'var(--fs-card-shadow)',
+        ...(inFocus
+          ? ({
+              '--fs-menu-item-font-size': 'clamp(1rem, 4.2vw, 1.125rem)',
+              '--fs-menu-item-padding-y': '0.625rem',
+            } as React.CSSProperties)
+          : {}),
+      }}
     >
       {/* Header */}
       <div className={`px-5 py-3 border-b-2 ${quadrantTheme.border} ${quadrantTheme.headerBg} flex items-center justify-between`}>
-        <div className="flex items-center gap-2">
-          {Icon && <Icon size={14} className={quadrantTheme.accent} />}
-          <h2 className={`text-sm font-barDisplay font-bold uppercase tracking-[0.2em] ${quadrantTheme.accent}`}>
-            {data.title}
-          </h2>
-        </div>
+        {onFocusRequest ? (
+          <button
+            type="button"
+            onClick={onFocusRequest}
+            className="flex items-center gap-2 text-left min-h-[44px] -my-1 flex-1 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--fs-nav-active-border)]"
+            aria-label={`Read ${data.title} menu larger`}
+          >
+            {Icon && <Icon size={inFocus ? 18 : 14} className={quadrantTheme.accent} />}
+            <h2 className={`${inFocus ? 'text-base' : 'text-sm'} font-barDisplay font-bold uppercase tracking-[0.2em] ${quadrantTheme.accent}`}>
+              {data.title}
+            </h2>
+          </button>
+        ) : (
+          <div className="flex items-center gap-2">
+            {Icon && <Icon size={inFocus ? 18 : 14} className={quadrantTheme.accent} />}
+            <h2 className={`${inFocus ? 'text-base' : 'text-sm'} font-barDisplay font-bold uppercase tracking-[0.2em] ${quadrantTheme.accent}`}>
+              {data.title}
+            </h2>
+          </div>
+        )}
       </div>
 
-      <div className="px-5 py-4">
+      <div className={`px-5 ${inFocus ? 'py-5' : 'py-4'}`}>
         {data.sections.map((section, si) => (
           <div key={`${section.name}-${si}`} className={si < data.sections.length - 1 ? 'mb-5' : ''}>
             {/* Section header */}
@@ -61,8 +101,8 @@ const Quadrant: React.FC<QuadrantProps> = ({
               {isAdmin ? (
                 <div className="flex items-center gap-1 flex-1 min-w-0">
                   <div className="flex flex-col gap-0.5">
-                    <button onClick={() => onMoveSection(id, si, 'up')} className={`${btnMuted} transition-colors`} disabled={si === 0}><ChevronUp size={10} /></button>
-                    <button onClick={() => onMoveSection(id, si, 'down')} className={`${btnMuted} transition-colors`} disabled={si === data.sections.length - 1}><ChevronDown size={10} /></button>
+                    <Button type="button" variant="muted" size="iconSm" iconOnly onClick={() => onMoveSection(id, si, 'up')} disabled={si === 0}><ChevronUp size={10} /></Button>
+                    <Button type="button" variant="muted" size="iconSm" iconOnly onClick={() => onMoveSection(id, si, 'down')} disabled={si === data.sections.length - 1}><ChevronDown size={10} /></Button>
                   </div>
                   <div className="flex-1 min-w-0">
                     <input
@@ -77,17 +117,17 @@ const Quadrant: React.FC<QuadrantProps> = ({
                       className={`text-[9px] uppercase tracking-wider bg-transparent border-b border-dashed w-full focus:outline-none mt-0.5 ${adminDashBorder} opacity-90 ${theme.textMuted}`}
                     />
                   </div>
-                  <button onClick={() => onRemoveSection(id, si)} className={`${btnDanger} transition-colors ml-1`}>
+                  <Button type="button" variant="dangerGhost" size="iconSm" iconOnly onClick={() => onRemoveSection(id, si)} className="ml-1">
                     <Trash2 size={11} />
-                  </button>
+                  </Button>
                 </div>
               ) : (
-                <div className="flex items-baseline gap-2">
-                  <span className={`text-[11px] font-barDisplay font-bold uppercase tracking-[0.15em] ${theme.text}`}>
+                <div className="flex items-baseline gap-2 flex-wrap">
+                  <span className={`${sectionLabel} font-barDisplay font-bold uppercase ${theme.text}`}>
                     {section.name}
                   </span>
                   {section.note && (
-                    <span className={`text-[9px] uppercase tracking-wider ${theme.textMuted}`}>
+                    <span className={`${sectionNote} uppercase tracking-wider ${theme.textMuted}`}>
                       {section.note}
                     </span>
                   )}
@@ -106,8 +146,8 @@ const Quadrant: React.FC<QuadrantProps> = ({
               >
                 {isAdmin && (
                   <div className="flex flex-col gap-0.5 shrink-0 pt-0.5">
-                    <button onClick={() => onMoveItem(id, si, ii, 'up')} className={`${btnMuted} transition-colors`} disabled={ii === 0}><ChevronUp size={10} /></button>
-                    <button onClick={() => onMoveItem(id, si, ii, 'down')} className={`${btnMuted} transition-colors`} disabled={ii === section.items.length - 1}><ChevronDown size={10} /></button>
+                    <Button type="button" variant="muted" size="iconSm" iconOnly onClick={() => onMoveItem(id, si, ii, 'up')} disabled={ii === 0}><ChevronUp size={10} /></Button>
+                    <Button type="button" variant="muted" size="iconSm" iconOnly onClick={() => onMoveItem(id, si, ii, 'down')} disabled={ii === section.items.length - 1}><ChevronDown size={10} /></Button>
                   </div>
                 )}
 
@@ -151,7 +191,7 @@ const Quadrant: React.FC<QuadrantProps> = ({
                         <span className="text-[8px] font-bold uppercase tracking-widest text-white bg-red-600 px-1.5 py-0.5">NEW</span>
                       )}
                       {item.description && (
-                        <p className={`text-[10px] italic w-full mt-0.5 ${theme.textMuted}`}>{item.description}</p>
+                        <p className={`${itemDescription} italic w-full ${theme.textMuted}`}>{item.description}</p>
                       )}
                     </div>
                   )}
@@ -170,9 +210,9 @@ const Quadrant: React.FC<QuadrantProps> = ({
                           className={`text-sm font-bold w-14 text-right bg-transparent border-b border-dashed focus:outline-none ${adminDashBorder} ${quadrantTheme.accent}`}
                         />
                       </div>
-                      <button onClick={() => onRemoveItem(id, si, ii)} className={`${btnDanger} transition-colors mt-0.5`}>
+                      <Button type="button" variant="dangerGhost" size="iconSm" iconOnly onClick={() => onRemoveItem(id, si, ii)} className="mt-0.5">
                         <Trash2 size={12} />
-                      </button>
+                      </Button>
                     </>
                   ) : (
                     <span className={`font-bold whitespace-nowrap ${quadrantTheme.accent}`} style={{ fontSize: 'var(--fs-menu-item-font-size)' }}>
@@ -185,24 +225,30 @@ const Quadrant: React.FC<QuadrantProps> = ({
 
             {/* Add item button */}
             {isAdmin && (
-              <button
+              <Button
+                type="button"
+                variant="ghost"
+                size="xs"
                 onClick={() => onAddItem(id, si)}
-                className={`mt-2 flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest transition-colors ${quadrantTheme.accent} opacity-50 hover:opacity-100`}
+                className={`mt-2 ${quadrantTheme.accent} opacity-50 hover:opacity-100 normal-case`}
               >
                 <Plus size={10} /> Add Item
-              </button>
+              </Button>
             )}
           </div>
         ))}
 
         {/* Add section button */}
         {isAdmin && (
-          <button
+          <Button
+            type="button"
+            variant="dashed"
+            size="xs"
             onClick={() => onAddSection(id)}
-            className={`mt-3 w-full flex items-center justify-center gap-1 text-[9px] font-bold uppercase tracking-widest py-2 border border-dashed transition-colors border-[color:var(--fs-input-border)] text-[color:var(--fs-btn-muted)] hover:text-[color:var(--fs-btn-muted-hover)] hover:border-[color:var(--fs-text-muted)]`}
+            className="mt-3"
           >
             <Plus size={10} /> Add Section
-          </button>
+          </Button>
         )}
       </div>
     </div>

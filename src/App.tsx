@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import Header from './components/Header';
 import Footer from './components/Footer';
-import Quadrant from './components/Quadrant';
+import MenuPage from './components/pages/MenuPage';
 import NavDrawer, { Page } from './components/NavDrawer';
 import AboutPage from './components/pages/AboutPage';
-import Connect4Page from './components/pages/Connect4Page';
 import BookingPage from './components/pages/BookingPage';
 import DrinksPage from './components/pages/DrinksPage';
 import SpecialsPage from './components/pages/SpecialsPage';
@@ -17,6 +16,12 @@ import { ThemeMode, getTheme } from './theme';
 import { useMenuStore } from './hooks/useMenuStore';
 import { DesignTokensProvider, useDesignTokens } from './contexts/DesignTokensContext';
 import { useAuth } from './contexts/AuthContext';
+import { FEATURES } from './config/features';
+import { chalkboardItemsFromSpecials } from './lib/specials';
+
+const Connect4Page = FEATURES.connect4
+  ? lazy(() => import('./components/pages/Connect4Page'))
+  : null;
 
 const App = () => {
   const [themeMode, setThemeMode] = useState<ThemeMode>('light');
@@ -65,12 +70,19 @@ const AppInner: React.FC<AppInnerProps> = ({ themeMode, setThemeMode }) => {
     return () => window.removeEventListener('hashchange', go);
   }, []);
 
-  // Auto-open auth modal for handle setup after a new member signs in
+  // Auto-open auth modal for handle setup after a new member signs in (Connect 4 only)
   useEffect(() => {
+    if (!FEATURES.connect4) return;
     if (isLoggedIn && !profile?.display_name) {
       setShowAuthModal(true);
     }
   }, [isLoggedIn, profile?.display_name]);
+
+  useEffect(() => {
+    if (!FEATURES.connect4 && activePage === 'connect4') {
+      setActivePage('menu');
+    }
+  }, [activePage]);
 
   useEffect(() => {
     if (activePage === 'jackpot') {
@@ -92,10 +104,29 @@ const AppInner: React.FC<AppInnerProps> = ({ themeMode, setThemeMode }) => {
   const renderPage = () => {
     switch (activePage) {
       case 'about':
-        return <AboutPage theme={theme} onNavigate={setActivePage} />;
+        return (
+          <AboutPage
+            theme={theme}
+            specials={store.specials}
+            specialsMeta={store.chalkboard}
+            openHours={store.openHours}
+            onNavigate={setActivePage}
+          />
+        );
 
       case 'connect4':
-        return <Connect4Page theme={theme} />;
+        if (!FEATURES.connect4 || !Connect4Page) {
+          return null;
+        }
+        return (
+          <Suspense fallback={
+            <div className={`flex items-center justify-center min-h-[40vh] ${theme.text}`}>
+              <span className="text-xs font-barDisplay font-bold uppercase tracking-[0.3em] opacity-40">Loading…</span>
+            </div>
+          }>
+            <Connect4Page theme={theme} />
+          </Suspense>
+        );
 
       case 'booking':
         return <BookingPage theme={theme} />;
@@ -121,8 +152,13 @@ const AppInner: React.FC<AppInnerProps> = ({ themeMode, setThemeMode }) => {
             onChalkboard={() => setShowChalkboard(true)}
             onColorChange={setCustomBgColor}
             onUpdateSpecial={(idx, field, value) =>
-              store.updateSpecial(idx, field as 'day' | 'dish' | 'price', value)
+              store.updateSpecial(idx, field as 'day' | 'dish' | 'price' | 'description' | 'image', value)
             }
+            onAddSpecial={store.addSpecial}
+            onRemoveSpecial={store.removeSpecial}
+            onMoveSpecial={store.moveSpecial}
+            onUpdateChalkboardMeta={(field, value) => store.updateChalkboardMeta(field, value)}
+            chalkboardMeta={store.chalkboard}
             onUpdateOpenHours={store.setOpenHours}
             onUpdateEvent={(idx, field, value) => store.updateEvent(idx, field, value)}
             onAddEvent={store.addEvent}
@@ -150,13 +186,14 @@ const AppInner: React.FC<AppInnerProps> = ({ themeMode, setThemeMode }) => {
         return (
           <SpecialsPage
             theme={theme}
-            data={store.chalkboard}
+            meta={store.chalkboard}
+            specials={store.specials}
             isAdmin={isAdmin}
             onUpdateMeta={(field, value) => store.updateChalkboardMeta(field, value)}
-            onUpdateItem={(idx, field, value) => store.updateChalkboardItem(idx, field, value)}
-            onAddItem={store.addChalkboardItem}
-            onRemoveItem={store.removeChalkboardItem}
-            onMoveItem={store.moveChalkboardItem}
+            onUpdateSpecial={(idx, field, value) => store.updateSpecial(idx, field, value)}
+            onAddSpecial={store.addSpecial}
+            onRemoveSpecial={store.removeSpecial}
+            onMoveSpecial={store.moveSpecial}
             onPrintChalkboard={() => setShowChalkboard(true)}
           />
         );
@@ -218,42 +255,23 @@ const AppInner: React.FC<AppInnerProps> = ({ themeMode, setThemeMode }) => {
       />
 
       {isMenuPage ? (
-        <div className="flex-grow overflow-y-auto overflow-x-hidden p-4 md:p-6 no-scrollbar safe-left safe-right">
-          <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch mb-6">
-            {(Object.keys(store.menu) as Array<keyof MenuData>).map((key) => (
-              <Quadrant
-                key={key}
-                id={key}
-                data={store.menu[key]}
-                isAdmin={isAdmin}
-                theme={theme}
-                quadrantTheme={store.menu[key].color === 'green' ? theme.quadrantGreen : theme.quadrantBlue}
-                onUpdateItem={(q, si, ii, field, value) =>
-                  store.updateItem(q, si, ii, field as keyof MenuItem, value)
-                }
-                onAddItem={store.addItem}
-                onRemoveItem={store.removeItem}
-                onMoveItem={store.moveItem}
-                onUpdateSection={(q, si, field, value) =>
-                  store.updateSection(q, si, field as keyof MenuSection, value)
-                }
-                onAddSection={store.addSection}
-                onRemoveSection={store.removeSection}
-                onMoveSection={store.moveSection}
-              />
-            ))}
-          </div>
-
-          <div className="max-w-6xl mx-auto border-t border-[color:var(--fs-advisory-border)] px-4 py-4 mb-24">
-            <p className={`text-xs leading-relaxed ${theme.text}`}>
-              <span className="font-bold">Consumer advisory:</span> Consuming raw or undercooked meats, poultry,
-              seafood, shellfish, or eggs may increase your risk of foodborne illness, especially if you have certain
-              medical conditions. Menu items may contain or come into contact with allergens including wheat, eggs,
-              peanuts, tree nuts, milk, soy, fish, and shellfish. Please inform your server of any dietary restrictions
-              or allergies.
-            </p>
-          </div>
-        </div>
+        <MenuPage
+          theme={theme}
+          menu={store.menu}
+          isAdmin={isAdmin}
+          onUpdateItem={(q, si, ii, field, value) =>
+            store.updateItem(q, si, ii, field as keyof MenuItem, value)
+          }
+          onAddItem={store.addItem}
+          onRemoveItem={store.removeItem}
+          onMoveItem={store.moveItem}
+          onUpdateSection={(q, si, field, value) =>
+            store.updateSection(q, si, field as keyof MenuSection, value)
+          }
+          onAddSection={store.addSection}
+          onRemoveSection={store.removeSection}
+          onMoveSection={store.moveSection}
+        />
       ) : (
         <div className="flex-grow overflow-y-auto overflow-x-hidden no-scrollbar safe-left safe-right">
           {renderPage()}
@@ -285,7 +303,10 @@ const AppInner: React.FC<AppInnerProps> = ({ themeMode, setThemeMode }) => {
 
       {showChalkboard && (
         <ChalkboardSpecials
-          data={store.chalkboard}
+          data={{
+            ...store.chalkboard,
+            items: chalkboardItemsFromSpecials(store.specials),
+          }}
           isAdmin={isAdmin}
           onUpdateMeta={(field, value) => store.updateChalkboardMeta(field, value)}
           onUpdateItem={(idx, field, value) => store.updateChalkboardItem(idx, field, value)}

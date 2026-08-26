@@ -1,9 +1,15 @@
 import React from 'react';
 import { Theme } from '../../theme';
 import type { Page } from '../NavDrawer';
+import type { ChalkboardData, Special } from '../../types';
+import { specialForToday } from '../../lib/specials';
+import Button from '../ui/Button';
 
 export interface AboutPageProps {
   theme: Theme;
+  specials: Special[];
+  specialsMeta: Pick<ChalkboardData, 'title' | 'price' | 'subtitle'>;
+  openHours: string;
   onNavigate?: (page: Page) => void;
 }
 
@@ -14,12 +20,14 @@ const GOOGLE_MAPS_PLACE_URL = 'https://share.google/BNmWveS6rJw5QsVKo';
 
 const MAP_SCREENSHOT = '/images/4square-map.png';
 
-const AboutPage: React.FC<AboutPageProps> = ({ theme, onNavigate }) => {
+const AboutPage: React.FC<AboutPageProps> = ({ theme, specials, specialsMeta, openHours, onNavigate }) => {
   const isDark = theme.isDark || theme.mode === 'apple';
   const bgWarm = isDark ? 'bg-[#1a1918]' : 'bg-[#F4F1EA]';
   const textPrimary = isDark ? 'text-[#f4f1ea]' : 'text-[#1a1a1a]';
   const textMuted = isDark ? 'text-[#c4beb5]' : 'text-[#5c564d]';
   const headingColor = isDark ? 'text-[#e8e4dc]' : 'text-[#2d3d2d]';
+  const accent = isDark ? 'text-[#c9b896]' : 'text-[#2d3d2d]';
+  const todaySpecial = specialForToday(specials);
 
   return (
     <div className="font-bar">
@@ -50,10 +58,10 @@ const AboutPage: React.FC<AboutPageProps> = ({ theme, onNavigate }) => {
             </button>
             <button
               type="button"
-              onClick={() => onNavigate?.('booking')}
+              onClick={() => onNavigate?.('specials')}
               className="inline-block px-5 py-2.5 text-xs font-bold uppercase tracking-wider border-2 border-[#c9b896] text-[#e8e4dc] hover:bg-[#c9b896]/10 transition-colors"
             >
-              See Events
+              Lunch Specials
             </button>
           </div>
         </div>
@@ -112,6 +120,67 @@ const AboutPage: React.FC<AboutPageProps> = ({ theme, onNavigate }) => {
         </div>
       </section>
 
+      {/* Weekly specials — same data as footer + Specials page */}
+      <section className={`${bgWarm} border-t ${isDark ? 'border-white/10' : 'border-[#2d3d2d]/15'} py-12 sm:py-14`}>
+        <div className="max-w-4xl mx-auto px-5 sm:px-8">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
+            <div>
+              <p className={`text-[10px] font-semibold uppercase tracking-[0.25em] mb-2 ${accent}`}>
+                {specialsMeta.price}
+              </p>
+              <h2 className={`font-barDisplay text-2xl sm:text-3xl font-bold ${headingColor}`}>
+                Weekly lunch lineup
+              </h2>
+              <p className={`mt-2 text-sm ${textMuted}`}>{specialsMeta.subtitle}</p>
+            </div>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => onNavigate?.('specials')}
+              className={isDark ? 'border-white/20 bg-transparent text-[#e8e4dc]' : ''}
+            >
+              Full chalkboard
+            </Button>
+          </div>
+
+          {todaySpecial && (
+            <div className={`mb-8 p-5 border-2 ${isDark ? 'border-[#c9b896]/40 bg-white/5' : 'border-[#2d3d2d]/15 bg-white/70'}`}>
+              <p className={`text-[10px] font-bold uppercase tracking-[0.2em] mb-2 ${accent}`}>
+                Tonight · {todaySpecial.day}
+              </p>
+              <p className={`font-barDisplay text-xl sm:text-2xl font-bold ${headingColor}`}>
+                {todaySpecial.dish}
+              </p>
+              {todaySpecial.description && (
+                <p className={`mt-2 text-sm leading-relaxed ${textMuted}`}>{todaySpecial.description}</p>
+              )}
+              <p className={`mt-3 text-sm font-bold ${accent}`}>
+                ${todaySpecial.price % 1 === 0 ? todaySpecial.price : todaySpecial.price.toFixed(2)}
+              </p>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {specials.map((s) => (
+              <div
+                key={s.id ?? s.day}
+                className={`p-4 border ${isDark ? 'border-white/10 bg-white/[0.03]' : 'border-[#2d3d2d]/10 bg-white/60'}`}
+              >
+                <p className={`text-[10px] font-bold uppercase tracking-[0.18em] mb-1 ${accent}`}>{s.day}</p>
+                <p className={`font-barDisplay text-lg font-bold ${headingColor}`}>{s.dish}</p>
+                {s.description && (
+                  <p className={`mt-1 text-sm leading-snug ${textMuted}`}>{s.description}</p>
+                )}
+                <p className={`mt-2 text-sm font-bold ${accent}`}>
+                  ${s.price % 1 === 0 ? s.price : s.price.toFixed(2)}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Find Us — typographic only, two-column desktop, no icons */}
       <section className={`${bgWarm} border-t ${isDark ? 'border-white/10' : 'border-[#2d3d2d]/15'} py-12 sm:py-14`}>
         <div className="max-w-4xl mx-auto px-5 sm:px-8">
@@ -128,7 +197,7 @@ const AboutPage: React.FC<AboutPageProps> = ({ theme, onNavigate }) => {
             </div>
             <div>
               <p className={`font-semibold text-base sm:text-lg leading-snug ${textPrimary}`}>
-                Open Wednesday–Saturday
+                Open {openHours}
               </p>
               <p className={`mt-2 text-base ${textPrimary}`}>
                 <a href="tel:781-848-4448" className="hover:underline">781-848-4448</a>

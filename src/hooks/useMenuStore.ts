@@ -1,27 +1,22 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { db } from '../db';
 import { MenuData, Special, DrinksData, MenuVersion, MenuItem, MenuSection, TrainSignEvent, ChalkboardData, ChalkboardSpecial } from '../types';
-import { INITIAL_MENU_DATA, INITIAL_SPECIALS } from '../data/menuData';
+import { INITIAL_MENU_DATA } from '../data/menuData';
 import { INITIAL_DRINKS_DATA } from '../data/drinksData';
+import {
+  INITIAL_SPECIALS,
+  defaultChalkboardMeta,
+  normalizeSpecials,
+} from '../lib/specials';
 
 const DEFAULT_TRAIN_EVENTS: TrainSignEvent[] = [
   { id: 'evt-1', title: 'KARAOKE WEDNESDAY', emoji: '🎤' },
   { id: 'evt-2', title: 'SATURDAY NIGHT DJ PARTY', emoji: '🪩' },
 ];
 
-const DEFAULT_OPEN_HOURS = '4-1am Wed thru Saturday';
+const DEFAULT_OPEN_HOURS = '4PM–1AM · Wed through Sat';
 
-const DEFAULT_CHALKBOARD: ChalkboardData = {
-  title: 'Four Square',
-  price: '$12 Lunch Specials',
-  subtitle: 'Wednesday–Saturday from 4PM–1AM',
-  items: [
-    { id: 'cb-1', heading: 'Bar Pizza', description: 'Our signature thin-crust bar pie with house sauce and mozzarella' },
-    { id: 'cb-2', heading: 'Steak Tips', description: 'Marinated sirloin tips with fries and house slaw' },
-    { id: 'cb-3', heading: 'Classic Cheeseburger', description: 'Our classic cheeseburger & fries' },
-    { id: 'cb-4', heading: 'Fish & Chips', description: 'Beer-battered cod with fries, tartar sauce & slaw' },
-  ],
-};
+const DEFAULT_CHALKBOARD: ChalkboardData = defaultChalkboardMeta();
 
 function deepClone<T>(val: T): T {
   return JSON.parse(JSON.stringify(val));
@@ -52,15 +47,16 @@ export function useMenuStore() {
       if (record) {
         const loadedEvents = record.events?.length ? record.events : deepClone(DEFAULT_TRAIN_EVENTS);
         const loadedOpenHours = record.openHours ?? DEFAULT_OPEN_HOURS;
-        const loadedChalkboard = record.chalkboard ?? deepClone(DEFAULT_CHALKBOARD);
+        const loadedChalkboard = defaultChalkboardMeta(record.chalkboard);
+        const loadedSpecials = normalizeSpecials(record.specials, record.chalkboard);
         setMenu(record.menu);
-        setSpecials(record.specials);
+        setSpecials(loadedSpecials);
         setDrinks(record.drinks);
         setEvents(deepClone(loadedEvents));
         setOpenHours(loadedOpenHours);
-        setChalkboard(deepClone(loadedChalkboard));
+        setChalkboard(loadedChalkboard);
         setLastSaved(record.lastSaved ? new Date(record.lastSaved) : null);
-        savedRef.current = { menu: record.menu, specials: record.specials, drinks: record.drinks, events: loadedEvents, openHours: loadedOpenHours, chalkboard: loadedChalkboard };
+        savedRef.current = { menu: record.menu, specials: loadedSpecials, drinks: record.drinks, events: loadedEvents, openHours: loadedOpenHours, chalkboard: loadedChalkboard };
       } else {
         savedRef.current = { menu: deepClone(INITIAL_MENU_DATA), specials: deepClone(INITIAL_SPECIALS), drinks: deepClone(INITIAL_DRINKS_DATA), events: deepClone(DEFAULT_TRAIN_EVENTS), openHours: DEFAULT_OPEN_HOURS, chalkboard: deepClone(DEFAULT_CHALKBOARD) };
       }
@@ -212,6 +208,33 @@ export function useMenuStore() {
     setSpecials(prev => prev.map((s, i) => i === idx ? { ...s, [field]: value } : s));
   }, []);
 
+  const addSpecial = useCallback(() => {
+    setSpecials(prev => [
+      ...prev,
+      {
+        id: genId(),
+        day: 'Wed',
+        dish: 'New Special',
+        price: 12,
+        description: '',
+      },
+    ]);
+  }, []);
+
+  const removeSpecial = useCallback((idx: number) => {
+    setSpecials(prev => prev.filter((_, i) => i !== idx));
+  }, []);
+
+  const moveSpecial = useCallback((idx: number, direction: 'up' | 'down') => {
+    setSpecials(prev => {
+      const next = [...prev];
+      const target = direction === 'up' ? idx - 1 : idx + 1;
+      if (target < 0 || target >= next.length) return prev;
+      [next[idx], next[target]] = [next[target], next[idx]];
+      return next;
+    });
+  }, []);
+
   // ── DRINKS CRUD ───────────────────────────────────────────────────────────────
   const updateDrinkItem = useCallback((category: string, idx: number, field: string, value: string | number | boolean) => {
     setDrinks(prev => ({
@@ -263,35 +286,27 @@ export function useMenuStore() {
   }, []);
 
   const updateChalkboardItem = useCallback((idx: number, field: keyof ChalkboardSpecial, value: string) => {
-    setChalkboard(prev => ({
-      ...prev,
-      items: prev.items.map((item, i) => i === idx ? { ...item, [field]: value } : item),
-    }));
+    const fieldMap: Partial<Record<keyof ChalkboardSpecial, keyof Special>> = {
+      heading: 'dish',
+      description: 'description',
+      image: 'image',
+    };
+    const specialField = fieldMap[field];
+    if (!specialField) return;
+    setSpecials(prev => prev.map((s, i) => i === idx ? { ...s, [specialField]: value } : s));
   }, []);
 
   const addChalkboardItem = useCallback(() => {
-    setChalkboard(prev => ({
-      ...prev,
-      items: [...prev.items, { id: genId(), heading: 'New Special', description: 'Description here' }],
-    }));
-  }, []);
+    addSpecial();
+  }, [addSpecial]);
 
   const removeChalkboardItem = useCallback((idx: number) => {
-    setChalkboard(prev => ({
-      ...prev,
-      items: prev.items.filter((_, i) => i !== idx),
-    }));
-  }, []);
+    removeSpecial(idx);
+  }, [removeSpecial]);
 
   const moveChalkboardItem = useCallback((idx: number, direction: 'up' | 'down') => {
-    setChalkboard(prev => {
-      const items = [...prev.items];
-      const target = direction === 'up' ? idx - 1 : idx + 1;
-      if (target < 0 || target >= items.length) return prev;
-      [items[idx], items[target]] = [items[target], items[idx]];
-      return { ...prev, items };
-    });
-  }, []);
+    moveSpecial(idx, direction);
+  }, [moveSpecial]);
 
   return {
     menu, specials, drinks, events, openHours, setOpenHours,
@@ -301,7 +316,7 @@ export function useMenuStore() {
     save, discard, restoreVersion,
     updateItem, addItem, removeItem, moveItem,
     updateSection, addSection, removeSection, moveSection,
-    updateSpecial,
+    updateSpecial, addSpecial, removeSpecial, moveSpecial,
     updateDrinkItem, addDrinkItem, removeDrinkItem,
     updateEvent, addEvent, removeEvent, moveEvent,
   };

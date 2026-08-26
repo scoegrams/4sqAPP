@@ -3,3 +3,6 @@
 
 [functions.jackpot-pin]
 verify_jwt = false
+
+[functions.party-inquiry]
+verify_jwt = false

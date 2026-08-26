@@ -2,6 +2,8 @@ import React from 'react';
 import { LucideIcon } from 'lucide-react';
 import { X, UtensilsCrossed, GlassWater, CalendarDays, Info, Grid2x2, Sparkles } from 'lucide-react';
 import { Theme } from '../theme';
+import Button from './ui/Button';
+import { FEATURES } from '../config/features';
 
 export type Page = 'menu' | 'about' | 'connect4' | 'booking' | 'drinks' | 'specials' | 'jackpot';
 
@@ -19,7 +21,7 @@ const NAV_ITEMS: { id: Page; label: string; icon: LucideIcon }[] = [
   { id: 'specials', label: 'Specials', icon: Sparkles },
   { id: 'booking', label: 'Party', icon: CalendarDays },
   { id: 'about', label: 'About', icon: Info },
-  { id: 'connect4', label: 'Connect 4', icon: Grid2x2 },
+  ...(FEATURES.connect4 ? [{ id: 'connect4' as const, label: 'Connect 4', icon: Grid2x2 }] : []),
 ];
 
 const NavDrawer: React.FC<NavDrawerProps> = ({ isOpen, onClose, activePage, onNavigate, theme: _theme }) => {
@@ -41,39 +43,34 @@ const NavDrawer: React.FC<NavDrawerProps> = ({ isOpen, onClose, activePage, onNa
           <span className="font-barDisplay text-xs font-bold uppercase tracking-[0.3em] text-[color:var(--fs-drawer-text)]">
             Navigate
           </span>
-          <button
+          <Button
+            type="button"
+            variant="muted"
+            size="icon"
+            iconOnly
             onClick={onClose}
-            className="min-h-[44px] min-w-[44px] flex items-center justify-center -m-2 text-[color:var(--fs-drawer-text)] active:opacity-70"
+            className="-m-2 text-[color:var(--fs-drawer-text)]"
             aria-label="Close menu"
           >
             <X size={20} />
-          </button>
+          </Button>
         </div>
         <nav className="p-2">
           {NAV_ITEMS.map(({ id, label, icon: Icon }) => {
             const isActive = activePage === id;
             return (
-              <button
+              <Button
                 key={id}
+                type="button"
+                variant={isActive ? 'drawerActive' : 'drawer'}
                 onClick={() => {
                   onNavigate(id);
                   onClose();
                 }}
-                className="font-barDisplay w-full flex items-center gap-3 px-4 min-h-[48px] py-3 text-sm font-bold uppercase tracking-widest transition-all active:scale-[0.99]"
-                style={{
-                  backgroundColor: isActive ? 'var(--fs-drawer-active-bg)' : 'transparent',
-                  color: isActive ? 'var(--fs-drawer-active-text)' : 'var(--fs-drawer-inactive-text)',
-                }}
-                onMouseEnter={(e) => {
-                  if (!isActive) e.currentTarget.style.backgroundColor = 'var(--fs-drawer-hover-bg)';
-                }}
-                onMouseLeave={(e) => {
-                  if (!isActive) e.currentTarget.style.backgroundColor = 'transparent';
-                }}
               >
                 <Icon size={16} />
                 {label}
-              </button>
+              </Button>
             );
           })}
         </nav>

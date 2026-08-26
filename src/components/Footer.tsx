@@ -1,7 +1,9 @@
 import React, { useRef } from 'react';
 import { MapPin, Phone, Clock, Pencil } from 'lucide-react';
 import { Special } from '../types';
+import { specialsForDisplay } from '../lib/specials';
 import { Theme } from '../theme';
+import Button from './ui/Button';
 
 interface FooterProps {
   specials: Special[];
@@ -32,7 +34,8 @@ const Footer: React.FC<FooterProps> = ({
   onOpenSpecialsEditor,
   onGoJackpot,
 }) => {
-  const doubled = [...specials, ...specials];
+  const displaySpecials = specialsForDisplay(specials);
+  const doubled = [...displaySpecials, ...displaySpecials];
   const tapCount = useRef(0);
   const tapTimer = useRef<ReturnType<typeof setTimeout>>();
 
@@ -57,19 +60,28 @@ const Footer: React.FC<FooterProps> = ({
     <div className={`z-20 transition-colors duration-300 ${theme.footerBg} ${theme.footerBorder}`}>
       <div className="overflow-hidden whitespace-nowrap border-b border-inherit">
         <div className="flex items-center">
-          <button
+          <Button
+            type="button"
+            variant="primary"
+            size="sm"
             onClick={isAdmin ? onOpenSpecialsEditor : undefined}
-            className={`shrink-0 px-2.5 sm:px-4 py-2 sm:py-2 font-barDisplay font-bold text-[8px] sm:text-[9px] uppercase tracking-[0.15em] sm:tracking-[0.2em] border-r flex items-center gap-1 transition-all min-h-0 text-white border-[color:var(--fs-footer-schedule-border)] bg-[var(--fs-footer-schedule-bg)] hover:bg-[var(--fs-footer-schedule-hover-bg)] ${
-              !isAdmin ? 'cursor-default' : 'cursor-pointer'
+            disabled={!isAdmin}
+            className={`shrink-0 px-2.5 sm:px-4 py-2 sm:py-2 text-[8px] sm:text-[9px] tracking-[0.15em] sm:tracking-[0.2em] border-r min-h-0 rounded-none border-y-0 border-l-0 ${
+              !isAdmin ? 'cursor-default hover:bg-[var(--fs-footer-schedule-bg)]' : ''
             }`}
           >
             Daily Schedule
             {isAdmin && <Pencil size={8} className="opacity-70" />}
-          </button>
+          </Button>
           <div className="overflow-hidden flex-1">
             <div className="marquee-track">
-              {doubled.map((s, i) => (
-                <div key={`${s.day}-${i}`} className="flex items-center shrink-0 pr-1">
+              {doubled.map((s, i) => {
+                const sourceIdx = specials.findIndex(
+                  (sp) => (sp.id && sp.id === s.id) || (sp.day === s.day && sp.dish === s.dish),
+                );
+                const idx = sourceIdx >= 0 ? sourceIdx : i % displaySpecials.length;
+                return (
+                <div key={`${s.day}-${s.id ?? i}-${i}`} className="flex items-center shrink-0 pr-1">
                   <span
                     className={`${DAY_COLORS[s.day] || 'bg-slate-600'} text-white text-[8px] sm:text-[9px] font-barDisplay font-bold uppercase tracking-wider sm:tracking-widest px-1.5 sm:px-2 py-0.5 sm:py-1 mx-1.5 sm:mx-2`}
                   >
@@ -79,7 +91,7 @@ const Footer: React.FC<FooterProps> = ({
                     <>
                       <input
                         value={s.dish}
-                        onChange={(e) => onUpdateSpecial(i % specials.length, 'dish', e.target.value)}
+                        onChange={(e) => onUpdateSpecial(idx, 'dish', e.target.value)}
                         className={`text-xs font-bold bg-transparent border-b border-dashed w-24 focus:outline-none ${tickerTextClass} border-[color:var(--fs-footer-marquee-input-border)]`}
                       />
                       <span className="text-xs font-barDisplay font-bold ml-1 text-[color:var(--fs-footer-price-accent)]">$</span>
@@ -87,7 +99,7 @@ const Footer: React.FC<FooterProps> = ({
                         type="number"
                         value={s.price}
                         onChange={(e) =>
-                          onUpdateSpecial(i % specials.length, 'price', parseFloat(e.target.value) || 0)
+                          onUpdateSpecial(idx, 'price', parseFloat(e.target.value) || 0)
                         }
                         className="text-xs font-barDisplay font-bold bg-transparent border-b border-dashed w-10 focus:outline-none text-[color:var(--fs-footer-price-accent)] border-[color:var(--fs-footer-marquee-input-border)]"
                       />
@@ -99,7 +111,8 @@ const Footer: React.FC<FooterProps> = ({
                     </span>
                   )}
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>

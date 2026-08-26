@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Mail, User, Check, ArrowRight, Loader2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import Button from './ui/Button';
 
 interface AuthModalProps {
   onClose: () => void;
@@ -100,14 +101,17 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose }) => {
                 {step === 'handle' && 'Choose your handle'}
               </h2>
             </div>
-            <button
+            <Button
               type="button"
+              variant="muted"
+              size="iconSm"
+              iconOnly
               onClick={onClose}
-              className="w-8 h-8 flex items-center justify-center text-[var(--fs-text-muted)] hover:text-[var(--fs-page-text)] transition-colors"
+              className="w-8 h-8 min-h-8 min-w-8"
               aria-label="Close"
             >
               <X size={16} />
-            </button>
+            </Button>
           </div>
 
           {/* Body */}
@@ -146,17 +150,19 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose }) => {
                 {displayError && (
                   <p className="text-xs text-red-500 font-medium">{displayError}</p>
                 )}
-                <button
+                <Button
                   type="submit"
-                  disabled={submitting || !emailInput.trim()}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 text-[11px] font-barDisplay font-bold uppercase tracking-widest text-white transition-opacity hover:opacity-85 disabled:opacity-40 disabled:cursor-not-allowed"
-                  style={{ backgroundColor: 'var(--fs-footer-schedule-bg)', borderRadius: 'var(--fs-radius)' }}
+                  variant="primary"
+                  size="lg"
+                  fullWidth
+                  loading={submitting}
+                  disabled={!emailInput.trim()}
                 >
                   {submitting
                     ? <><Loader2 size={13} className="animate-spin" /> Sending…</>
                     : <><ArrowRight size={13} /> Send magic link</>
                   }
-                </button>
+                </Button>
                 <p className="text-[10px] text-center text-[var(--fs-text-muted)]">
                   Chat, leaderboard & game history — all saved to your account.
                 </p>
@@ -181,14 +187,13 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose }) => {
                 </div>
                 <p className="text-[10px] text-[var(--fs-text-muted)]">
                   Didn't get it?{' '}
-                  <button
+                  <Button
                     type="button"
+                    variant="link"
                     onClick={() => { setStep('email'); setLocalError(null); clearError(); }}
-                    className="underline hover:no-underline font-semibold"
-                    style={{ color: 'var(--fs-nav-active-text)' }}
                   >
                     Try again
-                  </button>
+                  </Button>
                 </p>
               </div>
             )}
@@ -225,24 +230,29 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose }) => {
                     />
                   </div>
                 </div>
-                <button
+                <Button
                   type="submit"
-                  disabled={settingHandle || !handleInput.trim()}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 text-[11px] font-barDisplay font-bold uppercase tracking-widest text-white transition-opacity hover:opacity-85 disabled:opacity-40 disabled:cursor-not-allowed"
-                  style={{ backgroundColor: 'var(--fs-footer-schedule-bg)', borderRadius: 'var(--fs-radius)' }}
+                  variant="primary"
+                  size="lg"
+                  fullWidth
+                  loading={settingHandle}
+                  disabled={!handleInput.trim()}
                 >
                   {settingHandle
                     ? <><Loader2 size={13} className="animate-spin" /> Saving…</>
                     : <><Check size={13} /> Let's go</>
                   }
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="sm"
+                  fullWidth
                   onClick={onClose}
-                  className="w-full text-[10px] text-[var(--fs-text-muted)] hover:underline"
+                  className="text-[10px]"
                 >
                   Skip for now
-                </button>
+                </Button>
               </form>
             )}
 

@@ -2,17 +2,19 @@ import React, { useRef } from 'react';
 import { Plus, Trash2, ChevronUp, ChevronDown, Printer, ImagePlus, X } from 'lucide-react';
 import { FONT_HAMON } from '../../fontTokens';
 import { Theme } from '../../theme';
-import { ChalkboardData, ChalkboardSpecial } from '../../types';
+import { ChalkboardData, Special } from '../../types';
+import { SPECIAL_DAYS } from '../../lib/specials';
 
 interface SpecialsPageProps {
   theme: Theme;
-  data: ChalkboardData;
+  meta: ChalkboardData;
+  specials: Special[];
   isAdmin: boolean;
   onUpdateMeta: (field: 'title' | 'price' | 'subtitle' | 'accentColor', value: string) => void;
-  onUpdateItem: (idx: number, field: keyof ChalkboardSpecial, value: string) => void;
-  onAddItem: () => void;
-  onRemoveItem: (idx: number) => void;
-  onMoveItem: (idx: number, dir: 'up' | 'down') => void;
+  onUpdateSpecial: (idx: number, field: keyof Special, value: string | number) => void;
+  onAddSpecial: () => void;
+  onRemoveSpecial: (idx: number) => void;
+  onMoveSpecial: (idx: number, dir: 'up' | 'down') => void;
   onPrintChalkboard: () => void;
 }
 
@@ -101,11 +103,11 @@ const ItemPhotoSquares: React.FC<{
 };
 
 const SpecialsPage: React.FC<SpecialsPageProps> = ({
-  theme, data, isAdmin,
-  onUpdateMeta, onUpdateItem, onAddItem, onRemoveItem, onMoveItem,
+  theme, meta, specials, isAdmin,
+  onUpdateMeta, onUpdateSpecial, onAddSpecial, onRemoveSpecial, onMoveSpecial,
   onPrintChalkboard,
 }) => {
-  const CHALK_MINT = data.accentColor || CHALK_MINT_DEFAULT;
+  const CHALK_MINT = meta.accentColor || CHALK_MINT_DEFAULT;
   return (
     <div className="min-h-full relative overflow-hidden" style={{ background: BOARD_BG }}>
 
@@ -215,7 +217,7 @@ const SpecialsPage: React.FC<SpecialsPageProps> = ({
 
           {isAdmin ? (
             <input
-              value={data.title}
+              value={meta.title}
               onChange={(e) => onUpdateMeta('title', e.target.value)}
               className="bg-transparent border-none text-center w-full focus:outline-none"
               style={{ fontFamily: FONT_HAMON, fontWeight: 700, fontSize: 'clamp(52px, 10vw, 80px)', color: CHALK_WHITE, textShadow: '2px 2px 8px rgba(0,0,0,0.4), 0 0 20px rgba(255,255,255,0.03)', lineHeight: 1 }}
@@ -226,7 +228,7 @@ const SpecialsPage: React.FC<SpecialsPageProps> = ({
               color: CHALK_WHITE, margin: 0, lineHeight: 1,
               textShadow: '2px 2px 8px rgba(0,0,0,0.4), 0 0 20px rgba(255,255,255,0.03)',
             }}>
-              {data.title}
+              {meta.title}
             </h1>
           )}
         </div>
@@ -246,7 +248,7 @@ const SpecialsPage: React.FC<SpecialsPageProps> = ({
           }} />
           {isAdmin ? (
             <input
-              value={data.price}
+              value={meta.price}
               onChange={(e) => onUpdateMeta('price', e.target.value)}
               className="bg-transparent border-none text-center w-full focus:outline-none relative"
               style={{ fontFamily: FONT_HAMON, fontWeight: 700, fontSize: 'clamp(28px, 6vw, 44px)', color: CHALK_MINT, letterSpacing: '4px', textTransform: 'uppercase', textShadow: `0 0 25px ${CHALK_MINT}25, 2px 2px 6px rgba(0,0,0,0.3)` }}
@@ -258,7 +260,7 @@ const SpecialsPage: React.FC<SpecialsPageProps> = ({
               textTransform: 'uppercase',
               textShadow: `0 0 25px ${CHALK_MINT}25, 2px 2px 6px rgba(0,0,0,0.3)`,
             }}>
-              {data.price}
+              {meta.price}
             </h2>
           )}
         </div>
@@ -267,7 +269,7 @@ const SpecialsPage: React.FC<SpecialsPageProps> = ({
         <div className="text-center mb-2">
           {isAdmin ? (
             <input
-              value={data.subtitle}
+              value={meta.subtitle}
               onChange={(e) => onUpdateMeta('subtitle', e.target.value)}
               className="bg-transparent border-none text-center w-full focus:outline-none"
               style={{ fontFamily: FONT_HAMON, fontWeight: 400, fontSize: 'clamp(16px, 3vw, 22px)', color: CHALK_GRAY, letterSpacing: '5px', textTransform: 'uppercase' }}
@@ -277,7 +279,7 @@ const SpecialsPage: React.FC<SpecialsPageProps> = ({
               fontFamily: FONT_HAMON, fontWeight: 400, fontSize: 'clamp(16px, 3vw, 22px)',
               color: CHALK_GRAY, margin: 0, letterSpacing: '5px', textTransform: 'uppercase',
             }}>
-              {data.subtitle}
+              {meta.subtitle}
             </p>
           )}
         </div>
@@ -285,10 +287,10 @@ const SpecialsPage: React.FC<SpecialsPageProps> = ({
         {/* Date + day-of-week indicator */}
         {(() => {
           const now = new Date();
-          const days = ['Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-          const jsDay = now.getDay();
-          const dayMap: Record<number, number> = { 3: 0, 4: 1, 5: 2, 6: 3, 0: 4 };
-          const activeIdx = dayMap[jsDay] ?? -1;
+          const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+          const today = dayNames[now.getDay()];
+          const displayDays = specials.map((s) => s.day).filter((d, i, arr) => arr.indexOf(d) === i);
+          const days = displayDays.length ? displayDays : [...SPECIAL_DAYS];
           const dateStr = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
           return (
             <div className="mt-5 mb-2 text-center">
@@ -296,8 +298,8 @@ const SpecialsPage: React.FC<SpecialsPageProps> = ({
                 {dateStr}
               </p>
               <div className="flex justify-center gap-3 sm:gap-5">
-                {days.map((d, i) => {
-                  const isToday = i === activeIdx;
+                {days.map((d) => {
+                  const isToday = d === today;
                   return (
                     <div key={d} className="flex flex-col items-center gap-1">
                       <span
@@ -334,21 +336,20 @@ const SpecialsPage: React.FC<SpecialsPageProps> = ({
 
         {/* ═══ SPECIALS ITEMS ═══ */}
         <div className="space-y-8 sm:space-y-10">
-          {data.items.map((item, idx) => {
+          {specials.map((item, idx) => {
             const rot = ITEM_ROTATIONS[idx % ITEM_ROTATIONS.length];
             return (
-              <div key={item.id} className="relative group" style={{ transform: `rotate(${rot}deg)` }}>
+              <div key={item.id ?? `${item.day}-${idx}`} className="relative group" style={{ transform: `rotate(${rot}deg)` }}>
 
-                {/* Admin controls — float left */}
                 {isAdmin && (
                   <div className="absolute -left-6 sm:-left-8 top-1/2 -translate-y-1/2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                    <button onClick={() => onMoveItem(idx, 'up')} className="p-1 hover:opacity-100 opacity-60 transition-opacity">
+                    <button type="button" onClick={() => onMoveSpecial(idx, 'up')} className="p-1 hover:opacity-100 opacity-60 transition-opacity">
                       <ChevronUp size={16} color={CHALK_GRAY} />
                     </button>
-                    <button onClick={() => onRemoveItem(idx)} className="p-1 hover:opacity-100 opacity-60 transition-opacity">
+                    <button type="button" onClick={() => onRemoveSpecial(idx)} className="p-1 hover:opacity-100 opacity-60 transition-opacity">
                       <Trash2 size={13} color="#e57373" />
                     </button>
-                    <button onClick={() => onMoveItem(idx, 'down')} className="p-1 hover:opacity-100 opacity-60 transition-opacity">
+                    <button type="button" onClick={() => onMoveSpecial(idx, 'down')} className="p-1 hover:opacity-100 opacity-60 transition-opacity">
                       <ChevronDown size={16} color={CHALK_GRAY} />
                     </button>
                   </div>
@@ -376,17 +377,44 @@ const SpecialsPage: React.FC<SpecialsPageProps> = ({
                       image={item.image}
                       isAdmin={isAdmin}
                       accentColor={CHALK_MINT}
-                      onUpload={(dataUrl) => onUpdateItem(idx, 'image', dataUrl)}
-                      onRemove={() => onUpdateItem(idx, 'image', '')}
+                      onUpload={(dataUrl) => onUpdateSpecial(idx, 'image', dataUrl)}
+                      onRemove={() => onUpdateSpecial(idx, 'image', '')}
                     />
 
                     {/* Text */}
                     <div className="flex-1 min-w-0">
+                      <p
+                        className={`font-bar text-[11px] uppercase tracking-[0.25em] mb-2 ${item.image ? 'text-left' : 'text-center'}`}
+                        style={{ color: `${CHALK_MINT}90` }}
+                      >
+                        {item.day}
+                        {!isAdmin && (
+                          <span className="ml-2" style={{ color: CHALK_GRAY }}>
+                            ${item.price % 1 === 0 ? item.price : item.price.toFixed(2)}
+                          </span>
+                        )}
+                      </p>
                       {isAdmin ? (
                         <>
+                          <div className="flex flex-wrap items-center gap-2 mb-2">
+                            <input
+                              value={item.day}
+                              onChange={(e) => onUpdateSpecial(idx, 'day', e.target.value)}
+                              className="w-14 bg-transparent border-b border-dashed text-center focus:outline-none"
+                              style={{ color: CHALK_MINT, borderColor: `${CHALK_GRAY}40` }}
+                            />
+                            <span style={{ color: CHALK_GRAY }}>$</span>
+                            <input
+                              type="number"
+                              value={item.price}
+                              onChange={(e) => onUpdateSpecial(idx, 'price', parseFloat(e.target.value) || 0)}
+                              className="w-16 bg-transparent border-b border-dashed focus:outline-none"
+                              style={{ color: CHALK_MINT, borderColor: `${CHALK_GRAY}40` }}
+                            />
+                          </div>
                           <input
-                            value={item.heading}
-                            onChange={(e) => onUpdateItem(idx, 'heading', e.target.value)}
+                            value={item.dish}
+                            onChange={(e) => onUpdateSpecial(idx, 'dish', e.target.value)}
                             className={`bg-transparent border-none w-full focus:outline-none ${item.image ? 'text-left' : 'text-center'}`}
                             style={{
                               fontFamily: FONT_HAMON,
@@ -397,11 +425,11 @@ const SpecialsPage: React.FC<SpecialsPageProps> = ({
                               textTransform: 'uppercase',
                               textShadow: '1px 1px 4px rgba(0,0,0,0.3), 0 0 10px rgba(255,255,255,0.02)',
                             }}
-                            placeholder="Heading..."
+                            placeholder="Dish..."
                           />
                           <input
-                            value={item.description}
-                            onChange={(e) => onUpdateItem(idx, 'description', e.target.value)}
+                            value={item.description ?? ''}
+                            onChange={(e) => onUpdateSpecial(idx, 'description', e.target.value)}
                             className={`bg-transparent border-none w-full focus:outline-none mt-2 ${item.image ? 'text-left' : 'text-center'}`}
                             style={{
                               fontFamily: FONT_HAMON,
@@ -426,17 +454,19 @@ const SpecialsPage: React.FC<SpecialsPageProps> = ({
                             lineHeight: 1.2,
                             textShadow: '1px 1px 4px rgba(0,0,0,0.3), 0 0 10px rgba(255,255,255,0.02)',
                           }}>
-                            {item.heading}
+                            {item.dish}
                           </h3>
-                          <p style={{
-                            fontFamily: FONT_HAMON,
-                            fontWeight: 400,
-                            fontSize: 'clamp(16px, 2.5vw, 20px)',
-                            color: CHALK_GRAY,
-                            margin: 0, letterSpacing: '1px', lineHeight: 1.6,
-                          }}>
-                            {item.description}
-                          </p>
+                          {item.description && (
+                            <p style={{
+                              fontFamily: FONT_HAMON,
+                              fontWeight: 400,
+                              fontSize: 'clamp(16px, 2.5vw, 20px)',
+                              color: CHALK_GRAY,
+                              margin: 0, letterSpacing: '1px', lineHeight: 1.6,
+                            }}>
+                              {item.description}
+                            </p>
+                          )}
                         </>
                       )}
                     </div>
@@ -450,7 +480,8 @@ const SpecialsPage: React.FC<SpecialsPageProps> = ({
         {/* Add special */}
         {isAdmin && (
           <button
-            onClick={onAddItem}
+            type="button"
+            onClick={onAddSpecial}
             className="w-full mt-8 py-4 flex items-center justify-center gap-3 transition-all hover:scale-[1.01] active:scale-[0.99] rounded-xl"
             style={{
               fontFamily: FONT_HAMON,

@@ -27,9 +27,12 @@ export interface MenuData {
 }
 
 export interface Special {
+  id?: string;
   day: string;
   dish: string;
   price: number;
+  description?: string;
+  image?: string;
 }
 
 export interface DrinkItem {

@@ -9,7 +9,9 @@
     "preview": "vite preview",
     "check:db": "node scripts/check-supabase.mjs",
     "check:jackpot-fn": "node scripts/check-jackpot-function.mjs",
-    "deploy:jackpot-pin": "supabase functions deploy jackpot-pin --no-verify-jwt"
+    "deploy:jackpot-pin": "supabase functions deploy jackpot-pin --no-verify-jwt",
+    "deploy:party-inquiry": "supabase functions deploy party-inquiry --no-verify-jwt",
+    "check:party-fn": "node scripts/check-party-function.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.99.2",
