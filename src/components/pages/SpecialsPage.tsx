@@ -4,35 +4,21 @@ import { FONT_HAMON } from '../../fontTokens';
 import { Theme } from '../../theme';
 import { ChalkboardData, Special } from '../../types';
 import { SPECIAL_DAYS } from '../../lib/specials';
+import { resolveChalkboardTheme, type ChalkboardMetaField, DEFAULT_CHALKBOARD_BG } from '../../lib/chalkboardTheme';
+import ChalkboardColorControls from '../ChalkboardColorControls';
 
 interface SpecialsPageProps {
   theme: Theme;
   meta: ChalkboardData;
   specials: Special[];
   isAdmin: boolean;
-  onUpdateMeta: (field: 'title' | 'price' | 'subtitle' | 'accentColor', value: string) => void;
+  onUpdateMeta: (field: ChalkboardMetaField, value: string | boolean) => void;
   onUpdateSpecial: (idx: number, field: keyof Special, value: string | number) => void;
   onAddSpecial: () => void;
   onRemoveSpecial: (idx: number) => void;
   onMoveSpecial: (idx: number, dir: 'up' | 'down') => void;
   onPrintChalkboard: () => void;
 }
-
-const CHALK_WHITE = '#f5f5f5';
-const CHALK_MINT_DEFAULT = '#9ED3C7';
-const CHALK_GRAY = '#c0c0c0';
-const BOARD_BG = '#2b2b2b';
-
-const CHALK_PALETTE = [
-  { label: 'Teal',    value: '#9ED3C7' },
-  { label: 'Gold',    value: '#F4C56D' },
-  { label: 'Rose',    value: '#F4A0A0' },
-  { label: 'Lavender',value: '#C9B8F0' },
-  { label: 'Sky',     value: '#7EC8E3' },
-  { label: 'Sage',    value: '#A8C5A0' },
-  { label: 'Coral',   value: '#F4876A' },
-  { label: 'White',   value: '#f5f5f5' },
-];
 
 const CHALK_SMUDGES = [
   { top: '8%', left: '5%', w: 120, h: 40, rot: -8, opacity: 0.018 },
@@ -47,9 +33,11 @@ const ItemPhotoSquares: React.FC<{
   image?: string;
   isAdmin: boolean;
   accentColor: string;
+  boardBg?: string;
+  secondaryColor?: string;
   onUpload: (dataUrl: string) => void;
   onRemove: () => void;
-}> = ({ image, isAdmin, accentColor, onUpload, onRemove }) => {
+}> = ({ image, isAdmin, accentColor, boardBg = DEFAULT_CHALKBOARD_BG, secondaryColor = '#d8d8d8', onUpload, onRemove }) => {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -69,8 +57,8 @@ const ItemPhotoSquares: React.FC<{
         <div className="relative w-28 sm:w-36 aspect-square rounded-lg overflow-hidden shadow-lg shadow-black/30">
           <img src={image} alt="" className="w-full h-full object-cover" />
           <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute left-1/2 top-0 bottom-0 w-px" style={{ background: `${BOARD_BG}70` }} />
-            <div className="absolute top-1/2 left-0 right-0 h-px" style={{ background: `${BOARD_BG}70` }} />
+            <div className="absolute left-1/2 top-0 bottom-0 w-px" style={{ background: `${boardBg}70` }} />
+            <div className="absolute top-1/2 left-0 right-0 h-px" style={{ background: `${boardBg}70` }} />
           </div>
         </div>
         {isAdmin && (
@@ -94,7 +82,7 @@ const ItemPhotoSquares: React.FC<{
         title="Add photo"
       >
         <ImagePlus size={22} style={{ color: `${accentColor}60` }} className="group-hover:scale-110 transition-transform" />
-        <span className="font-bar text-xs font-normal" style={{ color: `${CHALK_GRAY}80` }}>
+        <span className="font-bar text-xs font-normal" style={{ color: `${secondaryColor}80` }}>
           Add photo
         </span>
       </button>
@@ -107,7 +95,11 @@ const SpecialsPage: React.FC<SpecialsPageProps> = ({
   onUpdateMeta, onUpdateSpecial, onAddSpecial, onRemoveSpecial, onMoveSpecial,
   onPrintChalkboard,
 }) => {
-  const CHALK_MINT = meta.accentColor || CHALK_MINT_DEFAULT;
+  const chalk = resolveChalkboardTheme(meta);
+  const CHALK_MINT = chalk.accent;
+  const CHALK_WHITE = chalk.primary;
+  const CHALK_GRAY = chalk.secondary;
+  const BOARD_BG = chalk.bg;
   return (
     <div className="min-h-full relative overflow-hidden" style={{ background: BOARD_BG }}>
 
@@ -147,54 +139,11 @@ const SpecialsPage: React.FC<SpecialsPageProps> = ({
         {/* Print button + accent color picker */}
         {isAdmin && (
           <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-            {/* Chalk color swatches */}
-            <div className="flex items-center gap-2">
-              <span className="font-bar text-[10px] uppercase tracking-widest" style={{ color: `${CHALK_GRAY}80` }}>
-                Chalk color
-              </span>
-              <div className="flex gap-1.5">
-                {CHALK_PALETTE.map(({ label, value }) => {
-                  const isActive = CHALK_MINT === value;
-                  return (
-                    <button
-                      key={value}
-                      type="button"
-                      title={label}
-                      onClick={() => onUpdateMeta('accentColor', value)}
-                      className="transition-all active:scale-90"
-                      style={{
-                        width: 20,
-                        height: 20,
-                        borderRadius: '50%',
-                        backgroundColor: value,
-                        border: isActive ? `2px solid white` : `2px solid transparent`,
-                        boxShadow: isActive ? `0 0 0 1px ${value}, 0 0 8px ${value}60` : 'none',
-                        opacity: isActive ? 1 : 0.6,
-                      }}
-                    />
-                  );
-                })}
-                {/* Custom hex input */}
-                <label
-                  title="Custom color"
-                  className="relative cursor-pointer"
-                  style={{ width: 20, height: 20 }}
-                >
-                  <input
-                    type="color"
-                    value={CHALK_MINT}
-                    onChange={(e) => onUpdateMeta('accentColor', e.target.value)}
-                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                  />
-                  <div
-                    className="w-5 h-5 rounded-full border-2 flex items-center justify-center text-[7px] font-bold"
-                    style={{ borderColor: `${CHALK_GRAY}50`, background: CHALK_MINT, color: BOARD_BG }}
-                  >
-                    +
-                  </div>
-                </label>
-              </div>
-            </div>
+            <ChalkboardColorControls
+              meta={meta}
+              onUpdateMeta={onUpdateMeta}
+              mutedLabelColor={`${CHALK_GRAY}80`}
+            />
 
             <button
               onClick={onPrintChalkboard}
@@ -377,6 +326,8 @@ const SpecialsPage: React.FC<SpecialsPageProps> = ({
                       image={item.image}
                       isAdmin={isAdmin}
                       accentColor={CHALK_MINT}
+                      boardBg={BOARD_BG}
+                      secondaryColor={CHALK_GRAY}
                       onUpload={(dataUrl) => onUpdateSpecial(idx, 'image', dataUrl)}
                       onRemove={() => onUpdateSpecial(idx, 'image', '')}
                     />

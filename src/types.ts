@@ -96,6 +96,9 @@ export interface ChalkboardData {
   subtitle: string;
   items: ChalkboardSpecial[];
   accentColor?: string;
+  backgroundColor?: string;
+  /** Light-on-dark chalk (default) vs dark-on-light */
+  invertText?: boolean;
 }
 
 export interface CurrentMenuRecord {

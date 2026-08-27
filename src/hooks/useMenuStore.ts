@@ -9,6 +9,7 @@ import {
   normalizeSpecials,
 } from '../lib/specials';
 import { DEFAULT_DISPLAY_BOARD, normalizeDisplayBoard } from '../lib/boardDisplay';
+import type { ChalkboardMetaField } from '../lib/chalkboardTheme';
 
 const DEFAULT_TRAIN_EVENTS: TrainSignEvent[] = [
   { id: 'evt-1', title: 'KARAOKE WEDNESDAY', emoji: '🎤' },
@@ -287,7 +288,7 @@ export function useMenuStore() {
   }, []);
 
   // ── CHALKBOARD SPECIALS CRUD ─────────────────────────────────────────────────
-  const updateChalkboardMeta = useCallback((field: 'title' | 'price' | 'subtitle' | 'accentColor', value: string) => {
+  const updateChalkboardMeta = useCallback((field: ChalkboardMetaField, value: string | boolean) => {
     setChalkboard(prev => ({ ...prev, [field]: value }));
   }, []);
 

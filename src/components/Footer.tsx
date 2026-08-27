@@ -1,9 +1,11 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { MapPin, Phone, Clock, Pencil } from 'lucide-react';
 import { Special } from '../types';
 import { specialsForDisplay } from '../lib/specials';
 import { Theme } from '../theme';
-import Button from './ui/Button';
+import { dayTagClass } from '../lib/dayTagColors';
+
+import { JACKPOT_SECRET_TAP_KEY } from '../lib/jackpotPinAuth';
 
 interface FooterProps {
   specials: Special[];
@@ -14,16 +16,6 @@ interface FooterProps {
   onOpenSpecialsEditor?: () => void;
   onGoJackpot?: () => void;
 }
-
-const DAY_COLORS: Record<string, string> = {
-  Mon: 'bg-blue-600',
-  Tue: 'bg-teal-600',
-  Wed: 'bg-emerald-600',
-  Thu: 'bg-orange-600',
-  Fri: 'bg-red-600',
-  Sat: 'bg-purple-600',
-  Sun: 'bg-rose-600',
-};
 
 const Footer: React.FC<FooterProps> = ({
   specials,
@@ -38,6 +30,7 @@ const Footer: React.FC<FooterProps> = ({
   const doubled = [...displaySpecials, ...displaySpecials];
   const tapCount = useRef(0);
   const tapTimer = useRef<ReturnType<typeof setTimeout>>();
+  const [secretTapProgress, setSecretTapProgress] = useState(0);
 
   const tickerTextClass = theme.isDark
     ? 'text-[color:var(--fs-footer-marquee-text-dark)]'
@@ -48,10 +41,18 @@ const Footer: React.FC<FooterProps> = ({
     clearTimeout(tapTimer.current);
     if (tapCount.current >= 5) {
       tapCount.current = 0;
+      setSecretTapProgress(0);
+      try {
+        sessionStorage.setItem(JACKPOT_SECRET_TAP_KEY, '1');
+      } catch {
+        /* ignore */
+      }
       onGoJackpot?.();
     } else {
+      setSecretTapProgress(tapCount.current);
       tapTimer.current = setTimeout(() => {
         tapCount.current = 0;
+        setSecretTapProgress(0);
       }, 2000);
     }
   };
@@ -60,19 +61,18 @@ const Footer: React.FC<FooterProps> = ({
     <div className={`z-20 transition-colors duration-300 ${theme.footerBg} ${theme.footerBorder}`}>
       <div className="overflow-hidden whitespace-nowrap border-b border-inherit">
         <div className="flex items-center">
-          <Button
+          <button
             type="button"
-            variant="primary"
-            size="sm"
             onClick={isAdmin ? onOpenSpecialsEditor : undefined}
-            disabled={!isAdmin}
-            className={`shrink-0 px-2.5 sm:px-4 py-2 sm:py-2 text-[8px] sm:text-[9px] tracking-[0.15em] sm:tracking-[0.2em] border-r min-h-0 rounded-none border-y-0 border-l-0 ${
-              !isAdmin ? 'cursor-default hover:bg-[var(--fs-footer-schedule-bg)]' : ''
+            className={`shrink-0 inline-flex items-center gap-1 px-2 sm:px-2.5 py-2 border-r border-inherit text-[8px] sm:text-[9px] font-barDisplay font-bold uppercase tracking-wider sm:tracking-widest ${tickerTextClass} ${
+              isAdmin
+                ? 'hover:opacity-80 transition-opacity cursor-pointer'
+                : 'cursor-default'
             }`}
           >
             Daily Schedule
-            {isAdmin && <Pencil size={8} className="opacity-70" />}
-          </Button>
+            {isAdmin && <Pencil size={8} className="opacity-60 shrink-0" aria-hidden />}
+          </button>
           <div className="overflow-hidden flex-1">
             <div className="marquee-track">
               {doubled.map((s, i) => {
@@ -83,7 +83,7 @@ const Footer: React.FC<FooterProps> = ({
                 return (
                 <div key={`${s.day}-${s.id ?? i}-${i}`} className="flex items-center shrink-0 pr-1">
                   <span
-                    className={`${DAY_COLORS[s.day] || 'bg-slate-600'} text-white text-[8px] sm:text-[9px] font-barDisplay font-bold uppercase tracking-wider sm:tracking-widest px-1.5 sm:px-2 py-0.5 sm:py-1 mx-1.5 sm:mx-2`}
+                    className={`${dayTagClass(s.day)} text-white text-[8px] sm:text-[9px] font-barDisplay font-bold uppercase tracking-wider sm:tracking-widest px-1.5 sm:px-2 py-0.5 sm:py-1 mx-1.5 sm:mx-2`}
                   >
                     {s.day}
                   </span>
@@ -140,11 +140,22 @@ const Footer: React.FC<FooterProps> = ({
           <button
             type="button"
             onClick={handleSecretTap}
-            className={`text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.12em] sm:tracking-[0.15em] select-none focus:outline-none ${theme.textMuted} sm:ml-0 opacity-80 hover:opacity-100`}
-            aria-hidden="true"
-            tabIndex={-1}
+            className={`relative text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.12em] sm:tracking-[0.15em] select-none focus:outline-none sm:ml-0 transition-all ${
+              secretTapProgress > 0
+                ? 'text-[color:var(--fs-footer-price-accent)] opacity-100 scale-105'
+                : `${theme.textMuted} opacity-80 hover:opacity-100`
+            }`}
+            aria-label="Four Square"
           >
             Four Square
+            {secretTapProgress > 0 && secretTapProgress < 5 && (
+              <span
+                className="absolute -top-3 left-1/2 -translate-x-1/2 text-[7px] font-barDisplay font-bold tracking-wider text-[color:var(--fs-footer-price-accent)] whitespace-nowrap"
+                aria-live="polite"
+              >
+                {secretTapProgress}/5
+              </span>
+            )}
           </button>
         </div>
       </div>

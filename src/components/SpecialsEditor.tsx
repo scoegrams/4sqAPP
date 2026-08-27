@@ -3,6 +3,7 @@ import { X, CalendarDays, Plus, Trash2, ChevronUp, ChevronDown, AlertCircle } fr
 import type { ChalkboardData, Special } from '../types';
 import { Theme } from '../theme';
 import { SPECIAL_DAYS, duplicateSpecialDays } from '../lib/specials';
+import { dayTagClass } from '../lib/dayTagColors';
 import Button from './ui/Button';
 
 interface SpecialsEditorProps {
@@ -20,16 +21,6 @@ interface SpecialsEditorProps {
   onMove: (idx: number, dir: 'up' | 'down') => void;
   onClose: () => void;
 }
-
-const DAY_COLORS: Record<string, string> = {
-  Mon: 'bg-blue-600',
-  Tue: 'bg-teal-600',
-  Wed: 'bg-emerald-600',
-  Thu: 'bg-orange-600',
-  Fri: 'bg-red-600',
-  Sat: 'bg-purple-600',
-  Sun: 'bg-rose-600',
-};
 
 const META_LABELS: Record<'title' | 'price' | 'subtitle', string> = {
   title: 'Board title',
@@ -132,7 +123,7 @@ const SpecialsEditor: React.FC<SpecialsEditorProps> = ({
                 <select
                   value={s.day}
                   onChange={(e) => onUpdate(i, 'day', e.target.value)}
-                  className={`text-[9px] font-barDisplay font-bold uppercase tracking-widest px-2 py-1 border-0 ${DAY_COLORS[s.day] || 'bg-slate-600'} text-white`}
+                  className={`text-[9px] font-barDisplay font-bold uppercase tracking-widest px-2 py-1 border-0 ${dayTagClass(s.day)} text-white`}
                 >
                   {[...SPECIAL_DAYS, 'Sun', 'Mon', 'Tue'].map((day) => (
                     <option key={day} value={day}>{day}</option>

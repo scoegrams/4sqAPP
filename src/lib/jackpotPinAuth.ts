@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { FunctionsHttpError } from '@supabase/supabase-js';
 
 const CLIENT_KEY = 'four_square_jackpot_client_id';
+export const JACKPOT_SECRET_TAP_KEY = 'four_square_jackpot_secret_tap';
 
 /** Stable ID for this browser tab session (clears when the tab/session ends). */
 export function getJackpotClientId(): string {

@@ -13,7 +13,8 @@ import PartyInquiriesPanel from '../PartyInquiriesPanel';
 import TrainSignEditor from '../TrainSignEditor';
 import ThemeStudioPanel from '../ThemeStudioPanel';
 import { supabase, hasSupabase } from '../../lib/supabase';
-import { getJackpotClientId, signInWithJackpotPin } from '../../lib/jackpotPinAuth';
+import { getJackpotClientId, signInWithJackpotPin, JACKPOT_SECRET_TAP_KEY } from '../../lib/jackpotPinAuth';
+import StaffAdminGuide from '../StaffAdminGuide';
 import { useAuth } from '../../contexts/AuthContext';
 import { useDesignTokens } from '../../contexts/DesignTokensContext';
 import type { DesignTokens } from '../../theme/designTokenTypes';
@@ -174,6 +175,26 @@ const JackpotPage: React.FC<JackpotPageProps> = ({
   const [showHistory, setShowHistory] = useState(false);
   const [showSpecials, setShowSpecials] = useState(false);
   const [showTrainSign, setShowTrainSign] = useState(false);
+  const [fromSecretTap, setFromSecretTap] = useState(false);
+
+  useEffect(() => {
+    try {
+      if (sessionStorage.getItem(JACKPOT_SECRET_TAP_KEY) === '1') {
+        setFromSecretTap(true);
+      }
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  const clearSecretTapFlag = () => {
+    try {
+      sessionStorage.removeItem(JACKPOT_SECRET_TAP_KEY);
+    } catch {
+      /* ignore */
+    }
+    setFromSecretTap(false);
+  };
 
   // Check if logged-in user has owner/staff role
   useEffect(() => {
@@ -211,6 +232,7 @@ const JackpotPage: React.FC<JackpotPageProps> = ({
         setPinMessage(sessionErr.message);
         return;
       }
+      clearSecretTapFlag();
       setPinInput('');
       setAttemptsLeft(null);
       setPinLocked(false);
@@ -278,16 +300,14 @@ const JackpotPage: React.FC<JackpotPageProps> = ({
     return (
       <div className="min-h-[60vh] bg-[#F4F1EA] font-bar py-10 sm:py-14">
         <div className="max-w-sm mx-auto px-5 sm:px-8">
-          <div className="mb-8 text-center sm:text-left">
+          <div className="mb-6 text-center sm:text-left">
             <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#5c564d] mb-1.5">Four Square</p>
             <h2 className="font-barDisplay text-3xl font-bold text-[#2d3d2d]">Jackpot</h2>
-            <p className="text-base text-[#2d3d2d] mt-3 font-semibold">Enter your PIN.</p>
-            <p className="text-sm text-[#5c564d] mt-1.5 leading-relaxed">
-              <strong>3 tries</strong> per browser session, then a short lockout. No email — PIN only.
-            </p>
           </div>
 
           <div className="space-y-5">
+            <StaffAdminGuide mode="login" fromSecretTap={fromSecretTap} />
+
             <form onSubmit={handlePinSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-bold text-[#2d3d2d] mb-2">PIN</label>
@@ -380,7 +400,8 @@ const JackpotPage: React.FC<JackpotPageProps> = ({
           </button>
         </div>
 
-        {/* Admin mode toggle */}
+        <StaffAdminGuide mode="dashboard" className="border-b-2 border-[#2d3d2d]/20 pb-5" />
+
         <Section
           title="Admin mode"
           icon={isAdmin ? <ShieldCheck size={16} className="text-emerald-600" /> : <ShieldOff size={16} />}

@@ -65,6 +65,32 @@ const HEADER_NAV_ROW: NavRowItem[] = [
     : []),
 ];
 
+function joinClasses(...parts: Array<string | false | null | undefined>) {
+  return parts.filter(Boolean).join(' ');
+}
+
+const WordmarkWithSquares: React.FC<{ fontSize: string; sqUnit: string }> = ({ fontSize, sqUnit }) => (
+  <div
+    className="relative shrink-0 font-barDisplay font-bold text-center text-[color:var(--fs-header-wordmark)] w-fit z-10"
+    style={{ fontSize }}
+  >
+    <h1
+      className="m-0 p-0 leading-[0.88] tracking-[0.04em] text-center"
+      aria-label="Four Square, Restaurant and Bar, Braintree Landing"
+    >
+      <span className="block">FOUR</span>
+      <span className="block">SQUARE</span>
+    </h1>
+    <div
+      aria-hidden="true"
+      className="absolute left-1/2 -translate-x-1/2 z-10 pointer-events-none"
+      style={{ top: '100%', marginTop: '-0.06em' }}
+    >
+      <FourSquares unit={sqUnit} />
+    </div>
+  </div>
+);
+
 const Header: React.FC<HeaderProps> = ({
   theme, activePage, trainSignEvents = [], isAdmin, isDirty, isSaving,
   isLoggedIn, profile,
@@ -87,36 +113,64 @@ const Header: React.FC<HeaderProps> = ({
 
   const initial = (profile?.display_name || profile?.email || 'M')[0].toUpperCase();
 
+  const navLinkClasses = (isActive: boolean) =>
+    joinClasses(
+      'inline-flex flex-1 lg:flex-none items-center justify-center gap-1 min-h-[44px] lg:min-h-0 px-1 lg:px-3 py-0 lg:py-1.5',
+      'text-[10px] lg:text-[12px] uppercase tracking-wider lg:tracking-widest transition-all duration-200 active:scale-[0.98]',
+      'border-b-2 -mb-px shrink-0',
+      isActive
+        ? 'text-[color:var(--fs-nav-active-text)] border-[color:var(--fs-nav-active-border)]'
+        : 'text-[color:var(--fs-nav-active-text)] opacity-50 border-transparent hover:opacity-80 hover:border-[color:var(--fs-nav-active-border)]',
+    );
+
   return (
     <div className={`z-20 transition-colors duration-300 safe-top ${theme.headerBg} ${theme.headerBorder}`}>
-      {/* pl uses max() so logo never hugs the screen edge when safe-area is 0 */}
-      <div className="py-1.5 sm:py-2 flex items-start justify-between gap-3 pl-[max(1.25rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] sm:pl-[max(1.5rem,env(safe-area-inset-left,0px))] sm:pr-[max(1.5rem,env(safe-area-inset-right,0px))]">
-        <div className="flex items-start gap-3 sm:gap-4 min-w-0 flex-1 pl-0">
-          {/* Stacked Hamon wordmark + square tech — matches brand lockup */}
-          <div
-            className="shrink-0 self-start font-barDisplay font-bold text-center text-[color:var(--fs-header-wordmark)] w-fit max-w-[92vw]"
-            style={{ fontSize: 'clamp(1.45rem, 4.6vw, 1.95rem)' }}
-          >
-            <h1
-              className="m-0 p-0 leading-[0.88] tracking-[0.04em]"
-              aria-label="Four Square, Restaurant and Bar"
-            >
-              <span className="block">FOUR</span>
-              <span className="block">SQUARE</span>
-            </h1>
-            <div aria-hidden="true">
-              <FourSquares unit="0.24em" className="mt-[0.07em]" />
-            </div>
-          </div>
-          <span
-            className="hidden md:block self-center font-barDisplay font-bold border-l pl-4 text-[color:var(--fs-header-tagline)] border-[color:var(--fs-header-tagline-border)]"
-            style={{ fontSize: 'clamp(1.05rem, 2.4vw, 1.35rem)', letterSpacing: '0.02em' }}
-          >
-            Restaurant &amp; Bar
-          </span>
+      {/* Mobile: 3 columns — wordmark | tagline | menu */}
+      <div
+        className="md:hidden grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-2 py-1 pl-[max(1.25rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))]"
+      >
+        <WordmarkWithSquares fontSize="clamp(1.3rem, 4vw, 1.55rem)" sqUnit="0.44em" />
+
+        <div
+          className="min-w-0 self-stretch flex flex-col justify-center border-l border-[color:var(--fs-header-tagline-border)] pl-2 leading-none text-[color:var(--fs-header-tagline)]"
+          aria-hidden="true"
+        >
+          <span className="text-[8px] font-bold uppercase tracking-[0.16em]">Bar &amp; Restaurant</span>
+          <span className="text-[8px] font-bold uppercase tracking-[0.1em] mt-1">Braintree Landing</span>
         </div>
 
-        <div className="flex items-start gap-2 shrink-0 pt-0.5">
+        <div className="flex justify-end self-center pl-1">
+          <Button
+            type="button"
+            variant="menu"
+            size="iconSm"
+            iconOnly
+            onClick={onOpenNav}
+            aria-label="Open navigation"
+            className="min-h-[40px] min-w-[40px] p-1.5"
+          >
+            <Menu size={16} strokeWidth={2.25} />
+          </Button>
+        </div>
+      </div>
+
+      {/* Tablet / desktop brand row */}
+      <div className="hidden md:flex items-center gap-3 py-1.5 pl-[max(1.5rem,env(safe-area-inset-left,0px))] pr-[max(1.5rem,env(safe-area-inset-right,0px))]">
+        <WordmarkWithSquares fontSize="clamp(1.45rem, 2.4vw, 1.95rem)" sqUnit="0.42em" />
+
+        <span
+          className="self-center font-barDisplay font-bold border-l pl-4 ml-1 text-[color:var(--fs-header-tagline)] border-[color:var(--fs-header-tagline-border)] shrink-0"
+          style={{ fontSize: 'clamp(1.05rem, 2.4vw, 1.35rem)', letterSpacing: '0.02em' }}
+        >
+          Restaurant &amp; Bar
+          <span className="block text-[0.55em] font-bold uppercase tracking-[0.22em] opacity-75 mt-0.5">
+            Braintree Landing
+          </span>
+        </span>
+
+        <div className="flex-1 min-w-2" aria-hidden />
+
+        <div className="flex items-center gap-1.5 shrink-0">
           <TrainSign theme={theme} events={trainSignEvents} isAdmin={false} />
 
           {/* Member auth — Connect 4 only when feature is enabled */}
@@ -175,23 +229,25 @@ const Header: React.FC<HeaderProps> = ({
           <Button
             type="button"
             variant="menu"
-            size="icon"
+            size="iconSm"
             iconOnly
             onClick={onOpenNav}
             aria-label="Open navigation"
+            className="min-h-[44px] min-w-[44px] p-2"
           >
-            <Menu size={18} />
+            <Menu size={18} strokeWidth={2.25} />
           </Button>
         </div>
       </div>
 
+      {/* Nav bar — low vertical padding, full-width tap targets on mobile */}
       <div
-        className={`border-t overflow-x-auto no-scrollbar flex items-center justify-center gap-0 sm:gap-1 px-2 sm:px-6 ${theme.navUnderline}`}
+        className={`border-t flex w-full items-stretch justify-stretch lg:justify-center overflow-x-auto no-scrollbar ${theme.navUnderline}`}
         style={{
           backdropFilter: 'blur(var(--fs-nav-blur))',
           WebkitBackdropFilter: 'blur(var(--fs-nav-blur))',
-          paddingLeft: 'max(0.5rem, env(safe-area-inset-left, 0px))',
-          paddingRight: 'max(0.5rem, env(safe-area-inset-right, 0px))',
+          paddingLeft: 'max(0.25rem, env(safe-area-inset-left, 0px))',
+          paddingRight: 'max(0.25rem, env(safe-area-inset-right, 0px))',
         }}
       >
         {HEADER_NAV_ROW.map(({ id, label, icon: Icon, wideOnly }) => {
@@ -199,17 +255,15 @@ const Header: React.FC<HeaderProps> = ({
           return (
             <button
               key={id}
+              type="button"
               onClick={() => onNavigate(id)}
               style={{ fontFamily: "'Hamon', system-ui, sans-serif", fontWeight: 700 }}
-              className={`items-center gap-1 px-2 md:px-3 py-1 md:py-1.5 text-[9px] md:text-[12px] uppercase tracking-wider md:tracking-widest transition-all duration-200 border-b-2 -mb-px shrink-0 min-h-[40px] md:min-h-0 active:scale-[0.98] ${
-                wideOnly ? 'hidden md:inline-flex' : 'inline-flex'
-              } ${
-                isActive
-                  ? 'text-[color:var(--fs-nav-active-text)] border-[color:var(--fs-nav-active-border)]'
-                  : 'text-[color:var(--fs-nav-active-text)] opacity-50 border-transparent hover:opacity-80 hover:border-[color:var(--fs-nav-active-border)]'
-              }`}
+              className={joinClasses(
+                wideOnly ? 'hidden lg:inline-flex' : 'inline-flex',
+                navLinkClasses(isActive),
+              )}
             >
-              <Icon size={10} className="md:w-3 md:h-3 shrink-0" />
+              <Icon size={11} className="md:w-3 md:h-3 shrink-0" />
               {label}
             </button>
           );

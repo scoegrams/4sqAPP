@@ -2,11 +2,13 @@ import React from 'react';
 import { X, Plus, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
 import { FONT_HAMON } from '../fontTokens';
 import { ChalkboardData } from '../types';
+import { resolveChalkboardTheme, type ChalkboardMetaField } from '../lib/chalkboardTheme';
+import ChalkboardColorControls from './ChalkboardColorControls';
 
 interface ChalkboardSpecialsProps {
   data: ChalkboardData;
   isAdmin: boolean;
-  onUpdateMeta: (field: 'title' | 'price' | 'subtitle' | 'accentColor', value: string) => void;
+  onUpdateMeta: (field: ChalkboardMetaField, value: string | boolean) => void;
   onUpdateItem: (idx: number, field: 'heading' | 'description', value: string) => void;
   onAddItem: () => void;
   onRemoveItem: (idx: number) => void;
@@ -14,40 +16,38 @@ interface ChalkboardSpecialsProps {
   onClose: () => void;
 }
 
-const CHALK_WHITE = '#f5f5f5';
-const CHALK_MINT = '#9ED3C7';
-const CHALK_GRAY = '#d8d8d8';
-const BOARD_BG = '#2b2b2b';
-const BOARD_DARK = '#222222';
-
 const ChalkboardSpecials: React.FC<ChalkboardSpecialsProps> = ({
   data, isAdmin,
   onUpdateMeta, onUpdateItem, onAddItem, onRemoveItem, onMoveItem,
   onClose,
 }) => {
+  const theme = resolveChalkboardTheme(data);
   const handlePrint = () => window.print();
 
   return (
     <div className="fixed inset-0 z-[999] overflow-auto" style={{ background: '#111' }}>
       {/* Toolbar */}
-      <div className="no-print flex items-center justify-between px-6 py-3 sticky top-0 z-10"
+      <div className="no-print flex flex-wrap items-center justify-between gap-3 px-4 sm:px-6 py-3 sticky top-0 z-10"
         style={{ background: '#0f0f0f', borderBottom: '1px solid #333' }}
       >
-        <div className="flex items-center gap-3">
-          <span className="text-lg font-bold" style={{ color: CHALK_MINT, fontFamily: FONT_HAMON }}>
+        <div className="flex flex-wrap items-center gap-3 min-w-0">
+          <span className="text-lg font-bold shrink-0" style={{ color: theme.accent, fontFamily: FONT_HAMON }}>
             Chalkboard Specials
           </span>
           <span
-            className="text-[11px] tracking-[4px] uppercase font-normal"
+            className="text-[11px] tracking-[4px] uppercase font-normal hidden sm:inline"
             style={{ color: '#666', fontFamily: FONT_HAMON }}
           >
             Print Preview — 8.5 × 11"
           </span>
+          {isAdmin && (
+            <ChalkboardColorControls meta={data} onUpdateMeta={onUpdateMeta} mutedLabelColor="#777" />
+          )}
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 shrink-0">
           <button onClick={handlePrint}
             className="px-5 py-2 text-[11px] font-bold uppercase tracking-[2px]"
-            style={{ background: CHALK_MINT, color: BOARD_BG, border: 'none', cursor: 'pointer', fontFamily: FONT_HAMON }}
+            style={{ background: theme.accent, color: theme.invert ? theme.primary : theme.bg, border: 'none', cursor: 'pointer', fontFamily: FONT_HAMON }}
           >
             Print / Save PDF
           </button>
@@ -67,7 +67,7 @@ const ChalkboardSpecials: React.FC<ChalkboardSpecialsProps> = ({
           style={{
             width: '8.5in',
             minHeight: '11in',
-            background: BOARD_BG,
+            background: theme.bg,
             position: 'relative',
             overflow: 'hidden',
             boxShadow: '0 0 80px rgba(0,0,0,0.7)',
@@ -87,7 +87,7 @@ const ChalkboardSpecials: React.FC<ChalkboardSpecialsProps> = ({
           <div style={{
             position: 'absolute',
             top: '16px', left: '16px', right: '16px', bottom: '16px',
-            border: `2px solid ${CHALK_GRAY}33`,
+            border: `2px solid ${theme.frame}`,
             pointerEvents: 'none',
           }} />
 
@@ -101,12 +101,12 @@ const ChalkboardSpecials: React.FC<ChalkboardSpecialsProps> = ({
                   value={data.title}
                   onChange={(e) => onUpdateMeta('title', e.target.value)}
                   className="bg-transparent border-none text-center w-full focus:outline-none"
-                  style={{ fontFamily: FONT_HAMON, fontWeight: 700, fontSize: '56px', color: CHALK_WHITE, lineHeight: 1.1 }}
+                  style={{ fontFamily: FONT_HAMON, fontWeight: 700, fontSize: '56px', color: theme.primary, lineHeight: 1.1 }}
                 />
               ) : (
                 <h1 style={{
                   fontFamily: FONT_HAMON, fontWeight: 700, fontSize: '56px',
-                  color: CHALK_WHITE, margin: 0, lineHeight: 1.1,
+                  color: theme.primary, margin: 0, lineHeight: 1.1,
                   textShadow: '0 0 10px rgba(255,255,255,0.05)',
                 }}>
                   {data.title}
@@ -121,12 +121,12 @@ const ChalkboardSpecials: React.FC<ChalkboardSpecialsProps> = ({
                   value={data.price}
                   onChange={(e) => onUpdateMeta('price', e.target.value)}
                   className="bg-transparent border-none text-center w-full focus:outline-none"
-                  style={{ fontFamily: FONT_HAMON, fontWeight: 700, fontSize: '38px', color: CHALK_MINT, letterSpacing: '3px', textTransform: 'uppercase' }}
+                  style={{ fontFamily: FONT_HAMON, fontWeight: 700, fontSize: '38px', color: theme.accent, letterSpacing: '3px', textTransform: 'uppercase' }}
                 />
               ) : (
                 <h2 style={{
                   fontFamily: FONT_HAMON, fontWeight: 700, fontSize: '38px',
-                  color: CHALK_MINT, margin: 0, letterSpacing: '3px',
+                  color: theme.accent, margin: 0, letterSpacing: '3px',
                   textTransform: 'uppercase',
                   textShadow: '0 0 15px rgba(158,211,199,0.15)',
                 }}>
@@ -142,12 +142,12 @@ const ChalkboardSpecials: React.FC<ChalkboardSpecialsProps> = ({
                   value={data.subtitle}
                   onChange={(e) => onUpdateMeta('subtitle', e.target.value)}
                   className="bg-transparent border-none text-center w-full focus:outline-none"
-                  style={{ fontFamily: FONT_HAMON, fontWeight: 400, fontSize: '18px', color: CHALK_GRAY, letterSpacing: '4px', textTransform: 'uppercase' }}
+                  style={{ fontFamily: FONT_HAMON, fontWeight: 400, fontSize: '18px', color: theme.secondary, letterSpacing: '4px', textTransform: 'uppercase' }}
                 />
               ) : (
                 <p style={{
                   fontFamily: FONT_HAMON, fontWeight: 400, fontSize: '18px',
-                  color: CHALK_GRAY, margin: 0, letterSpacing: '4px',
+                  color: theme.secondary, margin: 0, letterSpacing: '4px',
                   textTransform: 'uppercase',
                 }}>
                   {data.subtitle}
@@ -159,7 +159,7 @@ const ChalkboardSpecials: React.FC<ChalkboardSpecialsProps> = ({
             <div style={{
               height: '2px', margin: '0 auto 36px',
               width: '70%',
-              background: `linear-gradient(90deg, transparent, ${CHALK_GRAY}30, ${CHALK_WHITE}20, ${CHALK_GRAY}30, transparent)`,
+              background: `linear-gradient(90deg, transparent, ${theme.secondary}30, ${theme.primary}20, ${theme.secondary}30, transparent)`,
             }} />
 
             {/* Special items */}
@@ -174,13 +174,13 @@ const ChalkboardSpecials: React.FC<ChalkboardSpecialsProps> = ({
                       display: 'flex', flexDirection: 'column', gap: '2px',
                     }}>
                       <button onClick={() => onMoveItem(idx, 'up')} className="p-1 hover:opacity-100 opacity-50 transition-opacity">
-                        <ChevronUp size={14} color={CHALK_GRAY} />
+                        <ChevronUp size={14} color={theme.secondary} />
                       </button>
                       <button onClick={() => onRemoveItem(idx)} className="p-1 hover:opacity-100 opacity-50 transition-opacity">
                         <Trash2 size={12} color="#e57373" />
                       </button>
                       <button onClick={() => onMoveItem(idx, 'down')} className="p-1 hover:opacity-100 opacity-50 transition-opacity">
-                        <ChevronDown size={14} color={CHALK_GRAY} />
+                        <ChevronDown size={14} color={theme.secondary} />
                       </button>
                     </div>
                   )}
@@ -199,8 +199,8 @@ const ChalkboardSpecials: React.FC<ChalkboardSpecialsProps> = ({
                         borderRadius: '4px', overflow: 'hidden',
                       }}>
                         <img src={item.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                        <div style={{ position: 'absolute', left: '50%', top: 0, bottom: 0, width: '1px', background: `${BOARD_BG}90` }} />
-                        <div style={{ position: 'absolute', top: '50%', left: 0, right: 0, height: '1px', background: `${BOARD_BG}90` }} />
+                        <div style={{ position: 'absolute', left: '50%', top: 0, bottom: 0, width: '1px', background: `${theme.bg}90` }} />
+                        <div style={{ position: 'absolute', top: '50%', left: 0, right: 0, height: '1px', background: `${theme.bg}90` }} />
                       </div>
                     )}
 
@@ -213,7 +213,7 @@ const ChalkboardSpecials: React.FC<ChalkboardSpecialsProps> = ({
                           onChange={(e) => onUpdateItem(idx, 'heading', e.target.value)}
                           className="bg-transparent border-none w-full focus:outline-none"
                           style={{
-                            fontFamily: FONT_HAMON, fontWeight: 700, fontSize: '28px', color: CHALK_WHITE,
+                            fontFamily: FONT_HAMON, fontWeight: 700, fontSize: '28px', color: theme.primary,
                             letterSpacing: '2px', textTransform: 'uppercase',
                             textAlign: item.image ? 'left' : 'center',
                           }}
@@ -221,7 +221,7 @@ const ChalkboardSpecials: React.FC<ChalkboardSpecialsProps> = ({
                       ) : (
                         <h3 style={{
                           fontFamily: FONT_HAMON, fontWeight: 700, fontSize: '28px',
-                          color: CHALK_WHITE, margin: '0 0 8px', letterSpacing: '2px',
+                          color: theme.primary, margin: '0 0 8px', letterSpacing: '2px',
                           textTransform: 'uppercase', lineHeight: 1.3,
                           textShadow: '0 0 8px rgba(255,255,255,0.04)',
                         }}>
@@ -236,7 +236,7 @@ const ChalkboardSpecials: React.FC<ChalkboardSpecialsProps> = ({
                           onChange={(e) => onUpdateItem(idx, 'description', e.target.value)}
                           className="bg-transparent border-none w-full focus:outline-none"
                           style={{
-                            fontFamily: FONT_HAMON, fontWeight: 400, fontSize: '17px', color: CHALK_GRAY,
+                            fontFamily: FONT_HAMON, fontWeight: 400, fontSize: '17px', color: theme.secondary,
                             letterSpacing: '1px',
                             textAlign: item.image ? 'left' : 'center',
                           }}
@@ -244,7 +244,7 @@ const ChalkboardSpecials: React.FC<ChalkboardSpecialsProps> = ({
                       ) : (
                         <p style={{
                           fontFamily: FONT_HAMON, fontWeight: 400, fontSize: '17px',
-                          color: CHALK_GRAY, margin: 0, letterSpacing: '1px',
+                          color: theme.secondary, margin: 0, letterSpacing: '1px',
                           lineHeight: 1.5,
                           maxWidth: item.image ? '100%' : '80%',
                           marginLeft: item.image ? 0 : 'auto',
@@ -261,9 +261,9 @@ const ChalkboardSpecials: React.FC<ChalkboardSpecialsProps> = ({
                     <div style={{
                       display: 'flex', justifyContent: 'center', gap: '12px', marginTop: '28px',
                     }}>
-                      <span style={{ color: `${CHALK_GRAY}40`, fontSize: '10px' }}>✦</span>
-                      <span style={{ color: `${CHALK_MINT}50`, fontSize: '8px', marginTop: '1px' }}>●</span>
-                      <span style={{ color: `${CHALK_GRAY}40`, fontSize: '10px' }}>✦</span>
+                      <span style={{ color: `${theme.secondary}40`, fontSize: '10px' }}>✦</span>
+                      <span style={{ color: `${theme.accent}50`, fontSize: '8px', marginTop: '1px' }}>●</span>
+                      <span style={{ color: `${theme.secondary}40`, fontSize: '10px' }}>✦</span>
                     </div>
                   )}
                 </div>
@@ -276,7 +276,7 @@ const ChalkboardSpecials: React.FC<ChalkboardSpecialsProps> = ({
                 <button
                   onClick={onAddItem}
                   className="inline-flex items-center gap-2 px-4 py-2 transition-opacity hover:opacity-100 opacity-60"
-                  style={{ border: `1px dashed ${CHALK_GRAY}40`, color: CHALK_GRAY, fontFamily: FONT_HAMON, fontWeight: 400, fontSize: '15px', background: 'transparent', cursor: 'pointer' }}
+                  style={{ border: `1px dashed ${theme.secondary}40`, color: theme.secondary, fontFamily: FONT_HAMON, fontWeight: 400, fontSize: '15px', background: 'transparent', cursor: 'pointer' }}
                 >
                   <Plus size={14} /> Add special
                 </button>
@@ -289,14 +289,14 @@ const ChalkboardSpecials: React.FC<ChalkboardSpecialsProps> = ({
               height: '2px',
               width: '50%',
               margin: '44px auto 0',
-              background: `linear-gradient(90deg, transparent, ${CHALK_GRAY}25, ${CHALK_MINT}20, ${CHALK_GRAY}25, transparent)`,
+              background: `linear-gradient(90deg, transparent, ${theme.secondary}25, ${theme.accent}20, ${theme.secondary}25, transparent)`,
             }} />
 
             {/* Chalk dust dots at bottom */}
             <div style={{
               display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '20px',
             }}>
-              {[CHALK_MINT, CHALK_WHITE, CHALK_MINT, CHALK_WHITE].map((c, i) => (
+              {[theme.accent, theme.primary, theme.accent, theme.primary].map((c, i) => (
                 <div key={i} style={{
                   width: '4px', height: '4px', borderRadius: '50%',
                   background: c, opacity: 0.25,

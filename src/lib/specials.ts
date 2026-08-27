@@ -3,11 +3,18 @@ import type { ChalkboardData, Special } from '../types';
 /** Days the bar runs specials (matches open hours). */
 export const SPECIAL_DAYS = ['Wed', 'Thu', 'Fri', 'Sat'] as const;
 
-export const DEFAULT_SPECIALS_META: Pick<ChalkboardData, 'title' | 'price' | 'subtitle' | 'accentColor'> = {
+import { DEFAULT_CHALKBOARD_BG, DEFAULT_CHALK_ACCENT } from './chalkboardTheme';
+
+export const DEFAULT_SPECIALS_META: Pick<
+  ChalkboardData,
+  'title' | 'price' | 'subtitle' | 'accentColor' | 'backgroundColor' | 'invertText'
+> = {
   title: 'Four Square',
   price: '$12 Lunch Specials',
   subtitle: 'Wednesday–Saturday · 4PM–1AM',
-  accentColor: '#9ED3C7',
+  accentColor: DEFAULT_CHALK_ACCENT,
+  backgroundColor: DEFAULT_CHALKBOARD_BG,
+  invertText: false,
 };
 
 export const INITIAL_SPECIALS: Special[] = [
@@ -81,6 +88,8 @@ export function defaultChalkboardMeta(chalkboard?: ChalkboardData): ChalkboardDa
     price: chalkboard?.price ?? DEFAULT_SPECIALS_META.price,
     subtitle: chalkboard?.subtitle ?? DEFAULT_SPECIALS_META.subtitle,
     accentColor: chalkboard?.accentColor ?? DEFAULT_SPECIALS_META.accentColor,
+    backgroundColor: chalkboard?.backgroundColor ?? DEFAULT_SPECIALS_META.backgroundColor,
+    invertText: chalkboard?.invertText ?? DEFAULT_SPECIALS_META.invertText,
     items: [],
   };
 }
