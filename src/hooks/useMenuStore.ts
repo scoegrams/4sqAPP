@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { db } from '../db';
-import { MenuData, Special, DrinksData, MenuVersion, MenuItem, MenuSection, TrainSignEvent, ChalkboardData, ChalkboardSpecial } from '../types';
+import { MenuData, Special, DrinksData, MenuVersion, MenuItem, MenuSection, TrainSignEvent, ChalkboardData, ChalkboardSpecial, DisplayBoardConfig } from '../types';
 import { INITIAL_MENU_DATA } from '../data/menuData';
 import { INITIAL_DRINKS_DATA } from '../data/drinksData';
 import {
@@ -8,6 +8,7 @@ import {
   defaultChalkboardMeta,
   normalizeSpecials,
 } from '../lib/specials';
+import { DEFAULT_DISPLAY_BOARD, normalizeDisplayBoard } from '../lib/boardDisplay';
 
 const DEFAULT_TRAIN_EVENTS: TrainSignEvent[] = [
   { id: 'evt-1', title: 'KARAOKE WEDNESDAY', emoji: '🎤' },
@@ -33,13 +34,14 @@ export function useMenuStore() {
   const [events, setEvents] = useState<TrainSignEvent[]>(() => deepClone(DEFAULT_TRAIN_EVENTS));
   const [openHours, setOpenHours] = useState<string>(DEFAULT_OPEN_HOURS);
   const [chalkboard, setChalkboard] = useState<ChalkboardData>(() => deepClone(DEFAULT_CHALKBOARD));
+  const [displayBoard, setDisplayBoard] = useState<DisplayBoardConfig>(() => deepClone(DEFAULT_DISPLAY_BOARD));
   const [isDirty, setIsDirty] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
-  const savedRef = useRef({ menu, specials, drinks, events: [] as TrainSignEvent[], openHours: DEFAULT_OPEN_HOURS, chalkboard: deepClone(DEFAULT_CHALKBOARD) as ChalkboardData });
+  const savedRef = useRef({ menu, specials, drinks, events: [] as TrainSignEvent[], openHours: DEFAULT_OPEN_HOURS, chalkboard: deepClone(DEFAULT_CHALKBOARD) as ChalkboardData, displayBoard: deepClone(DEFAULT_DISPLAY_BOARD) as DisplayBoardConfig });
 
   // Load from DB on mount
   useEffect(() => {
@@ -48,6 +50,7 @@ export function useMenuStore() {
         const loadedEvents = record.events?.length ? record.events : deepClone(DEFAULT_TRAIN_EVENTS);
         const loadedOpenHours = record.openHours ?? DEFAULT_OPEN_HOURS;
         const loadedChalkboard = defaultChalkboardMeta(record.chalkboard);
+        const loadedDisplayBoard = normalizeDisplayBoard(record.displayBoard);
         const loadedSpecials = normalizeSpecials(record.specials, record.chalkboard);
         setMenu(record.menu);
         setSpecials(loadedSpecials);
@@ -55,10 +58,11 @@ export function useMenuStore() {
         setEvents(deepClone(loadedEvents));
         setOpenHours(loadedOpenHours);
         setChalkboard(loadedChalkboard);
+        setDisplayBoard(loadedDisplayBoard);
         setLastSaved(record.lastSaved ? new Date(record.lastSaved) : null);
-        savedRef.current = { menu: record.menu, specials: loadedSpecials, drinks: record.drinks, events: loadedEvents, openHours: loadedOpenHours, chalkboard: loadedChalkboard };
+        savedRef.current = { menu: record.menu, specials: loadedSpecials, drinks: record.drinks, events: loadedEvents, openHours: loadedOpenHours, chalkboard: loadedChalkboard, displayBoard: loadedDisplayBoard };
       } else {
-        savedRef.current = { menu: deepClone(INITIAL_MENU_DATA), specials: deepClone(INITIAL_SPECIALS), drinks: deepClone(INITIAL_DRINKS_DATA), events: deepClone(DEFAULT_TRAIN_EVENTS), openHours: DEFAULT_OPEN_HOURS, chalkboard: deepClone(DEFAULT_CHALKBOARD) };
+        savedRef.current = { menu: deepClone(INITIAL_MENU_DATA), specials: deepClone(INITIAL_SPECIALS), drinks: deepClone(INITIAL_DRINKS_DATA), events: deepClone(DEFAULT_TRAIN_EVENTS), openHours: DEFAULT_OPEN_HOURS, chalkboard: deepClone(DEFAULT_CHALKBOARD), displayBoard: deepClone(DEFAULT_DISPLAY_BOARD) };
       }
     }).finally(() => setIsLoading(false));
   }, []);
@@ -66,9 +70,9 @@ export function useMenuStore() {
   // Track dirty state
   useEffect(() => {
     if (!isLoading) {
-      setIsDirty(JSON.stringify({ menu, specials, drinks, events, openHours, chalkboard }) !== JSON.stringify(savedRef.current));
+      setIsDirty(JSON.stringify({ menu, specials, drinks, events, openHours, chalkboard, displayBoard }) !== JSON.stringify(savedRef.current));
     }
-  }, [menu, specials, drinks, events, openHours, chalkboard, isLoading]);
+  }, [menu, specials, drinks, events, openHours, chalkboard, displayBoard, isLoading]);
 
   // ── Save ────────────────────────────────────────────────────────────────────
   const save = useCallback(async (note = '') => {
@@ -76,7 +80,7 @@ export function useMenuStore() {
     setSaveError(null);
     try {
       const now = new Date();
-      const snapshot = { menu: deepClone(menu), specials: deepClone(specials), drinks: deepClone(drinks), events: deepClone(events), openHours, chalkboard: deepClone(chalkboard) };
+      const snapshot = { menu: deepClone(menu), specials: deepClone(specials), drinks: deepClone(drinks), events: deepClone(events), openHours, chalkboard: deepClone(chalkboard), displayBoard: deepClone(displayBoard) };
       await db.current_menu.put({ id: 'current', ...snapshot, lastSaved: now });
       await db.menu_versions.add({ timestamp: now, note: note || `Saved ${now.toLocaleString()}`, ...snapshot });
       savedRef.current = { ...snapshot };
@@ -89,7 +93,7 @@ export function useMenuStore() {
     } finally {
       setIsSaving(false);
     }
-  }, [menu, specials, drinks, events, openHours, chalkboard]);
+  }, [menu, specials, drinks, events, openHours, chalkboard, displayBoard]);
 
   // ── Discard ─────────────────────────────────────────────────────────────────
   const discard = useCallback(() => {
@@ -99,6 +103,7 @@ export function useMenuStore() {
     setEvents(deepClone(savedRef.current.events));
     setOpenHours(savedRef.current.openHours);
     setChalkboard(deepClone(savedRef.current.chalkboard));
+    setDisplayBoard(deepClone(savedRef.current.displayBoard));
     setIsDirty(false);
   }, []);
 
@@ -110,6 +115,7 @@ export function useMenuStore() {
     setEvents(version.events?.length ? deepClone(version.events) : deepClone(DEFAULT_TRAIN_EVENTS));
     setOpenHours(version.openHours ?? DEFAULT_OPEN_HOURS);
     if (version.chalkboard) setChalkboard(deepClone(version.chalkboard));
+    setDisplayBoard(normalizeDisplayBoard(version.displayBoard));
     setIsDirty(true);
   }, []);
 
@@ -308,9 +314,13 @@ export function useMenuStore() {
     moveSpecial(idx, direction);
   }, [moveSpecial]);
 
+  const updateDisplayBoard = useCallback((field: keyof DisplayBoardConfig, value: string | number) => {
+    setDisplayBoard(prev => normalizeDisplayBoard({ ...prev, [field]: value }));
+  }, []);
+
   return {
     menu, specials, drinks, events, openHours, setOpenHours,
-    chalkboard, setChalkboard,
+    chalkboard, setChalkboard, displayBoard, updateDisplayBoard,
     updateChalkboardMeta, updateChalkboardItem, addChalkboardItem, removeChalkboardItem, moveChalkboardItem,
     isDirty, isLoading, isSaving, saveError, lastSaved,
     save, discard, restoreVersion,

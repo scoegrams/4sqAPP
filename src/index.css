@@ -241,6 +241,21 @@
   }
 }
 
+@keyframes board-event-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.board-event-enter {
+  animation: board-event-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .board-event-enter {
+    animation: fade-in 0.2s ease-out forwards;
+  }
+}
+
 @media print {
   .no-print { display: none !important; }
   @page {

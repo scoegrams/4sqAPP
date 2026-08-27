@@ -8,6 +8,7 @@ import BookingPage from './components/pages/BookingPage';
 import DrinksPage from './components/pages/DrinksPage';
 import SpecialsPage from './components/pages/SpecialsPage';
 import JackpotPage from './components/pages/JackpotPage';
+import BoardDisplayPage from './components/pages/BoardDisplayPage';
 import PrintMenuPage from './components/PrintMenuPage';
 import ChalkboardSpecials from './components/ChalkboardSpecials';
 import AuthModal from './components/AuthModal';
@@ -49,6 +50,9 @@ const AppInner: React.FC<AppInnerProps> = ({ themeMode, setThemeMode }) => {
   const [showPrint, setShowPrint] = useState(false);
   const [showChalkboard, setShowChalkboard] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [isBoardMode, setIsBoardMode] = useState(() =>
+    typeof window !== 'undefined' && window.location.hash === '#board',
+  );
 
   const isLoggedIn = !!user && !!profile;
 
@@ -62,12 +66,14 @@ const AppInner: React.FC<AppInnerProps> = ({ themeMode, setThemeMode }) => {
       : parseFloat(effectiveTokens.bgImageOpacityLight) || 0.15;
 
   useEffect(() => {
-    const go = () => {
-      if (window.location.hash === '#jackpot') setActivePage('jackpot');
+    const syncHash = () => {
+      const hash = window.location.hash;
+      if (hash === '#jackpot') setActivePage('jackpot');
+      setIsBoardMode(hash === '#board');
     };
-    go();
-    window.addEventListener('hashchange', go);
-    return () => window.removeEventListener('hashchange', go);
+    syncHash();
+    window.addEventListener('hashchange', syncHash);
+    return () => window.removeEventListener('hashchange', syncHash);
   }, []);
 
   // Auto-open auth modal for handle setup after a new member signs in (Connect 4 only)
@@ -159,6 +165,8 @@ const AppInner: React.FC<AppInnerProps> = ({ themeMode, setThemeMode }) => {
             onMoveSpecial={store.moveSpecial}
             onUpdateChalkboardMeta={(field, value) => store.updateChalkboardMeta(field, value)}
             chalkboardMeta={store.chalkboard}
+            displayBoard={store.displayBoard}
+            onUpdateDisplayBoard={store.updateDisplayBoard}
             onUpdateOpenHours={store.setOpenHours}
             onUpdateEvent={(idx, field, value) => store.updateEvent(idx, field, value)}
             onAddEvent={store.addEvent}
@@ -210,6 +218,18 @@ const AppInner: React.FC<AppInnerProps> = ({ themeMode, setThemeMode }) => {
       <div className={`h-screen flex items-center justify-center ${theme.bg} ${theme.text}`}>
         <span className="text-xs font-barDisplay font-bold uppercase tracking-[0.3em] opacity-40">Loading…</span>
       </div>
+    );
+  }
+
+  if (isBoardMode) {
+    return (
+      <BoardDisplayPage
+        board={store.displayBoard}
+        specials={store.specials}
+        events={store.events}
+        openHours={store.openHours}
+        specialsHeadline={store.chalkboard.price}
+      />
     );
   }
 

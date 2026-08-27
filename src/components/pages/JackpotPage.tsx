@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import {
   LogOut, ShieldCheck, ShieldOff, Save, Printer, History,
   RotateCcw, PencilLine, Palette, Check, AlertCircle, ChevronDown,
-  ChevronUp, CalendarDays, Train, Eye, Lock, Sparkles, KeyRound,
+  ChevronUp, CalendarDays, Train, Eye, Lock, Sparkles, KeyRound, Monitor,
 } from 'lucide-react';
 import { Theme, ThemeMode } from '../../theme';
-import type { Special, TrainSignEvent, MenuVersion, ChalkboardData } from '../../types';
+import type { Special, TrainSignEvent, MenuVersion, ChalkboardData, DisplayBoardConfig } from '../../types';
+import BoardDisplayEditor from '../BoardDisplayEditor';
 import VersionHistory from '../VersionHistory';
 import SpecialsEditor from '../SpecialsEditor';
 import PartyInquiriesPanel from '../PartyInquiriesPanel';
@@ -84,6 +85,8 @@ interface JackpotPageProps {
   customBgColor: string | null;
   specials: Special[];
   chalkboardMeta: Pick<ChalkboardData, 'title' | 'price' | 'subtitle'>;
+  displayBoard: DisplayBoardConfig;
+  onUpdateDisplayBoard: (field: keyof DisplayBoardConfig, value: string | number) => void;
   openHours: string;
   events: TrainSignEvent[];
   onToggleAdmin: () => void;
@@ -144,10 +147,10 @@ const Section: React.FC<{
 // ── Main component ──────────────────────────────────────────────────────────
 const JackpotPage: React.FC<JackpotPageProps> = ({
   theme, themeMode, isAdmin, isDirty, lastSaved, customBgColor,
-  specials, chalkboardMeta, openHours, events,
+  specials, chalkboardMeta, displayBoard, openHours, events,
   onToggleAdmin, onCycleTheme, onSetTheme,
   onSave, onDiscard, onPrint, onChalkboard, onColorChange,
-  onUpdateSpecial, onAddSpecial, onRemoveSpecial, onMoveSpecial, onUpdateChalkboardMeta, onUpdateOpenHours,
+  onUpdateSpecial, onAddSpecial, onRemoveSpecial, onMoveSpecial, onUpdateChalkboardMeta, onUpdateDisplayBoard, onUpdateOpenHours,
   onUpdateEvent, onAddEvent, onRemoveEvent, onMoveEvent,
   onRestoreVersion,
 }) => {
@@ -455,7 +458,7 @@ const JackpotPage: React.FC<JackpotPageProps> = ({
 
         {/* Export */}
         <Section title="Export &amp; print" icon={<Printer size={16} />}>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 mb-4">
             <button type="button" onClick={onPrint} className={btnTan}>
               <Printer size={13} /> Print menu PDF
             </button>
@@ -463,6 +466,10 @@ const JackpotPage: React.FC<JackpotPageProps> = ({
               <PencilLine size={13} /> Chalkboard specials
             </button>
           </div>
+        </Section>
+
+        <Section title="TV display board" icon={<Monitor size={16} />} defaultOpen>
+          <BoardDisplayEditor board={displayBoard} onUpdate={onUpdateDisplayBoard} />
         </Section>
 
         {/* Specials & events */}

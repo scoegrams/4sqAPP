@@ -45,6 +45,31 @@ export interface DrinkItem {
 
 export type DrinksData = Record<string, DrinkItem[]>;
 
+export interface TrainSignEvent {
+  id: string;
+  title: string;
+  emoji: string;
+}
+
+export type BoardBackgroundFit = 'cover' | 'contain';
+export type BoardBackgroundPosition = 'center' | 'top' | 'bottom';
+
+/** TV / tablet display board (`#board`) */
+export interface DisplayBoardConfig {
+  backgroundImageUrl: string;
+  /** Used when main URL is empty or fails to load */
+  fallbackImageUrl: string;
+  backgroundFit: BoardBackgroundFit;
+  backgroundPosition: BoardBackgroundPosition;
+  /** 0 = show photo clearly, 100 = very dark scrim for text */
+  overlayStrength: number;
+  tagline: string;
+  /** Prices, weekly panel, primary labels */
+  accentColor: string;
+  /** “Coming up” events accent */
+  highlightColor: string;
+}
+
 export interface MenuVersion {
   id?: number;
   timestamp: Date;
@@ -55,12 +80,7 @@ export interface MenuVersion {
   events?: TrainSignEvent[];
   openHours?: string;
   chalkboard?: ChalkboardData;
-}
-
-export interface TrainSignEvent {
-  id: string;
-  title: string;
-  emoji: string;
+  displayBoard?: DisplayBoardConfig;
 }
 
 export interface ChalkboardSpecial {
@@ -87,4 +107,5 @@ export interface CurrentMenuRecord {
   events?: TrainSignEvent[];
   openHours?: string;
   chalkboard?: ChalkboardData;
+  displayBoard?: DisplayBoardConfig;
 }
